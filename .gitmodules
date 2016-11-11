@@ -1,6 +1,3 @@
 [submodule "ext/glfw"]
 	path = ext/glfw
 	url = https://github.com/glfw/glfw
-[submodule "etc/glfw"]
-	path = etc/glfw
-	url = https://github.com/glfw/glfw.git
