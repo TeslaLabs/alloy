@@ -40,11 +40,9 @@
     <ClCompile Include="..\..\src\core\AlloyImage.cpp" />
     <ClCompile Include="..\..\src\core\AlloyIntersector.cpp" />
     <ClCompile Include="..\..\src\core\AlloyIsoContour.cpp" />
-    <ClCompile Include="..\..\src\core\AlloyLighting.cpp" />
     <ClCompile Include="..\..\src\core\AlloyMath.cpp" />
     <ClCompile Include="..\..\src\core\AlloyMesh.cpp" />
     <ClCompile Include="..\..\src\core\AlloyMeshPrimitives.cpp" />
-    <ClCompile Include="..\..\src\core\AlloyMorphableModel.cpp" />
     <ClCompile Include="..\..\src\core\AlloyNumber.cpp" />
     <ClCompile Include="..\..\src\core\AlloyOptimization.cpp" />
     <ClCompile Include="..\..\src\core\AlloyParameterPane.cpp" />
@@ -76,7 +74,6 @@
     <ClCompile Include="..\..\src\core\SanityChecks.cpp" />
     <ClCompile Include="..\..\src\core\sha1.cpp" />
     <ClCompile Include="..\..\src\core\sha2.cpp" />
-    <ClCompile Include="..\..\src\core\ShadowCastShader.cpp" />
     <ClCompile Include="..\..\src\core\tinyexr.cpp" />
     <ClCompile Include="..\..\src\core\tinyprocess.cpp" />
     <ClCompile Include="..\..\src\core\tinyspline.c" />
@@ -113,7 +110,6 @@
     <ClCompile Include="..\..\src\example\MeshTextureEx.cpp" />
     <ClCompile Include="..\..\src\example\MeshVertexColorEx.cpp" />
     <ClCompile Include="..\..\src\example\MeshWireframeEx.cpp" />
-    <ClCompile Include="..\..\src\example\MorphableModelEx.cpp" />
     <ClCompile Include="..\..\src\example\OneEuroFilterEx.cpp" />
     <ClCompile Include="..\..\src\example\ParameterPaneEx.cpp" />
     <ClCompile Include="..\..\src\example\PoissonBlendEx.cpp" />
@@ -154,12 +150,10 @@
     <ClInclude Include="..\..\include\core\AlloyImageProcessing.h" />
     <ClInclude Include="..\..\include\core\AlloyIntersector.h" />
     <ClInclude Include="..\..\include\core\AlloyIsoContour.h" />
-    <ClInclude Include="..\..\include\core\AlloyLighting.h" />
     <ClInclude Include="..\..\include\core\AlloyLocator.h" />
     <ClInclude Include="..\..\include\core\AlloyMath.h" />
     <ClInclude Include="..\..\include\core\AlloyMesh.h" />
     <ClInclude Include="..\..\include\core\AlloyMeshPrimitives.h" />
-    <ClInclude Include="..\..\include\core\AlloyMorphableModel.h" />
     <ClInclude Include="..\..\include\core\AlloyNumber.h" />
     <ClInclude Include="..\..\include\core\AlloyOptimization.h" />
     <ClInclude Include="..\..\include\core\AlloyOptimizationMath.h" />
@@ -205,7 +199,6 @@
     <ClInclude Include="..\..\include\core\process_win.h" />
     <ClInclude Include="..\..\include\core\sha1.h" />
     <ClInclude Include="..\..\include\core\sha2.h" />
-    <ClInclude Include="..\..\include\core\ShadowCastShader.h" />
     <ClInclude Include="..\..\include\core\stb_image.h" />
     <ClInclude Include="..\..\include\core\stb_image_write.h" />
     <ClInclude Include="..\..\include\core\stb_truetype.h" />
@@ -245,7 +238,6 @@
     <ClInclude Include="..\..\include\example\MeshTextureEx.h" />
     <ClInclude Include="..\..\include\example\MeshVertexColorEx.h" />
     <ClInclude Include="..\..\include\example\MeshWireframeEx.h" />
-    <ClInclude Include="..\..\include\example\MorphableModelEx.h" />
     <ClInclude Include="..\..\include\example\OneEuroFilterEx.h" />
     <ClInclude Include="..\..\include\example\ParameterPaneEx.h" />
     <ClInclude Include="..\..\include\example\PoissonBlendEx.h" />

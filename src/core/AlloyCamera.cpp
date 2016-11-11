@@ -62,7 +62,7 @@ namespace aly {
 		J(0, 0) = 0.5f * w * fx / (C * pt.z);
 		J(1, 1) = (flip) ? -0.5f * h * fy / (C * pt.z) : 0.5f * h * fy / (C * pt.z);
 		J(0, 2) = -0.5f * w * fx * pt.x / (C * pt.z * pt.z);
-		J(1, 2) = -(flip) ? -0.5f * h * fy * pt.y / (C * pt.z * pt.z) : 0.5f * h * fy * pt.y / (C * pt.z * pt.z);
+		J(1, 2) = -((flip) ? -0.5f * h * fy * pt.y / (C * pt.z * pt.z) : 0.5f * h * fy * pt.y / (C * pt.z * pt.z));
 		return J;
 	}
 	float2x3 CameraParameters::differentiateWorldToScreen(const float3& pt) const {

@@ -333,18 +333,6 @@
     <ClCompile Include="..\..\src\core\AlloyUndoRedo.cpp">
       <Filter>src\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\example\MorphableModelEx.cpp">
-      <Filter>src\example</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\core\AlloyLighting.cpp">
-      <Filter>src\core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\core\AlloyMorphableModel.cpp">
-      <Filter>src\core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\core\ShadowCastShader.cpp">
-      <Filter>src\core</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\core\nanovg.h">
@@ -726,18 +714,6 @@
       <Filter>include\core</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\core\AlloyUndoRedo.h">
-      <Filter>include\core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\example\MorphableModelEx.h">
-      <Filter>include\example</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\core\AlloyLighting.h">
-      <Filter>include\core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\core\AlloyMorphableModel.h">
-      <Filter>include\core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\core\ShadowCastShader.h">
       <Filter>include\core</Filter>
     </ClInclude>
   </ItemGroup>
