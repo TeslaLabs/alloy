@@ -2,8 +2,6 @@ Alloy Graphics Library
 ========
 Alloy is yet another 2D/3D graphics library written in C++11. As mundane as that sounds, this API provides an extensive collection of GUI components and engineering reference implementations of common 2D/3D graphics algorithms for fast prototyping on windows, linux, and mac platforms.
 
-[![Build Status](https://travis-ci.org/bclucas/Alloy-Graphics-Library.svg?branch=master)](https://travis-ci.org/bclucas/Alloy-Graphics-Library)
-[![Build status](https://ci.appveyor.com/api/projects/status/7kay7jjm6tpktme3/branch/master?svg=true)](https://ci.appveyor.com/project/bclucas/Alloy-Graphics-Library/branch/master)
 
 ## Contents
 - Anti-aliased vector graphics drawing (NanoVG).
@@ -83,164 +81,164 @@ make -j4
  - Change build configuration to Release|x64 for best performance 
 
 ## License
-Alloy is [BSD licensed](https://github.com/bclucas/Alloy-Graphics-Library/edit/master/LICENSE) and only uses libraries that also have a permissive license for commercial and academic use.
+Alloy is [BSD licensed](https://github.com/rgb2hsv/Alloy-Graphics-Library/edit/master/LICENSE) and only uses libraries that also have a permissive license for commercial and academic use.
 
 Absolute/Relative Positioning Example
 -------------------------
-[![UnitsEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0000.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/UnitsEx.cpp)
+[![UnitsEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0000.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/UnitsEx.cpp)
 
 Composite Example
 -------------------------
-[![CompisteEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0001.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/CompositeEx.cpp)
+[![CompisteEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0001.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/CompositeEx.cpp)
 
 Events Example
 -------------------------
-[![EventsEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0002.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/EventsEx.cpp)
+[![EventsEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0002.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/EventsEx.cpp)
 
 Drag and Drop Example
 -------------------------
-[![DragEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0003.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/DragEx.cpp)
+[![DragEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0003.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/DragEx.cpp)
 
 Tween Animation Example
 -------------------------
-[![TweenEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0004.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/TweenEx.cpp)
+[![TweenEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0004.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/TweenEx.cpp)
 
 Image Example
 -------------------------
-[![ImageEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0005.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/ImageEx.cpp)
+[![ImageEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0005.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/ImageEx.cpp)
 
 Controls Example
 -------------------------
-[![ControlsEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0006.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/ControlsEx.cpp)
+[![ControlsEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0006.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/ControlsEx.cpp)
 
 Dialog Example
 -------------------------
-[![DialogEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0007.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/DialogEx.cpp)
+[![DialogEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0007.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/DialogEx.cpp)
 
 Parameter Pane Example
 -------------------------
-[![ParameterPaneEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0037.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/ParameterPaneEx.cpp)
+[![ParameterPaneEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0037.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/ParameterPaneEx.cpp)
 
 Timeline Example
 -------------------------
-[![TimelineEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0039.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/TimelineEx.cpp)
+[![TimelineEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0039.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/TimelineEx.cpp)
 
 Expand Bar Example
 -------------------------
-[![ExpandBarEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0008.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/ExpandBarEx.cpp)
+[![ExpandBarEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0008.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/ExpandBarEx.cpp)
 
 Expand Tree Example
 -------------------------
-[![ExpandTreeEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0032.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/ExpandTreeEx.cpp)
+[![ExpandTreeEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0032.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/ExpandTreeEx.cpp)
 
 Tab Pane Example
 -------------------------
-[![TabPaneEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0036.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/TabPaneEx.cpp)
+[![TabPaneEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0036.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/TabPaneEx.cpp)
 
 Menu System Example
 -------------------------
-[![MenuEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0026.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/MenuEx.cpp)
+[![MenuEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0026.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/MenuEx.cpp)
 
 Graph Example
 -------------------------
-[![GraphPaneEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0028.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/GraphPaneEx.cpp)
+[![GraphPaneEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0028.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/GraphPaneEx.cpp)
 
 Window Pane Example
 -------------------------
-[![WindowPaneEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0029.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/WindowPaneEx.cpp)
+[![WindowPaneEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0029.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/WindowPaneEx.cpp)
 
 Table Pane Example
 -------------------------
-[![TablePaneEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0038.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/TablePaneEx.cpp)
+[![TablePaneEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0038.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/TablePaneEx.cpp)
 
 DataFlow Example
 -------------------------
-[![DataFlowEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0033.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/DataFlowEx.cpp)
+[![DataFlowEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0033.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/DataFlowEx.cpp)
 
 Force Directed Graph Example
 -------------------------
-[![ForceDirectedGraphEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0034.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/ForceDirectedGraphEx.cpp)
+[![ForceDirectedGraphEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0034.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/ForceDirectedGraphEx.cpp)
 
 Mesh with Matcap Shading Example
 -------------------------
-[![MeshMatcapEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0009.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/MeshMatcapEx.cpp)
+[![MeshMatcapEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0009.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/MeshMatcapEx.cpp)
 
 Mesh Wireframe Example
 -------------------------
-[![MeshWireframeEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0010.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/MeshWireframeEx.cpp)
+[![MeshWireframeEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0010.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/MeshWireframeEx.cpp)
 
 Mesh Subdivision Example
 -------------------------
-[![MeshSubdivideEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0011.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/MeshSubdivideEx.cpp)
+[![MeshSubdivideEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0011.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/MeshSubdivideEx.cpp)
 
 Mesh Texture Example
 -------------------------
-[![MeshTextureEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0012.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/MeshTextureEx.cpp)
+[![MeshTextureEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0012.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/MeshTextureEx.cpp)
 
 Mesh with Per Vertex Color Example
 -------------------------
-[![MeshVertexColorEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0013.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/MeshVertexColorEx.cpp)
+[![MeshVertexColorEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0013.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/MeshVertexColorEx.cpp)
 
 Particles Example
 -------------------------
-[![MeshParticleEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0014.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/MeshParticleEx.cpp)
+[![MeshParticleEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0014.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/MeshParticleEx.cpp)
 
 Mesh Depth / Normals / Distances Example
 -------------------------
-[![MeshDepthEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0015.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/MeshDepthEx.cpp)
+[![MeshDepthEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0015.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/MeshDepthEx.cpp)
 
 Mesh Phong Shading Example
 -------------------------
-[![MeshPhongEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0016.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/MeshPhongEx.cpp)
+[![MeshPhongEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0016.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/MeshPhongEx.cpp)
 
 Laplace Fill Example
 -------------------------
-[![LaplaceFillEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0017.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/LaplaceFillEx.cpp)
+[![LaplaceFillEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0017.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/LaplaceFillEx.cpp)
 
 Poisson Blend Example
 -------------------------
-[![PoissonBlendEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0018.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/PoissonBlendEx.cpp)
+[![PoissonBlendEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0018.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/PoissonBlendEx.cpp)
 
 Poisson Fill Example
 -------------------------
-[![PoissonInpaintEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0019.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/PoissonInpaintEx.cpp)
+[![PoissonInpaintEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0019.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/PoissonInpaintEx.cpp)
 
 Image Filter Example
 -------------------------
-[![ImageProcessingEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0020.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/ImageProcessingEx.cpp)
+[![ImageProcessingEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0020.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/ImageProcessingEx.cpp)
 
 Object/Face Picker Example
 -------------------------
-[![MeshPickerEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0021.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/MeshPickerEx.cpp)
+[![MeshPickerEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0021.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/MeshPickerEx.cpp)
 
 Mesh Ray Intersection Example
 -------------------------
-[![IntersectorEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0022.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/IntersectorEx.cpp)
+[![IntersectorEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0022.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/IntersectorEx.cpp)
 
 Mesh Smoothing Example
 -------------------------
-[![MeshSmoothEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0023.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/MeshSmoothEx.cpp)
+[![MeshSmoothEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0023.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/MeshSmoothEx.cpp)
 
 Color Space Example
 -------------------------
-[![ColorSpaceEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0024.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/ColorSpaceEx.cpp)
+[![ColorSpaceEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0024.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/ColorSpaceEx.cpp)
 
 Mesh Primitives Example
 -------------------------
-[![MeshPrimitivesEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0025.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/MeshPrimitivesEx.cpp)
+[![MeshPrimitivesEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0025.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/MeshPrimitivesEx.cpp)
 
 Point Locator Example
 -------------------------
-[![LocatorEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0027.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/LocatorEx.cpp)
+[![LocatorEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0027.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/LocatorEx.cpp)
 
 B-Spline Example
 -------------------------
-[![SplineEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0030.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/SplineEx.cpp)
+[![SplineEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0030.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/SplineEx.cpp)
 
 Distance Field Example
 -------------------------
-[![DistanceFieldEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0031.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/DistanceFieldEx.cpp)
+[![DistanceFieldEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0031.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/DistanceFieldEx.cpp)
 
 One Euro Filter Example
 -------------------------
-[![OneEuroFilterEx](https://github.com/bclucas/blob/blob/master/screenshots/screenshot0035.png)](https://github.com/lucasfilm/bendy/blob/master/alloy/src/example/OneEuroFilterEx.cpp)
+[![OneEuroFilterEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0035.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/OneEuroFilterEx.cpp)
