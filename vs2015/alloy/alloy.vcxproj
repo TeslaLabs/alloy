@@ -1,0 +1,449 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\core\AlloyAnimator.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyAny.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyApplication.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyCamera.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyColorSelector.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyCommon.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyContext.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyCursorLocator.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyDataFlow.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyDelaunay.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyDenseMatrix.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyDenseSolve.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyDistanceField.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyDrawUtil.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyExpandBar.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyExpandTree.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyFileUtil.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyGraphPane.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyImage.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyIntersector.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyIsoContour.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyLighting.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyMath.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyMesh.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyMeshPrimitives.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyMorphableModel.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyNumber.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyOptimization.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyParameterPane.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyPLY.cpp" />
+    <ClCompile Include="..\..\src\core\AlloySimulation.cpp" />
+    <ClCompile Include="..\..\src\core\AlloySparseBitSet.cpp" />
+    <ClCompile Include="..\..\src\core\AlloySparseMatrix.cpp" />
+    <ClCompile Include="..\..\src\core\AlloySparseSolve.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyTablePane.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyTabPane.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyTimeline.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyUI.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyUndoRedo.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyUnits.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyVolume.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyWidget.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyWorker.cpp" />
+    <ClCompile Include="..\..\src\core\AvoidanceRouting.cpp" />
+    <ClCompile Include="..\..\src\core\CommonShaders.cpp" />
+    <ClCompile Include="..\..\src\core\ForceDirectedGraph.cpp" />
+    <ClCompile Include="..\..\src\core\GLComponent.cpp" />
+    <ClCompile Include="..\..\src\core\GLFrameBuffer.cpp" />
+    <ClCompile Include="..\..\src\core\GLShader.cpp" />
+    <ClCompile Include="..\..\src\core\GLTexture.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyImageProcessing.cpp" />
+    <ClCompile Include="..\..\src\core\nanovg.cpp" />
+    <ClCompile Include="..\..\src\core\process_unix.cpp" />
+    <ClCompile Include="..\..\src\core\process_win.cpp" />
+    <ClCompile Include="..\..\src\core\SanityChecks.cpp" />
+    <ClCompile Include="..\..\src\core\sha1.cpp" />
+    <ClCompile Include="..\..\src\core\sha2.cpp" />
+    <ClCompile Include="..\..\src\core\ShadowCastShader.cpp" />
+    <ClCompile Include="..\..\src\core\tinyexr.cpp" />
+    <ClCompile Include="..\..\src\core\tinyprocess.cpp" />
+    <ClCompile Include="..\..\src\core\tinyspline.c" />
+    <ClCompile Include="..\..\src\core\tinysplinecpp.cpp" />
+    <ClCompile Include="..\..\src\core\tiny_obj_loader.cpp" />
+    <ClCompile Include="..\..\src\example\AnyFunctionEx.cpp" />
+    <ClCompile Include="..\..\src\example\ColorSpaceEx.cpp" />
+    <ClCompile Include="..\..\src\example\CompositeEx.cpp" />
+    <ClCompile Include="..\..\src\example\ControlsEx.cpp" />
+    <ClCompile Include="..\..\src\example\DataFlowEx.cpp" />
+    <ClCompile Include="..\..\src\example\DialogsEx.cpp" />
+    <ClCompile Include="..\..\src\example\DistanceFieldEx.cpp" />
+    <ClCompile Include="..\..\src\example\DragEx.cpp" />
+    <ClCompile Include="..\..\src\example\EventsEx.cpp" />
+    <ClCompile Include="..\..\src\example\ExpandBarEx.cpp" />
+    <ClCompile Include="..\..\src\example\ExpandTreeEx.cpp" />
+    <ClCompile Include="..\..\src\example\ForceDirectedGraphEx.cpp" />
+    <ClCompile Include="..\..\src\example\GraphPaneEx.cpp" />
+    <ClCompile Include="..\..\src\example\ImageEx.cpp" />
+    <ClCompile Include="..\..\src\example\ImageProcessingEx.cpp" />
+    <ClCompile Include="..\..\src\example\IntersectorEx.cpp" />
+    <ClCompile Include="..\..\src\example\LaplaceFillEx.cpp" />
+    <ClCompile Include="..\..\src\example\LocatorEx.cpp" />
+    <ClCompile Include="..\..\src\example\MenuEx.cpp" />
+    <ClCompile Include="..\..\src\example\MeshDepthEx.cpp" />
+    <ClCompile Include="..\..\src\example\MeshMatcapEx.cpp" />
+    <ClCompile Include="..\..\src\example\MeshOptimizationEx.cpp" />
+    <ClCompile Include="..\..\src\example\MeshParticleEx.cpp" />
+    <ClCompile Include="..\..\src\example\MeshPhongEx.cpp" />
+    <ClCompile Include="..\..\src\example\MeshPickerEx.cpp" />
+    <ClCompile Include="..\..\src\example\MeshPrimitivesEx.cpp" />
+    <ClCompile Include="..\..\src\example\MeshSmoothEx.cpp" />
+    <ClCompile Include="..\..\src\example\MeshSubdivideEx.cpp" />
+    <ClCompile Include="..\..\src\example\MeshTextureEx.cpp" />
+    <ClCompile Include="..\..\src\example\MeshVertexColorEx.cpp" />
+    <ClCompile Include="..\..\src\example\MeshWireframeEx.cpp" />
+    <ClCompile Include="..\..\src\example\MorphableModelEx.cpp" />
+    <ClCompile Include="..\..\src\example\OneEuroFilterEx.cpp" />
+    <ClCompile Include="..\..\src\example\ParameterPaneEx.cpp" />
+    <ClCompile Include="..\..\src\example\PoissonBlendEx.cpp" />
+    <ClCompile Include="..\..\src\example\PoissonInpaintEx.cpp" />
+    <ClCompile Include="..\..\src\example\SplineEx.cpp" />
+    <ClCompile Include="..\..\src\example\TablePaneEx.cpp" />
+    <ClCompile Include="..\..\src\example\TabPaneEx.cpp" />
+    <ClCompile Include="..\..\src\example\TimelineEx.cpp" />
+    <ClCompile Include="..\..\src\example\TweenEx.cpp" />
+    <ClCompile Include="..\..\src\example\UnitsEx.cpp" />
+    <ClCompile Include="..\..\src\example\WindowPaneEx.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\core\Alloy.h" />
+    <ClInclude Include="..\..\include\core\AlloyAnimator.h" />
+    <ClInclude Include="..\..\include\core\AlloyAny.h" />
+    <ClInclude Include="..\..\include\core\AlloyAnyFunction.h" />
+    <ClInclude Include="..\..\include\core\AlloyApplication.h" />
+    <ClInclude Include="..\..\include\core\AlloyArray.h" />
+    <ClInclude Include="..\..\include\core\AlloyCamera.h" />
+    <ClInclude Include="..\..\include\core\AlloyColorSelector.h" />
+    <ClInclude Include="..\..\include\core\AlloyCommon.h" />
+    <ClInclude Include="..\..\include\core\AlloyContext.h" />
+    <ClInclude Include="..\..\include\core\AlloyCursorLocator.h" />
+    <ClInclude Include="..\..\include\core\AlloyDataFlow.h" />
+    <ClInclude Include="..\..\include\core\AlloyDelaunay.h" />
+    <ClInclude Include="..\..\include\core\AlloyDenseMatrix.h" />
+    <ClInclude Include="..\..\include\core\AlloyDenseSolve.h" />
+    <ClInclude Include="..\..\include\core\AlloyDistanceField.h" />
+    <ClInclude Include="..\..\include\core\AlloyDrawUtil.h" />
+    <ClInclude Include="..\..\include\core\AlloyEnum.h" />
+    <ClInclude Include="..\..\include\core\AlloyExpandBar.h" />
+    <ClInclude Include="..\..\include\core\AlloyExpandTree.h" />
+    <ClInclude Include="..\..\include\core\AlloyFilesystem.h" />
+    <ClInclude Include="..\..\include\core\AlloyFileUtil.h" />
+    <ClInclude Include="..\..\include\core\AlloyGraphPane.h" />
+    <ClInclude Include="..\..\include\core\AlloyImage.h" />
+    <ClInclude Include="..\..\include\core\AlloyImageProcessing.h" />
+    <ClInclude Include="..\..\include\core\AlloyIntersector.h" />
+    <ClInclude Include="..\..\include\core\AlloyIsoContour.h" />
+    <ClInclude Include="..\..\include\core\AlloyLighting.h" />
+    <ClInclude Include="..\..\include\core\AlloyLocator.h" />
+    <ClInclude Include="..\..\include\core\AlloyMath.h" />
+    <ClInclude Include="..\..\include\core\AlloyMesh.h" />
+    <ClInclude Include="..\..\include\core\AlloyMeshPrimitives.h" />
+    <ClInclude Include="..\..\include\core\AlloyMorphableModel.h" />
+    <ClInclude Include="..\..\include\core\AlloyNumber.h" />
+    <ClInclude Include="..\..\include\core\AlloyOptimization.h" />
+    <ClInclude Include="..\..\include\core\AlloyOptimizationMath.h" />
+    <ClInclude Include="..\..\include\core\AlloyParameterPane.h" />
+    <ClInclude Include="..\..\include\core\AlloyPLY.h" />
+    <ClInclude Include="..\..\include\core\AlloySimulation.h" />
+    <ClInclude Include="..\..\include\core\AlloySparseBitSet.h" />
+    <ClInclude Include="..\..\include\core\AlloySparseMatrix.h" />
+    <ClInclude Include="..\..\include\core\AlloySparseSolve.h" />
+    <ClInclude Include="..\..\include\core\AlloySpline.h" />
+    <ClInclude Include="..\..\include\core\AlloyTablePane.h" />
+    <ClInclude Include="..\..\include\core\AlloyTabPane.h" />
+    <ClInclude Include="..\..\include\core\AlloyTimeline.h" />
+    <ClInclude Include="..\..\include\core\AlloyUI.h" />
+    <ClInclude Include="..\..\include\core\AlloyUndoRedo.h" />
+    <ClInclude Include="..\..\include\core\AlloyUnits.h" />
+    <ClInclude Include="..\..\include\core\AlloyVector.h" />
+    <ClInclude Include="..\..\include\core\AlloyVolume.h" />
+    <ClInclude Include="..\..\include\core\AlloyWidget.h" />
+    <ClInclude Include="..\..\include\core\AlloyWorker.h" />
+    <ClInclude Include="..\..\include\core\AvoidanceRouting.h" />
+    <ClInclude Include="..\..\include\core\BinaryMinHeap.h" />
+    <ClInclude Include="..\..\include\core\catch.h" />
+    <ClInclude Include="..\..\include\core\CommonShaders.h" />
+    <ClInclude Include="..\..\include\core\fontstash.h" />
+    <ClInclude Include="..\..\include\core\ForceDirectedGraph.h" />
+    <ClInclude Include="..\..\include\core\GLComponent.h" />
+    <ClInclude Include="..\..\include\core\GLFrameBuffer.h" />
+    <ClInclude Include="..\..\include\core\GLShader.h" />
+    <ClInclude Include="..\..\include\core\GLTexture.h" />
+    <ClInclude Include="..\..\include\core\libkdtree\allocator.h" />
+    <ClInclude Include="..\..\include\core\libkdtree\function.h" />
+    <ClInclude Include="..\..\include\core\libkdtree\iterator.h" />
+    <ClInclude Include="..\..\include\core\libkdtree\kdtree.h" />
+    <ClInclude Include="..\..\include\core\libkdtree\node.h" />
+    <ClInclude Include="..\..\include\core\libkdtree\region.h" />
+    <ClInclude Include="..\..\include\core\nanoflann.h" />
+    <ClInclude Include="..\..\include\core\nanovg.h" />
+    <ClInclude Include="..\..\include\core\nanovg_gl.h" />
+    <ClInclude Include="..\..\include\core\nanovg_gl_utils.h" />
+    <ClInclude Include="..\..\include\core\OneEuroFilter.h" />
+    <ClInclude Include="..\..\include\core\process_unix.h" />
+    <ClInclude Include="..\..\include\core\process_win.h" />
+    <ClInclude Include="..\..\include\core\sha1.h" />
+    <ClInclude Include="..\..\include\core\sha2.h" />
+    <ClInclude Include="..\..\include\core\ShadowCastShader.h" />
+    <ClInclude Include="..\..\include\core\stb_image.h" />
+    <ClInclude Include="..\..\include\core\stb_image_write.h" />
+    <ClInclude Include="..\..\include\core\stb_truetype.h" />
+    <ClInclude Include="..\..\include\core\tinyexr.h" />
+    <ClInclude Include="..\..\include\core\tinyformat.h" />
+    <ClInclude Include="..\..\include\core\tinyprocess.h" />
+    <ClInclude Include="..\..\include\core\tinyspline.h" />
+    <ClInclude Include="..\..\include\core\tinysplinecpp.h" />
+    <ClInclude Include="..\..\include\core\tiny_obj_loader.h" />
+    <ClInclude Include="..\..\include\example\ColorSpaceEx.h" />
+    <ClInclude Include="..\..\include\example\CompositeEx.h" />
+    <ClInclude Include="..\..\include\example\ControlsEx.h" />
+    <ClInclude Include="..\..\include\example\DataFlowEx.h" />
+    <ClInclude Include="..\..\include\example\DialogsEx.h" />
+    <ClInclude Include="..\..\include\example\DistanceFieldEx.h" />
+    <ClInclude Include="..\..\include\example\DragEx.h" />
+    <ClInclude Include="..\..\include\example\EventsEx.h" />
+    <ClInclude Include="..\..\include\example\ExpandBarEx.h" />
+    <ClInclude Include="..\..\include\example\ExpandTreeEx.h" />
+    <ClInclude Include="..\..\include\example\ForceDirectedGraphEx.h" />
+    <ClInclude Include="..\..\include\example\GraphPaneEx.h" />
+    <ClInclude Include="..\..\include\example\ImageEx.h" />
+    <ClInclude Include="..\..\include\example\ImageProcessingEx.h" />
+    <ClInclude Include="..\..\include\example\IntersectorEx.h" />
+    <ClInclude Include="..\..\include\example\LaplaceFillEx.h" />
+    <ClInclude Include="..\..\include\example\LocatorEx.h" />
+    <ClInclude Include="..\..\include\example\MenuEx.h" />
+    <ClInclude Include="..\..\include\example\MeshDepthEx.h" />
+    <ClInclude Include="..\..\include\example\MeshMatcapEx.h" />
+    <ClInclude Include="..\..\include\example\MeshOptimizationEx.h" />
+    <ClInclude Include="..\..\include\example\MeshParticleEx.h" />
+    <ClInclude Include="..\..\include\example\MeshPhongEx.h" />
+    <ClInclude Include="..\..\include\example\MeshPickerEx.h" />
+    <ClInclude Include="..\..\include\example\MeshPrimitivesEx.h" />
+    <ClInclude Include="..\..\include\example\MeshSmoothEx.h" />
+    <ClInclude Include="..\..\include\example\MeshSubdivideEx.h" />
+    <ClInclude Include="..\..\include\example\MeshTextureEx.h" />
+    <ClInclude Include="..\..\include\example\MeshVertexColorEx.h" />
+    <ClInclude Include="..\..\include\example\MeshWireframeEx.h" />
+    <ClInclude Include="..\..\include\example\MorphableModelEx.h" />
+    <ClInclude Include="..\..\include\example\OneEuroFilterEx.h" />
+    <ClInclude Include="..\..\include\example\ParameterPaneEx.h" />
+    <ClInclude Include="..\..\include\example\PoissonBlendEx.h" />
+    <ClInclude Include="..\..\include\example\PoissonInpaintEx.h" />
+    <ClInclude Include="..\..\include\example\SplineEx.h" />
+    <ClInclude Include="..\..\include\example\TablePaneEx.h" />
+    <ClInclude Include="..\..\include\example\TabPaneEx.h" />
+    <ClInclude Include="..\..\include\example\TimelineEx.h" />
+    <ClInclude Include="..\..\include\example\TweenEx.h" />
+    <ClInclude Include="..\..\include\example\UnitsEx.h" />
+    <ClInclude Include="..\..\include\example\WindowPaneEx.h" />
+    <ClInclude Include="Header.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\bendyfx\vs2015\bendycore\bendycore.vcxproj" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{E990BB2D-D073-48A2-841A-8231A304F580}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>alloy</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\props\Alloy.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\props\Alloy.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\props\Alloy.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\props\Alloy.props" />
+  </ImportGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <IntDir>build\$(Configuration)-$(Platform)\</IntDir>
+    <OutDir>build\$(Configuration)-$(Platform)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <IntDir>build\$(Configuration)-$(Platform)\</IntDir>
+    <OutDir>build\$(Configuration)-$(Platform)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <IntDir>build\$(Configuration)-$(Platform)\</IntDir>
+    <OutDir>build\$(Configuration)-$(Platform)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <IntDir>build\$(Configuration)-$(Platform)\</IntDir>
+    <OutDir>build\$(Configuration)-$(Platform)\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>NOMINMAX;WIN32;_WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include\core;..\..\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <OpenMPSupport>true</OpenMPSupport>
+      <MinimalRebuild>false</MinimalRebuild>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+    </Link>
+    <Lib>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
+    <Lib>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>NOMINMAX;WIN32;_WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include\core;..\..\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <OpenMPSupport>true</OpenMPSupport>
+      <MinimalRebuild>false</MinimalRebuild>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+    </Link>
+    <Lib>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
+    <Lib>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NOMINMAX;WIN32;_WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include\core;..\..\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <OpenMPSupport>true</OpenMPSupport>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+    </Link>
+    <Lib>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
+    <Lib>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NOMINMAX;WIN32;_WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include\core;..\..\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <OpenMPSupport>true</OpenMPSupport>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+    </Link>
+    <Lib>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
+    <Lib>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>
