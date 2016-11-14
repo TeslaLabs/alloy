@@ -333,6 +333,12 @@
     <ClCompile Include="..\..\src\core\AlloyUndoRedo.cpp">
       <Filter>src\core</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\core\AlloyImageFeatures.cpp">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\example\ImageFeaturesEx.cpp">
+      <Filter>src\example</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\core\nanovg.h">
@@ -716,8 +722,11 @@
     <ClInclude Include="..\..\include\core\AlloyUndoRedo.h">
       <Filter>include\core</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\..\bendyfx\vs2015\bendycore\bendycore.vcxproj" />
+    <ClInclude Include="..\..\include\core\AlloyImageFeatures.h">
+      <Filter>include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\example\ImageFeaturesEx.h">
+      <Filter>include\example</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

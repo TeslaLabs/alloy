@@ -38,6 +38,7 @@
     <ClCompile Include="..\..\src\core\AlloyFileUtil.cpp" />
     <ClCompile Include="..\..\src\core\AlloyGraphPane.cpp" />
     <ClCompile Include="..\..\src\core\AlloyImage.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyImageFeatures.cpp" />
     <ClCompile Include="..\..\src\core\AlloyIntersector.cpp" />
     <ClCompile Include="..\..\src\core\AlloyIsoContour.cpp" />
     <ClCompile Include="..\..\src\core\AlloyMath.cpp" />
@@ -93,6 +94,7 @@
     <ClCompile Include="..\..\src\example\ForceDirectedGraphEx.cpp" />
     <ClCompile Include="..\..\src\example\GraphPaneEx.cpp" />
     <ClCompile Include="..\..\src\example\ImageEx.cpp" />
+    <ClCompile Include="..\..\src\example\ImageFeaturesEx.cpp" />
     <ClCompile Include="..\..\src\example\ImageProcessingEx.cpp" />
     <ClCompile Include="..\..\src\example\IntersectorEx.cpp" />
     <ClCompile Include="..\..\src\example\LaplaceFillEx.cpp" />
@@ -147,6 +149,7 @@
     <ClInclude Include="..\..\include\core\AlloyFileUtil.h" />
     <ClInclude Include="..\..\include\core\AlloyGraphPane.h" />
     <ClInclude Include="..\..\include\core\AlloyImage.h" />
+    <ClInclude Include="..\..\include\core\AlloyImageFeatures.h" />
     <ClInclude Include="..\..\include\core\AlloyImageProcessing.h" />
     <ClInclude Include="..\..\include\core\AlloyIntersector.h" />
     <ClInclude Include="..\..\include\core\AlloyIsoContour.h" />
@@ -221,6 +224,7 @@
     <ClInclude Include="..\..\include\example\ForceDirectedGraphEx.h" />
     <ClInclude Include="..\..\include\example\GraphPaneEx.h" />
     <ClInclude Include="..\..\include\example\ImageEx.h" />
+    <ClInclude Include="..\..\include\example\ImageFeaturesEx.h" />
     <ClInclude Include="..\..\include\example\ImageProcessingEx.h" />
     <ClInclude Include="..\..\include\example\IntersectorEx.h" />
     <ClInclude Include="..\..\include\example\LaplaceFillEx.h" />
@@ -250,9 +254,6 @@
     <ClInclude Include="..\..\include\example\UnitsEx.h" />
     <ClInclude Include="..\..\include\example\WindowPaneEx.h" />
     <ClInclude Include="Header.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\..\bendyfx\vs2015\bendycore\bendycore.vcxproj" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{E990BB2D-D073-48A2-841A-8231A304F580}</ProjectGuid>
