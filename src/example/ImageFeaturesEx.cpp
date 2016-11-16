@@ -21,23 +21,25 @@
 
 #include "Alloy.h"
 #include "AlloyDenseSolve.h"
+#include "AlloyImageFeatures.h"
 #include "../../include/example/ImageFeaturesEx.h"
 using namespace aly;
+using namespace aly::daisy;
 ImageFeaturesEx::ImageFeaturesEx() :
-		Application(800, 600, "Poisson Blend Example") {
+		Application(800, 600, "Image Features Example") {
 }
 bool ImageFeaturesEx::init(Composite& rootNode) {
 
-	ImageRGBA srcImg, tarImg;
-	ReadImageFromFile(getFullPath("images/sfmarket.png"), srcImg);
-	ReadImageFromFile(getFullPath("images/sfsunset.png"), tarImg);
+	ImageRGBA leftImg, rightImg;
+	ReadImageFromFile(getFullPath("images/stereo_left.png"), leftImg);
+	ReadImageFromFile(getFullPath("images/stereo_right.png"), rightImg);
 
-	ConvertImage(srcImg, src);
-	ConvertImage(tarImg, tar);
+	ConvertImage(leftImg, left);
+	ConvertImage(rightImg, right);
 
-	ImageGlyphPtr srcGlyph = createImageGlyph(srcImg, false);
-	ImageGlyphPtr tarGlyph = createImageGlyph(tarImg, false);
-	ImageGlyphPtr resultGlyph = createImageGlyph(tarImg, false);
+	ImageGlyphPtr srcGlyph = createImageGlyph(leftImg, false);
+	ImageGlyphPtr tarGlyph = createImageGlyph(rightImg, false);
+	ImageGlyphPtr resultGlyph = createImageGlyph(rightImg, false);
 
 	GlyphRegionPtr srcRegion = MakeGlyphRegion(srcGlyph,
 			CoordPercent(0.05f, 0.0f), CoordPercent(0.4f, 0.3f),
@@ -65,6 +67,9 @@ bool ImageFeaturesEx::init(Composite& rootNode) {
 	rootNode.add(tarRegion);
 	rootNode.add(resultRegion);
 	rootNode.add(textLabel);
+	Daisy daisy;
+	daisy.evaluate(left);
+	/*
 	workerTask = WorkerTaskPtr(new WorkerTask([=] {
 		PoissonBlend(src, tar, 32, 6);
 		ImageRGBA out;
@@ -75,5 +80,6 @@ bool ImageFeaturesEx::init(Composite& rootNode) {
 				});
 	}));
 	workerTask->execute(isForcedClose());
+	*/
 	return true;
 }

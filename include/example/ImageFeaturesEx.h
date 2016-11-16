@@ -26,7 +26,7 @@
 #include "CommonShaders.h"
 class ImageFeaturesEx: public aly::Application {
 protected:
-	aly::ImageRGBAf src, tar;
+	aly::ImageRGBAf left,right;
 	aly::WorkerTaskPtr workerTask;
 	aly::RegionPtr drawRegion;
 public:
