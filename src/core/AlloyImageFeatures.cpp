@@ -7,6 +7,7 @@ namespace aly {
 		const float Daisy::sigma_0 = 1.0f;
 		const float Daisy::sigma_1 = std::sqrt(2.0f);
 		const float Daisy::sigma_2 = 8.0f;
+		const float Daisy::sigma_init = 1.6f;
 		const float Daisy::sigma_step = (float)std::pow(2, 1.0f / 2);
 		const int Daisy::scale_st = int((std::log(sigma_1 / sigma_0)) / (float)std::log(sigma_step));
 		Daisy::Daisy() {
@@ -131,15 +132,18 @@ namespace aly {
 			angleBins = _angleBins;
 			radiusBins = _radiusBins;
 			descriptorRadius = _descriptorRadius;
-			numberOfGridPoints = _angleBins * _radiusBins + 1; // +1 is for center pixel
+			numberOfGridPoints = angleBins * radiusBins + 1; // +1 is for center pixel
 			descriptorSize = numberOfGridPoints * _histogramBins;
-			for (int i = 0; i<360; i++){
-				orientationShift[i] = i / 360.0f * _histogramBins;
+			for (int i = 0; i<ORIENTATIONS; i++){
+				orientationShift[i] = (i / float(ORIENTATIONS)) * _histogramBins;
 			}
-			layerSize = image.width*image.height;
-			cubeSize = layerSize*_histogramBins;
+			std::cout << "Histogram " << histogramBins << " " << angleBins << " " << radiusBins << " " << descriptorRadius << " " << numberOfGridPoints << std::endl;
+			std::cout << "Compute Sigmas" << std::endl;
 			computeCubeSigmas();
+			std::cout << "Compute Grid Points" << std::endl;
 			computeGridPoints();
+			std::cout << "Intialize" << std::endl;
+			initialize();
 		}
 		int Daisy::quantizeRadius(float rad) {
 			if (rad <= sigmas[0]) return 0;
@@ -196,8 +200,9 @@ namespace aly {
 			}
 		}
 
-		void Daisy::layeredGradient(const Image1f& image,std::vector<Image1f>& layers, int layer_no)
+		void Daisy::layeredGradient(const Image1f& image,LayeredImage& layers, int layer_no)
 		{
+			std::cout << "Compute Layered Gradient" << std::endl;
 			Image1f bdata;
 			Image1f dx, dy;
 			Gradient<5,5>(image, dx, dy);
@@ -257,8 +262,8 @@ namespace aly {
 		{
 			std::vector<float> hist;
 			for (int r = 0; r<cubeNumber; r++){
-				Cube1f& dst = smoothLayers[r];
-				Cube1f& src = smoothLayers[r+1];
+				LayeredImage& dst = smoothLayers[r];
+				LayeredImage& src = smoothLayers[r+1];
 				for (int y = 0; y<image.height; y++){
 					for (int x = 0; x<image.width; x++){
 						computeHistogram(src, x, y, hist);
@@ -270,13 +275,19 @@ namespace aly {
 			}
 		}
 		void Daisy::computeSmoothedGradientLayers(){
+			std::cout << "Compute smoothed layers" << std::endl;
 			Image1f tmp;
 			float sigma;
-			smoothLayers.resize(cubeNumber);
+			smoothLayers.resize(cubeNumber+1);
+			for (int r = 0; r <smoothLayers.size(); r++) {
+				smoothLayers[r].resize(histogramBins);
+				for (Image1f& img : smoothLayers[r]) {
+					img.resize(image.width, image.height);
+				}
+			}
 			for (int r = 0; r<cubeNumber; r++) {
-				smoothLayers[r].resize(cubeSize);
-				Cube1f& prev_cube = smoothLayers[r];
-				Cube1f& cube = smoothLayers[r+1];
+				LayeredImage& prev_cube = smoothLayers[r];
+				LayeredImage& cube = smoothLayers[r+1];
 				// incremental smoothing
 				if (r == 0) {
 					sigma = sigmas[0];
@@ -348,6 +359,19 @@ namespace aly {
 				}
 			}
 			computeOrientedGridPoints();
+		}
+		void Daisy::initialize() {
+			smoothLayers.resize(1);
+			layeredGradient(image,smoothLayers[0]);
+			Image1f tmp;
+			// assuming a 0.5 image smoothness, we pull this to 1.6 as in sift
+			for (int i = 0; i<smoothLayers[0].size(); i++)
+			{
+				Smooth<5,5>(smoothLayers[0][i],tmp,std::sqrt(sigma_init*sigma_init - 0.25));
+				smoothLayers[0][i] = tmp;
+			}
+			
+			computeSmoothedGradientLayers();
 		}
 		void Daisy::normalizeDescriptor(Descriptor& desc, Normalization nrm_type)
 		{
@@ -441,6 +465,7 @@ namespace aly {
 			descriptor =descriptorField(i,j);
 		}
 		void Daisy::updateSelectedCubes() {
+			selectedCubes.resize(radiusBins);
 			for (int r = 0; r<radiusBins; r++){
 				float seed_sigma = (r + 1)*descriptorRadius / (radiusBins*0.5f);
 				selectedCubes[r] = quantizeRadius(seed_sigma);

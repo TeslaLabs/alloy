@@ -5,7 +5,7 @@
 #include <array>
 namespace aly {
 	namespace daisy {
-		typedef std::vector<Image1f> Cube1f;
+		typedef std::vector<Image1f> LayeredImage;
 		inline void point_transform_via_homography(float* H, float x, float y, float &u, float &v)
 		{
 			float kxp = H[0] * x + H[1] * y + H[2];
@@ -286,6 +286,7 @@ namespace aly {
 			static const float sigma_0;
 			static const float sigma_1;
 			static const float sigma_2;
+			static const float sigma_init;
 			static const float sigma_step;
 			static const int scale_st;
 			static const int scale_en = 1;
@@ -297,20 +298,17 @@ namespace aly {
 			Image1i orientMap;
 			DescriptorField descriptorField;
 			std::vector<float2> gridPoints;
-			std::vector<std::vector<Image1f>> smoothLayers;
-			std::vector<ImageRGBAf> gradientPyramid;
+			std::vector<LayeredImage> smoothLayers;
 			bool scaleInvariant;
 			bool rotationInvariant;
 			int orientationResolutions;
-			std::array<int,64> selectedCubes; 
+			std::vector<int> selectedCubes; 
 			std::vector<float> sigmas;
 			std::array<std::vector<float2>, ORIENTATIONS> orientedGridPoints;
 			int numberOfGridPoints;
 			int descriptorSize;
 			std::array<float,360> orientationShift;
 			bool disableInterpolation;
-			int cubeSize;
-			int layerSize;
 			float descriptorRadius;
 			int radiusBins;
 			int angleBins;
@@ -329,14 +327,14 @@ namespace aly {
 			void computeSmoothedGradientLayers();
 			float interpolatePeak(float left, float center, float right);
 			void smoothHistogram(std::vector<float>& hist, int hsz);
-			void layeredGradient(const Image1f& image, std::vector<Image1f>& layers, int layer_no = 8);
+			void layeredGradient(const Image1f& image, LayeredImage& layers, int layer_no = 8);
 			int quantizeRadius(float rad);
 			void getUnnormalizedDescriptor(float x, float y, int orientation, Descriptor& descriptor);
 			void normalizeSiftWay(Descriptor& desc);
 			void normalizePartial(Descriptor& desc);
 			void normalizeFull(Descriptor& desc);
 			void normalizeDescriptor(Descriptor& desc, Normalization nrm_type);
-			void computeHistogram(const std::vector<Image1f>& hcube, int x, int y, std::vector<float>& histogram);
+			void computeHistogram(const LayeredImage& hcube, int x, int y, std::vector<float>& histogram);
 			void i_get_descriptor(float x,float y, int orientation, Descriptor& descriptor);
 			void i_get_histogram(std::vector<float>& histogram, float x, float y, float shift, const std::vector<Image1f>& cube);
 			void bi_get_histogram(std::vector<float>& histogram, float x, float y,int shift, const std::vector<Image1f>& cube);
@@ -345,6 +343,7 @@ namespace aly {
 			void ni_get_descriptor(float x, float y, int orientation, Descriptor& descriptor);
 		public:
 			Daisy();
+			void initialize();
 			void evaluate(const ImageRGBAf& image, float descriptorRadius=15.0f, int radiusBins=3, int angleBins=8, int histogramBins=8);
 		};
 	}
