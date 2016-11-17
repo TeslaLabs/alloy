@@ -30,13 +30,15 @@ ImageFeaturesEx::ImageFeaturesEx() :
 }
 bool ImageFeaturesEx::init(Composite& rootNode) {
 
-	ImageRGBA leftImg, rightImg;
+	ImageRGBA leftImg, rightImg,tmp;
 	ReadImageFromFile(getFullPath("images/stereo_left.png"), leftImg);
 	ReadImageFromFile(getFullPath("images/stereo_right.png"), rightImg);
-
+	DownSample(leftImg, tmp);
+	DownSample(tmp,leftImg);
 	ConvertImage(leftImg, left);
+	DownSample(rightImg, tmp);
+	DownSample(tmp,rightImg);
 	ConvertImage(rightImg, right);
-
 	ImageGlyphPtr srcGlyph = createImageGlyph(leftImg, false);
 	ImageGlyphPtr tarGlyph = createImageGlyph(rightImg, false);
 	ImageGlyphPtr resultGlyph = createImageGlyph(rightImg, false);
@@ -68,11 +70,20 @@ bool ImageFeaturesEx::init(Composite& rootNode) {
 	rootNode.add(resultRegion);
 	rootNode.add(textLabel);
 	Daisy daisy;
-	daisy.evaluate(left);
-	//daisy.computeDescriptors();
+
+	DescriptorField leftDescriptors;
+	DescriptorField rightDescriptors;
+	std::cout<<"Computing left descriptors" << std::endl;
+	daisy.initialize(left);
+	daisy.getDescriptors(leftDescriptors,Normalization::Sift);
+
+	std::cout << "Computing right descriptors" << std::endl;
+	daisy.initialize(right);
+	daisy.getDescriptors(rightDescriptors, Normalization::Sift);
+
 	Descriptor desc;
 	std::cout << "Get Descriptor" << std::endl;
-	daisy.computeDescriptor(left.width / 2.0f, right.height / 2.0f, 0,desc);
+	daisy.getDescriptor(left.width / 2.0f, right.height / 2.0f, desc, 0);
 	std::cout << "Descriptor: \n";
 	for (int i = 0; i < desc.size(); i+=8) {
 		std::cout << (i / 8) << ":: ";

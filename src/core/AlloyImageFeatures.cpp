@@ -81,7 +81,7 @@ namespace aly {
 			myfile << sstr.str();
 			myfile.close();
 		}
-		void Smooth(const Layer& image, Layer& B, float sigmaX, float sigmaY) {
+		void Smooth(const OrientationLayer & image, OrientationLayer & B, float sigmaX, float sigmaY) {
 			double sigma = std::max(sigmaX, sigmaY);
 			if (sigma < 1.5f) {
 				Smooth<3, 3>(image, B, sigmaX, sigmaY);
@@ -117,11 +117,11 @@ namespace aly {
 				Smooth<25, 25>(image, B, sigmaX, sigmaY);
 			}
 		}
-		Daisy::Daisy():rotationInvariant(true),scaleInvariant(true),orientationResolutions(8) {
+		Daisy::Daisy(int orientResolutions):orientationResolutions(orientResolutions) {
 		}
 
 
-		void Daisy::i_get_histogram(std::vector<float>& histogram,float x,float y,float shift,const std::vector<Layer>& cube)
+		void Daisy::i_get_histogram(std::vector<float>& histogram,float x,float y,float shift,const std::vector<OrientationLayer >& cube)
 		{
 			int ishift = (int)shift;
 			double fshift = shift - ishift;
@@ -132,10 +132,11 @@ namespace aly {
 			else
 				ti_get_histogram(histogram, x, y, shift, cube);
 		}
-		void Daisy::bi_get_histogram(std::vector<float>& histogram, float x, float y, int shift, const std::vector<Layer>& hcube)
+		void Daisy::bi_get_histogram(std::vector<float>& histogram, float x, float y, int shift, const std::vector<OrientationLayer >& hcube)
 		{
 			int mnx = int(x);
 			int mny = int(y);
+			histogram.resize(histogramBins);
 			if (mnx >= image.width - 2 || mny >= image.height - 2){
 				histogram.assign(histogram.size(), 0.0f);
 				return;
@@ -149,18 +150,19 @@ namespace aly {
 				}
 			}
 		}
-		void Daisy::ti_get_histogram(std::vector<float>& histogram,float x,float y,float shift,const std::vector<Layer>& hcube)
+		void Daisy::ti_get_histogram(std::vector<float>& histogram,float x,float y,float shift,const std::vector<OrientationLayer >& hcube)
 		{
 			int ishift = int(shift);
 			float layer_alpha = shift - ishift;
 			std::vector<float> thist(histogramBins, 0.0f);
 			bi_get_histogram(thist, x, y, ishift, hcube);
+			histogram.resize(histogramBins);
 			for (int h = 0; h < histogramBins - 1; h++) {
 				histogram[h] = (1 - layer_alpha) * thist[h]+ layer_alpha * thist[h + 1];
 			}
 			histogram[histogramBins - 1] = (1 - layer_alpha)* thist[histogramBins - 1] + layer_alpha * thist[0];
 		}
-		void Daisy::ni_get_histogram(std::vector<float>& histogram,int x,int y,int shift,const std::vector<Layer>& hcube){
+		void Daisy::ni_get_histogram(std::vector<float>& histogram,int x,int y,int shift,const std::vector<OrientationLayer >& hcube){
 			if (is_outside(x, 0, image.width - 1, y, 0, image.height - 1))
 				return;
 			histogram.resize(histogramBins);
@@ -219,7 +221,6 @@ namespace aly {
 					xx =x+ grid[region].x;
 					yy =y+ grid[region].y;
 					iy = (int)yy;
-					std::cout  << region << " " << xx << "," << yy << std::endl;
 					if (yy - iy > 0.5)
 						iy++;
 					ix = (int)xx;
@@ -237,7 +238,7 @@ namespace aly {
 		}
 
 	
-		void Daisy::evaluate(const ImageRGBAf& _image,float _descriptorRadius,int _radiusBins,int _angleBins,int _histogramBins) {
+		void Daisy::initialize(const ImageRGBAf& _image,float _descriptorRadius,int _radiusBins,int _angleBins,int _histogramBins) {
 			ConvertImage(_image, image);
 			histogramBins = _histogramBins;
 			angleBins = _angleBins;
@@ -267,8 +268,7 @@ namespace aly {
 			}
 			return mini;
 		}
-		void Daisy::computeScales() {
-			std::cout << "Compute Scales" << std::endl;
+		void Daisy::computeScales(Image1f& scaleMap) {
 			float sigma = std::pow(sigma_step, scale_st)*sigma_0;
 			Image1f sim;
 			Image1f next_sim;
@@ -280,16 +280,13 @@ namespace aly {
 			float sigma_prev= sigma_0;
 			float sigma_new;
 			float sigma_inc;
-			std::cout << "Sigma " << sigma_prev << std::endl;
-			for (int i = 0; i<scale_en; i++)
-			{
+			for (int i = 0; i<scale_en; i++){
 				sigma_new = std::pow(sigma_step, scale_st + i) * sigma_0;
 				sigma_inc = std::sqrt(sigma_new*sigma_new - sigma_prev*sigma_prev);
 				sigma_prev = sigma_new;
 
 				Smooth(sim, next_sim, sigma_inc, sigma_inc);
-				for (int p = 0; p<(int)image.size(); p++)
-				{
+				for (int p = 0; p<(int)image.size(); p++){
 					float dog = fabs(next_sim[p] - sim[p]);
 					if (dog > max_dog[p])
 					{
@@ -300,7 +297,7 @@ namespace aly {
 				sim = next_sim;
 			}
 			//smooth scaling map
-			Smooth<21,21>(scaleMap, sim, 10,10);
+			Smooth(scaleMap, sim, 10,10);
 			scaleMap = sim;
 			for (int q = 0; q<(int)sim.size(); q++)
 			{
@@ -310,13 +307,12 @@ namespace aly {
 
 		void Daisy::layeredGradient(const Image1f& image,LayeredImage& layers, int layer_no)
 		{
-			std::cout << "Compute Layered Gradient "<<layer_no << std::endl;
-			Layer bdata;
+			OrientationLayer  bdata;
 			Image1f dx, dy;
 			Gradient<3,3>(image, dx, dy);
 			layers.resize(layer_no);
 			for (int l = 0; l<layer_no; l++){
-				Layer& layer_l = layers[l];
+				OrientationLayer & layer_l = layers[l];
 				layer_l.resize(image.width, image.height);
 				layer_l.setZero();
 				float angle = 2.0f * l * ALY_PI / layer_no;
@@ -359,7 +355,7 @@ namespace aly {
 			}
 		}
 
-		void Daisy::computeHistogram(const std::vector<Layer>& hcube,int x,int y,std::vector<float>& histogram)
+		void Daisy::computeHistogram(const LayeredImage& hcube,int x,int y,std::vector<float>& histogram)
 		{
 			histogram.resize(histogramBins);
 			for (int h = 0; h < histogramBins; h++) {
@@ -383,13 +379,12 @@ namespace aly {
 			}
 		}
 		void Daisy::computeSmoothedGradientLayers(){
-			std::cout << "Compute smoothed layers" << std::endl;
-			Layer tmp;
+			OrientationLayer  tmp;
 			float sigma;
 			smoothLayers.resize(cubeNumber+1);
 			for (int r = 0; r <smoothLayers.size(); r++) {
 				smoothLayers[r].resize(histogramBins);
-				for (Layer& img : smoothLayers[r]) {
+				for (OrientationLayer & img : smoothLayers[r]) {
 					img.resize(image.width, image.height);
 				}
 			}
@@ -402,17 +397,15 @@ namespace aly {
 				} else {
 					sigma = std::sqrt(sigmas[r] * sigmas[r] - sigmas[r - 1] * sigmas[r - 1]);
 				}
-				std::cout << "Sigma " << sigma << std::endl;
 				for (int th = 0; th<histogramBins; th++) {
 					Smooth(prev_cube[th],cube[th], sigma,sigma);
 				}
 			}
 			computeHistograms();
 		}
-		void Daisy::computeOrientations() {
-			Layer tmp;
-			std::cout << "Compute Orientations" << std::endl;
-			std::vector<Layer> layers;
+		void Daisy::computeOrientations(Image1i& orientMap, const Image1f& scaleMap, bool scaleInvariant) {
+			OrientationLayer  tmp;
+			std::vector<OrientationLayer > layers;
 			layeredGradient(image,layers,orientationResolutions);
 			orientMap.resize(image.width, image.height);
 			orientMap.setZero();
@@ -428,7 +421,7 @@ namespace aly {
 				sigma_new = std::pow(sigma_step, scale) * descriptorRadius / 3.0f;
 				sigma_inc = std::sqrt(sigma_new*sigma_new - sigma_prev*sigma_prev);
 				sigma_prev = sigma_new;
-				for (Layer& layer : layers) {
+				for (OrientationLayer & layer : layers) {
 					Smooth(layer, tmp,sigma_inc,sigma_inc);
 					layer = tmp;
 				}
@@ -463,7 +456,7 @@ namespace aly {
 						if (!(iangle >= 0.0f && iangle < 360.0f)){
 							angle = 0;
 						}
-						orientMap(i,j) = iangle;
+						orientMap(i,j) =int1(iangle);
 					}
 				}
 			}
@@ -472,7 +465,7 @@ namespace aly {
 		void Daisy::initialize() {
 			smoothLayers.resize(1);
 			layeredGradient(image,smoothLayers[0], orientationResolutions);
-			Layer tmp;
+			OrientationLayer  tmp;
 			float sigma = std::sqrt(sigma_init*sigma_init - 0.25f);
 			// assuming a 0.5 image smoothness, we pull this to 1.6 as in sift
 			for (int i = 0; i<smoothLayers[0].size(); i++)
@@ -487,8 +480,6 @@ namespace aly {
 		}
 		void Daisy::normalizeDescriptor(Descriptor& desc, Normalization nrm_type)
 		{
-			if (nrm_type == Normalization::Default)
-				nrm_type = normalizationType;
 			if (nrm_type == Normalization::Partial)
 				normalizePartial(desc);
 			else if (nrm_type == Normalization::Full)
@@ -561,22 +552,17 @@ namespace aly {
 				}
 			}
 		}
-		void Daisy::getUnnormalizedDescriptor(float x,float y,int orientation,Descriptor& descriptor)
+		void Daisy::getUnnormalizedDescriptor(float x,float y,int orientation,Descriptor& descriptor,bool disableInterpolation)
 		{
 			if (disableInterpolation) {
-				
 				ni_get_descriptor(x, y, orientation, descriptor);
 			} else {
 				i_get_descriptor(x, y, orientation, descriptor);
 			}
 		}
-		void Daisy::computeDescriptor(float x,float y, int orientation, Descriptor& descriptor) {
-			getUnnormalizedDescriptor(y, x, orientation, descriptor);
+		void Daisy::getDescriptor(float x,float y,  Descriptor& descriptor, int orientation, Normalization normalizationType,bool disableInterpolation) {
+			getUnnormalizedDescriptor(y, x, orientation, descriptor,disableInterpolation);
 			normalizeDescriptor(descriptor, normalizationType);
-		}
-		void Daisy::computeDescriptor(int i,int j, Descriptor& descriptor)
-		{
-			descriptor =descriptorField(i,j);
 		}
 		void Daisy::updateSelectedCubes() {
 			selectedCubes.resize(radiusBins);
@@ -593,19 +579,21 @@ namespace aly {
 			}
 			updateSelectedCubes();
 		}
-		void Daisy::computeDescriptors(){
-			if (scaleInvariant) computeScales();
-			
-			if (rotationInvariant) computeOrientations();
+		void Daisy::getDescriptors(DescriptorField& descriptorField,Normalization  normalizationType,bool scaleInvariant,bool rotationInvariant,bool disableInterpolation){
+			Image1f scaleMap;
+			Image1i orientMap;
+			if (scaleInvariant) computeScales(scaleMap);
+			if (rotationInvariant) computeOrientations(orientMap,scaleMap,scaleInvariant);
 			int orientation;
 			descriptorField.resize(image.width, image.height);
-			std::cout << "Compute Field" << std::endl;
+#pragma omp parallel for
 			for (int j = 0; j<image.height; j++){
 				for (int i = 0; i<image.width; i++){
 					orientation = 0;
 					if (orientMap.size()>0) orientation = orientMap(i,j).x;
 					if (!(orientation >= 0 && orientation < ORIENTATIONS)) orientation = 0;
-					getUnnormalizedDescriptor((float)i,(float)j,orientation, descriptorField(i,j));
+					getUnnormalizedDescriptor((float)i,(float)j,orientation, descriptorField(i,j),disableInterpolation);
+					normalizeDescriptor(descriptorField(i, j), normalizationType);
 				}
 			}
 		}
