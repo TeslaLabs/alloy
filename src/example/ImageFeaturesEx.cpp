@@ -69,10 +69,18 @@ bool ImageFeaturesEx::init(Composite& rootNode) {
 	rootNode.add(textLabel);
 	Daisy daisy;
 	daisy.evaluate(left);
-	daisy.computeDescriptors();
+	//daisy.computeDescriptors();
 	Descriptor desc;
 	std::cout << "Get Descriptor" << std::endl;
 	daisy.computeDescriptor(left.width / 2.0f, right.height / 2.0f, 0,desc);
+	std::cout << "Descriptor: \n";
+	for (int i = 0; i < desc.size(); i+=8) {
+		std::cout << (i / 8) << ":: ";
+		for (int n = 0; n < 8; n++) {
+			std::cout << desc[i+n] << " ";
+		}
+		std::cout << std::endl;
+	}
 	/*
 	workerTask = WorkerTaskPtr(new WorkerTask([=] {
 		PoissonBlend(src, tar, 32, 6);

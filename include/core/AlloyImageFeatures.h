@@ -4,8 +4,6 @@
 #include <AlloyImage.h>
 #include <array>
 namespace aly {
-	typedef std::vector<Image1f> LayeredImage;
-	void WriteLayeredImageToFile(const std::string& file, const LayeredImage& img);
 	namespace daisy {
 		inline void point_transform_via_homography(float* H, float x, float y, float &u, float &v)
 		{
@@ -32,17 +30,6 @@ namespace aly {
 			return slope;
 		}
 
-
-		template<class T>
-		class rectangle
-		{
-		public:
-			T lx, ux, ly, uy;
-			T dx, dy;
-			rectangle(T xl, T xu, T yl, T yu) { lx = xl; ux = xu; ly = yl; uy = yu; dx = ux - lx; dy = uy - ly; };
-			rectangle() { lx = ux = ly = uy = dx = dy = 0; };
-		};
-
 		template<class T1,class T2> inline bool is_outside(T1 x, T2 lx, T2 ux, T1 y, T2 ly, T2 uy)
 		{
 			return (x<lx || y>ux || y<ly || y>uy);
@@ -68,21 +55,6 @@ namespace aly {
 			return std::sqrt(x*x + y*y);
 		}
 
-		/// computes the radial component of a 2D array and returns the
-		/// result in a REAL array. the x&y coordinates are given in
-		/// separate 1D arrays together with their size.
-		template<class T> inline
-			T* magnitude(T* arrx, T* arry, int lsz)
-		{
-			T* mag = allocate<T>(lsz);
-
-			for (int k = 0; k<lsz; k++)
-			{
-				mag[k] = sqrt(arrx[k] * arrx[k] + arry[k] * arry[k]);
-			}
-
-			return mag;
-		}
 
 		/// Converts the given cartesian coordinates of a point to polar
 		/// ones.
@@ -110,6 +82,134 @@ namespace aly {
 			Descriptor() :std::vector<float>() {
 			}
 		};
+
+		class Layer {
+		protected:
+			std::vector<float> data;
+		public:
+			int width, height;
+			Layer(int w = 0, int h = 0) :width(w), height(h) {
+
+			}
+			size_t size() const {
+				return data.size();
+			}
+			void resize(int w, int h) {
+				data.resize(w * h);
+				data.shrink_to_fit();
+				width = w;
+				height = h;
+			}
+			inline void clear() {
+				data.clear();
+				data.shrink_to_fit();
+				width = 0;
+				height = 0;
+			}
+			float* ptr() {
+				if (data.size() == 0)
+					return nullptr;
+				return data.data();
+			}
+			const float* ptr() const {
+				if (data.size() == 0)
+					return nullptr;
+				return data.data();
+			}
+			const float& operator[](const size_t i) const {
+				return data[i];
+			}
+			float& operator[](const size_t i) {
+				return data[i];
+			}
+			float& operator()(int i, int j) {
+				return data[clamp(i, 0, width - 1) + clamp(j, 0, height - 1) * width];
+			}
+			float& operator()(const int2 ij) {
+				return data[clamp(ij.x, 0, width - 1)
+					+ clamp(ij.y, 0, height - 1) * width];
+			}
+			const float& operator()(int i, int j) const {
+				return data[clamp(i, 0, width - 1) + clamp(j, 0, height - 1) * width];
+			}
+			const float& operator()(const int2 ij) const {
+				return data[clamp(ij.x, 0, width - 1)
+					+ clamp(ij.y, 0, height - 1) * width];
+			}
+
+			void setZero() {
+				data.assign(data.size(), 0.0f);
+			}
+			float operator()(float x, float y) {
+				int i = static_cast<int>(std::floor(x));
+				int j = static_cast<int>(std::floor(y));
+				float rgb00 = operator()(i, j);
+				float rgb10 = operator()(i + 1, j);
+				float rgb11 = operator()(i + 1, j + 1);
+				float rgb01 = operator()(i, j + 1);
+				float dx = x - i;
+				float dy = y - j;
+				return ((rgb00 * (1.0f - dx) + rgb10 * dx) * (1.0f - dy)
+					+ (rgb01 * (1.0f - dx) + rgb11 * dx) * dy);
+			}
+			const float operator()(float x, float y) const {
+				int i = static_cast<int>(std::floor(x));
+				int j = static_cast<int>(std::floor(y));
+				const float rgb00 = operator()(i, j);
+				const float rgb10 = operator()(i + 1, j);
+				const float rgb11 = operator()(i + 1, j + 1);
+				const float rgb01 = operator()(i, j + 1);
+				float dx = x - i;
+				float dy = y - j;
+				return ((rgb00 * (1.0f - dx) + rgb10 * dx) * (1.0f - dy)
+					+ (rgb01 * (1.0f - dx) + rgb11 * dx) * dy);
+			}
+		};
+		typedef std::vector<Layer> LayeredImage;
+		void WriteLayeredImageToFile(const std::string& file, const LayeredImage& img);
+
+		template<size_t M, size_t N> void GaussianKernel(float(&kernel)[M][N],
+			float sigmaX = float(0.607902736 * (M - 1) * 0.5),
+			float sigmaY = float(0.607902736 * (N - 1) * 0.5)) {
+			float sum = 0;
+			for (int i = 0; i < (int)M; i++) {
+				for (int j = 0; j < (int)N; j++) {
+					float x = float(i - 0.5 * (M - 1));
+					float y = float(j - 0.5 * (N - 1));
+					float xn = x / sigmaX;
+					float yn = y / sigmaY;
+					float w = float(std::exp(-0.5 * (xn * xn + yn * yn)));
+					sum += w;
+					kernel[i][j] = w;
+				}
+			}
+			sum = 1.0f / sum;
+			for (int i = 0; i < (int)M; i++) {
+				for (int j = 0; j < (int)N; j++) {
+					kernel[i][j] *= sum;
+				}
+			}
+		}
+
+		template<size_t M, size_t N> void Smooth(const Layer& image, Layer& B,float sigmaX = (0.607902736 * (M - 1) * 0.5),float sigmaY = (0.607902736 * (N - 1) * 0.5)) {
+			float filter[M][N];
+			GaussianKernel<M,N>(filter, sigmaX, sigmaY);
+			B.resize(image.width, image.height);
+#pragma omp parallel for
+			for (int j = 0; j < image.height; j++) {
+				for (int i = 0; i < image.width; i++) {
+					float vsum=0.0;
+					for (int ii = 0; ii < (int)M; ii++) {
+						for (int jj = 0; jj < (int)N; jj++) {
+							float val = image(i + ii - (int)M / 2, j + jj - (int)N / 2);
+							vsum += filter[ii][jj] * val;
+						}
+					}
+					B(i, j) = vsum;
+				}
+			}
+		}
+		void Smooth(const Layer& image, Layer& B, float sigmaX, float sigmaY);
 		class DescriptorField {
 		protected:
 			std::vector<Descriptor> data;
@@ -214,10 +314,10 @@ namespace aly {
 			void normalizeDescriptor(Descriptor& desc, Normalization nrm_type);
 			void computeHistogram(const LayeredImage& hcube, int x, int y, std::vector<float>& histogram);
 			void i_get_descriptor(float x,float y, int orientation, Descriptor& descriptor);
-			void i_get_histogram(std::vector<float>& histogram, float x, float y, float shift, const std::vector<Image1f>& cube);
-			void bi_get_histogram(std::vector<float>& histogram, float x, float y,int shift, const std::vector<Image1f>& cube);
-			void ti_get_histogram(std::vector<float>& histogram, float x, float y, float shift, const std::vector<Image1f>& cube);
-			void ni_get_histogram(std::vector<float>& histogram, int x, int y, int shift, const std::vector<Image1f>& hcube);
+			void i_get_histogram(std::vector<float>& histogram, float x, float y, float shift, const std::vector<Layer>& cube);
+			void bi_get_histogram(std::vector<float>& histogram, float x, float y,int shift, const std::vector<Layer>& cube);
+			void ti_get_histogram(std::vector<float>& histogram, float x, float y, float shift, const std::vector<Layer>& cube);
+			void ni_get_histogram(std::vector<float>& histogram, int x, int y, int shift, const std::vector<Layer>& hcube);
 			void ni_get_descriptor(float x, float y, int orientation, Descriptor& descriptor);
 		public:
 			Daisy();
