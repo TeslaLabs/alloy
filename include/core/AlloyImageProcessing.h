@@ -148,8 +148,8 @@ template<size_t M, size_t N, class T, int C, ImageType I> void Gradient(
 	gX.resize(image.width, image.height);
 	gY.resize(image.width, image.height);
 #pragma omp parallel for
-	for (int i = 0; i < image.width; i++) {
-		for (int j = 0; j < image.height; j++) {
+	for (int j = 0; j < image.height; j++) {
+		for (int i = 0; i < image.width; i++) {
 			vec<double, C> vsumX(0.0);
 			vec<double, C> vsumY(0.0);
 			for (int ii = 0; ii < (int)M; ii++) {
@@ -171,8 +171,8 @@ template<size_t M, size_t N, class T, int C, ImageType I> void Laplacian(
 	GaussianKernelLaplacian(filter,sigmaX,sigmaY);
 	L.resize(image.width, image.height);
 #pragma omp parallel for
-	for (int i = 0; i < image.width; i++) {
-		for (int j = 0; j < image.height; j++) {
+	for (int j = 0; j < image.height; j++) {
+		for (int i = 0; i < image.width; i++) {
 			vec<double, C> vsum(0.0);
 			for (int ii = 0; ii < (int)M; ii++) {
 				for (int jj = 0; jj < (int)N; jj++) {
@@ -191,8 +191,8 @@ template<size_t M, size_t N, class T, int C, ImageType I> void Smooth(
 	GaussianKernel(filter,sigmaX,sigmaY);
 	B.resize(image.width, image.height);
 #pragma omp parallel for
-	for (int i = 0; i < image.width; i++) {
-		for (int j = 0; j < image.height; j++) {
+	for (int j = 0; j < image.height; j++) {
+		for (int i = 0; i < image.width; i++) {
 			vec<double, C> vsum(0.0);
 			for (int ii = 0; ii < (int)M; ii++) {
 				for (int jj = 0; jj < (int)N; jj++) {
@@ -202,6 +202,42 @@ template<size_t M, size_t N, class T, int C, ImageType I> void Smooth(
 			}
 			B(i, j) = vec<T, C>(vsum);
 		}
+	}
+}
+template<class T, int C, ImageType I> void Smooth(const Image<T, C, I>& image, Image<T, C, I>& B,double sigmaX,double sigmaY) {
+	double sigma = std::max(sigmaX, sigmaY);
+	if (sigma < 1.5f) {
+		Smooth<3, 3>(image, B,sigmaX, sigmaY);
+	}
+	else if (sigma < 2.5f) {
+		Smooth<5, 5>(image, B, sigmaX, sigmaY);
+	}
+	else if (sigma < 3.5f) {
+		Smooth<7, 7>(image, B, sigmaX, sigmaY);
+	}
+	else if (sigma < 5.5f) {
+		Smooth<11, 11>(image, B, sigmaX, sigmaY);
+	}
+	else if (sigma < 6.5f) {
+		Smooth<13, 13>(image, B, sigmaX, sigmaY);
+	}
+	else if (sigma < 7.5f) {
+		Smooth<15, 15>(image, B, sigmaX, sigmaY);
+	}
+	else if (sigma < 8.5f) {
+		Smooth<17, 17>(image, B, sigmaX, sigmaY);
+	}
+	else if (sigma < 9.5f) {
+		Smooth<19, 19>(image, B, sigmaX, sigmaY);
+	}
+	else if (sigma < 10.5f) {
+		Smooth<21, 21>(image, B, sigmaX, sigmaY);
+	}
+	else if (sigma < 11.5f) {
+		Smooth<23, 23>(image, B, sigmaX, sigmaY);
+	}
+	else if (sigma < 12.5f) {
+		Smooth<25, 25>(image, B, sigmaX, sigmaY);
 	}
 }
 template<class T, int C, ImageType I> void Smooth3x3(

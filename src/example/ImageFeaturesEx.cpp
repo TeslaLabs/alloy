@@ -69,6 +69,10 @@ bool ImageFeaturesEx::init(Composite& rootNode) {
 	rootNode.add(textLabel);
 	Daisy daisy;
 	daisy.evaluate(left);
+	daisy.computeDescriptors();
+	Descriptor desc;
+	std::cout << "Get Descriptor" << std::endl;
+	daisy.computeDescriptor(left.width / 2.0f, right.height / 2.0f, 0,desc);
 	/*
 	workerTask = WorkerTaskPtr(new WorkerTask([=] {
 		PoissonBlend(src, tar, 32, 6);

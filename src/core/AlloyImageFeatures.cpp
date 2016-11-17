@@ -3,6 +3,75 @@
 #include "AlloyImageFeatures.h"
 #include "AlloyImageProcessing.h"
 namespace aly {
+	void WriteLayeredImageToFile(const std::string& file, const LayeredImage& img) {
+		std::ostringstream vstr;
+		std::string fileName = GetFileWithoutExtension(file);
+		vstr << fileName << ".raw";
+		FILE* f = fopen(vstr.str().c_str(), "wb");
+		if (f == NULL) {
+			throw std::runtime_error(
+				MakeString() << "Could not open " << vstr.str().c_str()
+				<< " for writing.");
+		}
+		int w=0, h=0;
+		if (img.size() > 0) {
+			w = img[0].width;
+			h = img[0].height;
+		}
+			for (int k = 0; k < img.size(); k++) {
+				for (int j = 0; j <h; j++) {
+					for (int i = 0; i < w; i++) {
+						float val = img[k](i, j).x;
+						fwrite(&val, sizeof(float), 1, f);
+					}
+				}
+			}
+		fclose(f);
+		std::string typeName = "Float";
+		std::stringstream sstr;
+		sstr << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+		sstr << "<!-- MIPAV header file -->\n";
+		sstr << "<image xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" nDimensions=\"3\">\n";
+		sstr << "	<Dataset-attributes>\n";
+		sstr << "		<Image-offset>0</Image-offset>\n";
+		sstr << "		<Data-type>" << typeName << "</Data-type>\n";
+		sstr << "		<Endianess>Little</Endianess>\n";
+		sstr << "		<Extents>" << img[0].width << "</Extents>\n";
+		sstr << "		<Extents>" << img[0].height << "</Extents>\n";
+		sstr << "		<Extents>" << img.size() << "</Extents>\n";
+		sstr << "		<Resolutions>\n";
+		sstr << "			<Resolution>1.0</Resolution>\n";
+		sstr << "			<Resolution>1.0</Resolution>\n";
+		sstr << "			<Resolution>1.0</Resolution>\n";
+		sstr << "		</Resolutions>\n";
+		sstr << "		<Slice-spacing>1.0</Slice-spacing>\n";
+		sstr << "		<Slice-thickness>0.0</Slice-thickness>\n";
+		sstr << "		<Units>Millimeters</Units>\n";
+		sstr << "		<Units>Millimeters</Units>\n";
+		sstr << "		<Units>Millimeters</Units>\n";
+		sstr << "		<Compression>none</Compression>\n";
+		sstr << "		<Orientation>Unknown</Orientation>\n";
+		sstr << "		<Subject-axis-orientation>Unknown</Subject-axis-orientation>\n";
+		sstr << "		<Subject-axis-orientation>Unknown</Subject-axis-orientation>\n";
+		sstr << "		<Subject-axis-orientation>Unknown</Subject-axis-orientation>\n";
+		sstr << "		<Origin>0.0</Origin>\n";
+		sstr << "		<Origin>0.0</Origin>\n";
+		sstr << "		<Origin>0.0</Origin>\n";
+		sstr << "		<Modality>Unknown Modality</Modality>\n";
+		sstr << "	</Dataset-attributes>\n";
+		sstr << "</image>\n";
+		std::ofstream myfile;
+		std::stringstream xmlFile;
+		xmlFile << fileName << ".xml";
+		myfile.open(xmlFile.str().c_str(), std::ios_base::out);
+		if (!myfile.is_open()) {
+			throw std::runtime_error(
+				MakeString() << "Could not open " << xmlFile.str()
+				<< " for writing.");
+		}
+		myfile << sstr.str();
+		myfile.close();
+	}
 	namespace daisy {
 		const float Daisy::sigma_0 = 1.0f;
 		const float Daisy::sigma_1 = std::sqrt(2.0f);
@@ -10,7 +79,7 @@ namespace aly {
 		const float Daisy::sigma_init = 1.6f;
 		const float Daisy::sigma_step = (float)std::pow(2, 1.0f / 2);
 		const int Daisy::scale_st = int((std::log(sigma_1 / sigma_0)) / (float)std::log(sigma_step));
-		Daisy::Daisy() {
+		Daisy::Daisy():rotationInvariant(true),scaleInvariant(true),orientationResolutions(8) {
 		}
 
 
@@ -132,6 +201,7 @@ namespace aly {
 			angleBins = _angleBins;
 			radiusBins = _radiusBins;
 			descriptorRadius = _descriptorRadius;
+
 			numberOfGridPoints = angleBins * radiusBins + 1; // +1 is for center pixel
 			descriptorSize = numberOfGridPoints * _histogramBins;
 			for (int i = 0; i<ORIENTATIONS; i++){
@@ -161,6 +231,7 @@ namespace aly {
 			return mini;
 		}
 		void Daisy::computeScales() {
+			std::cout << "Compute Scales" << std::endl;
 			float sigma = std::pow(sigma_step, scale_st)*sigma_0;
 			Image1f sim;
 			Image1f next_sim;
@@ -175,11 +246,11 @@ namespace aly {
 			std::cout << "Sigma " << sigma_prev << std::endl;
 			for (int i = 0; i<scale_en; i++)
 			{
-				std::cout << "Sigma new " << sigma_new << std::endl;
 				sigma_new = std::pow(sigma_step, scale_st + i) * sigma_0;
 				sigma_inc = std::sqrt(sigma_new*sigma_new - sigma_prev*sigma_prev);
 				sigma_prev = sigma_new;
-				Smooth<5, 5>(sim, next_sim, sigma_inc, sigma_inc);
+
+				Smooth(sim, next_sim, sigma_inc, sigma_inc);
 				for (int p = 0; p<(int)image.size(); p++)
 				{
 					float dog = fabs(next_sim[p] - sim[p]);
@@ -202,10 +273,10 @@ namespace aly {
 
 		void Daisy::layeredGradient(const Image1f& image,LayeredImage& layers, int layer_no)
 		{
-			std::cout << "Compute Layered Gradient" << std::endl;
+			std::cout << "Compute Layered Gradient "<<layer_no << std::endl;
 			Image1f bdata;
 			Image1f dx, dy;
-			Gradient<5,5>(image, dx, dy);
+			Gradient<3,3>(image, dx, dy);
 			layers.resize(layer_no);
 			for (int l = 0; l<layer_no; l++){
 				Image1f& layer_l = layers[l];
@@ -294,14 +365,16 @@ namespace aly {
 				} else {
 					sigma = std::sqrt(sigmas[r] * sigmas[r] - sigmas[r - 1] * sigmas[r - 1]);
 				}
+				std::cout << "Sigma " << sigma << std::endl;
 				for (int th = 0; th<histogramBins; th++) {
-					Smooth<11,11>(prev_cube[th],cube[th], sigma, sigma);
+					Smooth(prev_cube[th],cube[th], sigma,sigma);
 				}
 			}
 			computeHistograms();
 		}
 		void Daisy::computeOrientations() {
 			Image1f tmp;
+			std::cout << "Compute Orientations" << std::endl;
 			std::vector<Image1f> layers;
 			layeredGradient(image,layers,orientationResolutions);
 			orientMap.resize(image.width, image.height);
@@ -320,12 +393,12 @@ namespace aly {
 				sigma_inc = std::sqrt(sigma_new*sigma_new - sigma_prev*sigma_prev);
 				sigma_prev = sigma_new;
 				for (Image1f& layer : layers) {
-					Smooth<5, 5>(layer, tmp);
+					Smooth(layer, tmp,sigma_inc,sigma_inc);
 					layer = tmp;
 				}
 				for (int j = 0; j<image.height; j++){
 					for (int i = 0; i<image.width; i++){
-						if (scaleInvariant &&scaleMap(i,j).x != scale) continue;
+						if (scaleInvariant &&scaleMap.size()>0&&scaleMap(i,j).x != scale) continue;
 						for (int ori = 0; ori<orientationResolutions; ori++){
 							hist[ori] = layers[ori](i,j).x;
 						}
@@ -362,16 +435,19 @@ namespace aly {
 		}
 		void Daisy::initialize() {
 			smoothLayers.resize(1);
-			layeredGradient(image,smoothLayers[0]);
+			layeredGradient(image,smoothLayers[0], orientationResolutions);
 			Image1f tmp;
+			float sigma = std::sqrt(sigma_init*sigma_init - 0.25f);
 			// assuming a 0.5 image smoothness, we pull this to 1.6 as in sift
 			for (int i = 0; i<smoothLayers[0].size(); i++)
 			{
-				Smooth<5,5>(smoothLayers[0][i],tmp,std::sqrt(sigma_init*sigma_init - 0.25));
+				Smooth(smoothLayers[0][i],tmp,sigma, sigma);
 				smoothLayers[0][i] = tmp;
 			}
-			
 			computeSmoothedGradientLayers();
+			for (int i = 0;i < smoothLayers.size();i++) {
+				WriteLayeredImageToFile(MakeString() << GetDesktopDirectory() << ALY_PATH_SEPARATOR << "gradient" << i << ".xml", smoothLayers[i]);
+			}
 		}
 		void Daisy::normalizeDescriptor(Descriptor& desc, Normalization nrm_type)
 		{
@@ -452,9 +528,9 @@ namespace aly {
 		void Daisy::getUnnormalizedDescriptor(float x,float y,int orientation,Descriptor& descriptor)
 		{
 			if (disableInterpolation)
-				ni_get_descriptor(y, x, orientation, descriptor);
+				ni_get_descriptor(x, y, orientation, descriptor);
 			else
-				i_get_descriptor(y, x, orientation, descriptor);
+				i_get_descriptor(x, y, orientation, descriptor);
 		}
 		void Daisy::computeDescriptor(float x,float y, int orientation, Descriptor& descriptor) {
 			getUnnormalizedDescriptor(y, x, orientation, descriptor);
@@ -484,6 +560,7 @@ namespace aly {
 			if (rotationInvariant) computeOrientations();
 			int orientation;
 			descriptorField.resize(image.width, image.height);
+			std::cout << "Compute Field" << std::endl;
 			for (int j = 0; j<image.height; j++){
 				for (int i = 0; i<image.width; i++){
 					orientation = 0;
