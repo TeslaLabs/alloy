@@ -34,6 +34,7 @@ Alloy is yet another 2D/3D graphics library written in C++11. As mundane as that
 - Cross-Platform file system IO.
 - NURB curves, B-Splines, and Beziers (tinyspline).
 - Catmull-Clark and Loop mesh sub-division.
+- DAISY image descriptors.
 - Mesh primitives for box, icosahedron, sphere, cylinder, torus, plane, cone, pyramid, frustum, capsule, tessellated sphere, grid, and asteroid.
 - Iso-contour generation (with connectivity rules)
 - Dataflow UI for graphics/imaging pipelines
