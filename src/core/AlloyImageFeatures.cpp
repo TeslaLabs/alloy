@@ -561,7 +561,7 @@ namespace aly {
 			}
 		}
 		void Daisy::getDescriptor(float x,float y,  Descriptor& descriptor, int orientation, Normalization normalizationType,bool disableInterpolation) {
-			getUnnormalizedDescriptor(y, x, orientation, descriptor,disableInterpolation);
+			getUnnormalizedDescriptor(x, y, orientation, descriptor,disableInterpolation);
 			normalizeDescriptor(descriptor, normalizationType);
 		}
 		void Daisy::updateSelectedCubes() {
@@ -599,22 +599,49 @@ namespace aly {
 		}
 		void Daisy::computeOrientedGridPoints() {
 			for (int i = 0; i<ORIENTATIONS; i++){
-				orientedGridPoints[i].resize(numberOfGridPoints);
 				float angle = -i*2.0f*ALY_PI / ORIENTATIONS;
 				float cosa = std::cos(angle);
 				float sina = std::sin(angle);
 				std::vector<float2>& point_list = orientedGridPoints[i];
+				point_list.resize(numberOfGridPoints);
 				for (int k = 0; k<numberOfGridPoints; k++){
 					float2 pt = gridPoints[k];
 					point_list[k] = float2(pt.x*cosa + pt.y*sina ,-pt.x*sina + pt.y*cosa);
 				}
 			}
 		}
+		inline double lengthL2(const Descriptor& a) {
+			double ret = 0.0;
+			int N = (int)a.size();
+			for (int i = 0; i < N; i++) {
+				ret += a[i] * a[i];
+			}
+			return std::sqrt(ret);
+		}
+		double lengthSqr(const Descriptor& a) {
+			double ret = 0.0;
+			int N = (int)a.size();
+			for (int i = 0; i < N; i++) {
+				ret += a[i] * a[i];
+			}
+			return ret;
+		}
+		double lengthL1(const Descriptor& a) {
+			double ret = 0.0;
+			int N = (int)a.size();
+			for (int i = 0; i < N; i++) {
+				ret += std::abs(a[i]);
+			}
+			return ret;
+		}
+		double angle(const Descriptor& a, const Descriptor& b) {
+			return std::acos(dot(a, b) / (lengthL2(a)*lengthL2(b)));
+		}
 		void Daisy::computeGridPoints() {
 			double r_step = descriptorRadius / radiusBins;
 			double t_step = 2 * ALY_PI / angleBins;
 			gridPoints.resize(numberOfGridPoints);
-			for (int i = 0; i<gridPoints.size(); i++){
+			for (int i = 0; i<numberOfGridPoints; i++){
 				gridPoints[i]=float2(0,0);
 			}
 			for (int r = 0; r<radiusBins; r++){

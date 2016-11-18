@@ -209,6 +209,18 @@ namespace aly {
 				}
 			}
 		}
+		inline double dot(const Descriptor& a,const Descriptor& b) {
+			double ret = 0.0;
+			int N = (int)std::min(a.size(), b.size());
+			for (int i = 0; i < N; i++) {
+				ret += a[i] * b[i];
+			}
+			return ret;
+		}
+		inline double lengthL2(const Descriptor& a);
+		inline double lengthSqr(const Descriptor& a);
+		inline double lengthL1(const Descriptor& a);
+		inline double angle(const Descriptor& a, const Descriptor& b);
 		void Smooth(const OrientationLayer & image, OrientationLayer & B, float sigmaX, float sigmaY);
 		class DescriptorField {
 		protected:

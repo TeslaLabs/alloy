@@ -34,14 +34,21 @@ bool ImageFeaturesEx::init(Composite& rootNode) {
 	ReadImageFromFile(getFullPath("images/stereo_left.png"), leftImg);
 	ReadImageFromFile(getFullPath("images/stereo_right.png"), rightImg);
 	DownSample(leftImg, tmp);
-	DownSample(tmp,leftImg);
+	leftImg = tmp;
+	//DownSample(tmp,leftImg);
 	ConvertImage(leftImg, left);
 	DownSample(rightImg, tmp);
-	DownSample(tmp,rightImg);
+	rightImg = tmp;
+	//DownSample(tmp, rightImg);
 	ConvertImage(rightImg, right);
+
+	tmp.resize(left.width, left.height);
+	for (RGBA& c : tmp.data) {
+		c = RGBA(64, 64, 64, 255);
+	}
 	ImageGlyphPtr srcGlyph = createImageGlyph(leftImg, false);
 	ImageGlyphPtr tarGlyph = createImageGlyph(rightImg, false);
-	ImageGlyphPtr resultGlyph = createImageGlyph(rightImg, false);
+	ImageGlyphPtr resultGlyph = createImageGlyph(tmp, false);
 
 	GlyphRegionPtr srcRegion = MakeGlyphRegion(srcGlyph,
 			CoordPercent(0.05f, 0.0f), CoordPercent(0.4f, 0.3f),
@@ -54,55 +61,64 @@ bool ImageFeaturesEx::init(Composite& rootNode) {
 			Color(200, 200, 200, 255), UnitPX(1.0f));
 
 	TextLabelPtr textLabel = TextLabelPtr(
-			new TextLabel("Solving Poisson Blend ...",
-					CoordPercent(0.1f, 0.35f), CoordPercent(0.8f, 0.5f)));
+			new TextLabel("Stereo Matching ...",
+					CoordPercent(0.2f, 0.4f), CoordPercent(0.8f, 0.5f)));
 	textLabel->fontSize = UnitPX(20.0f);
 	textLabel->fontType = FontType::Bold;
 	textLabel->fontStyle = FontStyle::Outline;
 
 	GlyphRegionPtr resultRegion = MakeGlyphRegion(resultGlyph,
-			CoordPercent(0.1f, 0.35f), CoordPercent(0.8f, 0.5f),
-			AspectRule::FixedWidth, COLOR_NONE, COLOR_NONE,
+			CoordPercent(0.5f, 0.4f), CoordPercent(0.8f, 0.55f),
+			AspectRule::FixedHeight, COLOR_NONE, COLOR_NONE,
 			Color(200, 200, 200, 255), UnitPX(1.0f));
-
+	resultRegion->setOrigin(Origin::TopCenter);
 	rootNode.add(srcRegion);
 	rootNode.add(tarRegion);
 	rootNode.add(resultRegion);
 	rootNode.add(textLabel);
-	Daisy daisy;
 
-	DescriptorField leftDescriptors;
-	DescriptorField rightDescriptors;
-	std::cout<<"Computing left descriptors" << std::endl;
-	daisy.initialize(left);
-	daisy.getDescriptors(leftDescriptors,Normalization::Sift);
-
-	std::cout << "Computing right descriptors" << std::endl;
-	daisy.initialize(right);
-	daisy.getDescriptors(rightDescriptors, Normalization::Sift);
-
-	Descriptor desc;
-	std::cout << "Get Descriptor" << std::endl;
-	daisy.getDescriptor(left.width / 2.0f, right.height / 2.0f, desc, 0);
-	std::cout << "Descriptor: \n";
-	for (int i = 0; i < desc.size(); i+=8) {
-		std::cout << (i / 8) << ":: ";
-		for (int n = 0; n < 8; n++) {
-			std::cout << desc[i+n] << " ";
-		}
-		std::cout << std::endl;
-	}
-	/*
 	workerTask = WorkerTaskPtr(new WorkerTask([=] {
-		PoissonBlend(src, tar, 32, 6);
-		ImageRGBA out;
-		ConvertImage(tar,out);
+		ImageRGBA resultImg(leftImg.width,rightImg.height);
+		Daisy daisy;
+		DescriptorField leftDescriptors;
+		DescriptorField rightDescriptors;
+		textLabel->setLabel("Computing left image descriptors ...");
+		daisy.initialize(left);
+		daisy.getDescriptors(leftDescriptors, Normalization::Sift);
+
+		textLabel->setLabel("Computing right image descriptors ...");
+		daisy.initialize(right);
+		daisy.getDescriptors(rightDescriptors, Normalization::Sift);
+		Descriptor desc;
+		const int shiftBound = 64;
+		const float minScore = 0.8f;
+		textLabel->setLabel("Stereo mathcing ...");
+#pragma omp parallel for
+		for (int j = 0; j < leftDescriptors.height; j++) {
+			for (int i = 0; i < leftDescriptors.width; i++) {
+				double bestScore = 0.0;
+				int bestOffset = 0;
+				for (int ii = std::max(i - shiftBound,0); ii <= i; ii++) {
+					double score = dot(leftDescriptors(i, j), rightDescriptors(ii, j));
+					if (score > bestScore) {
+						bestOffset = i - ii;
+						bestScore = score;
+					}
+				}
+				if (bestScore > minScore) {
+					resultImg(i, j) = ToRGBA(HSVAtoRGBAf(HSVA((bestOffset) / (float)(shiftBound), clamp(((float)bestScore - minScore) / (1.0f - minScore), 0.0f, 1.0f), 0.8f, 1.0f)));
+				}
+				else {
+					resultImg(i, j) = RGBA(64, 64, 64, 255);
+				}
+			}
+		}
 		getContext()->addDeferredTask([=]() {
-					resultGlyph->set(out,getContext().get());
+					resultGlyph->set(resultImg,getContext().get());
 					textLabel->setLabel("Finished!");
 				});
 	}));
 	workerTask->execute(isForcedClose());
-	*/
+	
 	return true;
 }

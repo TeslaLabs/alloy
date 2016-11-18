@@ -207,6 +207,10 @@ Image Filter Example
 -------------------------
 [![ImageProcessingEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0020.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/ImageProcessingEx.cpp)
 
+Image Features Example
+-------------------------
+[![ImageProcessingEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0040.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/ImageFeaturesEx.cpp)
+
 Object/Face Picker Example
 -------------------------
 [![MeshPickerEx](https://github.com/rgb2hsv/blob/blob/master/screenshots/screenshot0021.png)](https://github.com/rgb2hsv/alloy/blob/master/alloy/src/example/MeshPickerEx.cpp)
