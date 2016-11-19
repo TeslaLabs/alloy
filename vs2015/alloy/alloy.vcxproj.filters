@@ -25,6 +25,9 @@
     <Filter Include="include\example">
       <UniqueIdentifier>{0af0aa1b-3c67-4214-aac0-3e5b5057e4a0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\cereal">
+      <UniqueIdentifier>{45ae0b41-1376-4320-9da5-fce2f2a9ce90}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\core\nanovg.cpp">
@@ -727,6 +730,15 @@
     </ClInclude>
     <ClInclude Include="..\..\include\core\BendyDescriptor.h">
       <Filter>include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\cereal\access.hpp">
+      <Filter>include\cereal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\cereal\cereal.hpp">
+      <Filter>include\cereal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\cereal\macros.hpp">
+      <Filter>include\cereal</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
