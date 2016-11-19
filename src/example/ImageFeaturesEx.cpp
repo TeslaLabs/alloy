@@ -84,15 +84,13 @@ bool ImageFeaturesEx::init(Composite& rootNode) {
 		DescriptorField rightDescriptors;
 		textLabel->setLabel("Computing left image descriptors ...");
 		daisy.initialize(left);
-		daisy.getDescriptors(leftDescriptors, Normalization::Sift);
-
+		daisy.getDescriptors(leftDescriptors, Normalization::Sift,false,false);
 		textLabel->setLabel("Computing right image descriptors ...");
 		daisy.initialize(right);
-		daisy.getDescriptors(rightDescriptors, Normalization::Sift);
-		Descriptor desc;
+		daisy.getDescriptors(rightDescriptors, Normalization::Sift, false, false);
 		const int shiftBound = 64;
 		const float minScore = 0.8f;
-		textLabel->setLabel("Stereo mathcing ...");
+		textLabel->setLabel("Stereo matching ...");
 #pragma omp parallel for
 		for (int j = 0; j < leftDescriptors.height; j++) {
 			for (int i = 0; i < leftDescriptors.width; i++) {

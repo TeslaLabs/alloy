@@ -30,49 +30,6 @@ namespace aly {
 			return slope;
 		}
 
-		template<class T1,class T2> inline bool is_outside(T1 x, T2 lx, T2 ux, T1 y, T2 ly, T2 uy)
-		{
-			return (x<lx || y>ux || y<ly || y>uy);
-		}
-		/// returns the theta component of a point array in the range -PI to PI.
-		template<class T> inline
-			float* angle(T* x, T* y, int lsz)
-		{
-			float* ang = allocate<float>(lsz);
-
-			for (int k = 0; k<lsz; k++)
-			{
-				ang[k] = angle<T>(x[k], y[k]);
-			}
-
-			return ang;
-		}
-
-		/// returns the radial component of a point.
-		template<class T> inline
-			T magnitude(T x, T y)
-		{
-			return std::sqrt(x*x + y*y);
-		}
-
-
-		/// Converts the given cartesian coordinates of a point to polar
-		/// ones.
-		template<class T> inline
-			void cartesian2polar(T x, T y, float &r, float &th)
-		{
-			r = magnitude(x, y);
-			th = angle(x, y);
-		}
-
-		/// Converts the given polar coordinates of a point to cartesian
-		/// ones.
-		template<class T1, class T2> inline
-			void polar2cartesian(T1 r, T1 t, T2 &y, T2 &x)
-		{
-			x = (T2)(r * std::cos(t));
-			y = (T2)(r * std::sin(t));
-		}
 		enum class Normalization
 		{
 			Partial = 0, Full = 1, Sift = 2
@@ -80,6 +37,9 @@ namespace aly {
 		class Descriptor: public std::vector<float> {
 		public:
 			Descriptor(size_t sz=0) :std::vector<float>(sz) {
+			}
+			Descriptor(const std::vector<float>& data):std::vector<float>(data.size()) {
+				std::vector<float>::assign(data.begin(), data.end());
 			}
 		};
 
@@ -168,47 +128,8 @@ namespace aly {
 		typedef std::vector<OrientationLayer > LayeredImage;
 		void WriteLayeredImageToFile(const std::string& file, const LayeredImage& img);
 
-		template<size_t M, size_t N> void GaussianKernel(float(&kernel)[M][N],
-			float sigmaX = float(0.607902736 * (M - 1) * 0.5),
-			float sigmaY = float(0.607902736 * (N - 1) * 0.5)) {
-			float sum = 0;
-			for (int i = 0; i < (int)M; i++) {
-				for (int j = 0; j < (int)N; j++) {
-					float x = float(i - 0.5 * (M - 1));
-					float y = float(j - 0.5 * (N - 1));
-					float xn = x / sigmaX;
-					float yn = y / sigmaY;
-					float w = float(std::exp(-0.5 * (xn * xn + yn * yn)));
-					sum += w;
-					kernel[i][j] = w;
-				}
-			}
-			sum = 1.0f / sum;
-			for (int i = 0; i < (int)M; i++) {
-				for (int j = 0; j < (int)N; j++) {
-					kernel[i][j] *= sum;
-				}
-			}
-		}
 
-		template<size_t M, size_t N> void Smooth(const OrientationLayer & image, OrientationLayer & B,float sigmaX = (0.607902736 * (M - 1) * 0.5),float sigmaY = (0.607902736 * (N - 1) * 0.5)) {
-			float filter[M][N];
-			GaussianKernel<M,N>(filter, sigmaX, sigmaY);
-			B.resize(image.width, image.height);
-#pragma omp parallel for
-			for (int j = 0; j < image.height; j++) {
-				for (int i = 0; i < image.width; i++) {
-					float vsum=0.0;
-					for (int ii = 0; ii < (int)M; ii++) {
-						for (int jj = 0; jj < (int)N; jj++) {
-							float val = image(i + ii - (int)M / 2, j + jj - (int)N / 2);
-							vsum += filter[ii][jj] * val;
-						}
-					}
-					B(i, j) = vsum;
-				}
-			}
-		}
+
 		inline double dot(const Descriptor& a,const Descriptor& b) {
 			double ret = 0.0;
 			int N = (int)std::min(a.size(), b.size());
@@ -221,13 +142,13 @@ namespace aly {
 		inline double lengthSqr(const Descriptor& a);
 		inline double lengthL1(const Descriptor& a);
 		inline double angle(const Descriptor& a, const Descriptor& b);
-		void Smooth(const OrientationLayer & image, OrientationLayer & B, float sigmaX, float sigmaY);
+		void Smooth(const OrientationLayer & image, OrientationLayer & B, float sigma);
 		class DescriptorField {
 		protected:
 			std::vector<Descriptor> data;
 		public:
 			int width, height;
-			DescriptorField(int w = 0, int h = 0):width(w),height(h) {
+			DescriptorField(int w = 0, int h = 0):width(w),height(h),data(w*h) {
 
 			}
 			size_t size() const {

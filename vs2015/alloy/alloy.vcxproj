@@ -178,6 +178,7 @@
     <ClInclude Include="..\..\include\core\AlloyWidget.h" />
     <ClInclude Include="..\..\include\core\AlloyWorker.h" />
     <ClInclude Include="..\..\include\core\AvoidanceRouting.h" />
+    <ClInclude Include="..\..\include\core\BendyDescriptor.h" />
     <ClInclude Include="..\..\include\core\BinaryMinHeap.h" />
     <ClInclude Include="..\..\include\core\catch.h" />
     <ClInclude Include="..\..\include\core\CommonShaders.h" />
@@ -187,6 +188,7 @@
     <ClInclude Include="..\..\include\core\GLFrameBuffer.h" />
     <ClInclude Include="..\..\include\core\GLShader.h" />
     <ClInclude Include="..\..\include\core\GLTexture.h" />
+    <ClInclude Include="..\..\include\core\kutility\general.h" />
     <ClInclude Include="..\..\include\core\libkdtree\allocator.h" />
     <ClInclude Include="..\..\include\core\libkdtree\function.h" />
     <ClInclude Include="..\..\include\core\libkdtree\iterator.h" />
@@ -253,7 +255,6 @@
     <ClInclude Include="..\..\include\example\TweenEx.h" />
     <ClInclude Include="..\..\include\example\UnitsEx.h" />
     <ClInclude Include="..\..\include\example\WindowPaneEx.h" />
-    <ClInclude Include="Header.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{E990BB2D-D073-48A2-841A-8231A304F580}</ProjectGuid>
