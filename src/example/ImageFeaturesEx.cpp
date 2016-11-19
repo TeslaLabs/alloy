@@ -84,10 +84,10 @@ bool ImageFeaturesEx::init(Composite& rootNode) {
 		DescriptorField rightDescriptors;
 		textLabel->setLabel("Computing left image descriptors ...");
 		daisy.initialize(left);
-		daisy.getDescriptors(leftDescriptors, Normalization::Sift,false,false);
+		daisy.getDescriptors(leftDescriptors, Normalization::Sift);
 		textLabel->setLabel("Computing right image descriptors ...");
 		daisy.initialize(right);
-		daisy.getDescriptors(rightDescriptors, Normalization::Sift, false, false);
+		daisy.getDescriptors(rightDescriptors, Normalization::Sift);
 		const int shiftBound = 64;
 		const float minScore = 0.8f;
 		textLabel->setLabel("Stereo matching ...");

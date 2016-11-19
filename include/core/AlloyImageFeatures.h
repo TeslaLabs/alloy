@@ -234,7 +234,7 @@ namespace aly {
 			static const float sigma_init;
 			static const float sigma_step;
 			static const int scale_st;
-			static const int scale_en = 1;
+			static const int scale_en = 3;
 			static const int ORIENTATIONS = 360;
 			static const int cubeNumber = 3;
 			Image1f image;
@@ -281,7 +281,7 @@ namespace aly {
 		public:
 			Daisy(int orientationResolutions=8);
 			void initialize(const ImageRGBAf& image, float descriptorRadius=15.0f, int radiusBins=3, int angleBins=8, int histogramBins=8);
-			void getDescriptors(DescriptorField& descriptorField, Normalization  normalizationType = Normalization::Sift, bool scaleInvariant=true, bool rotationInartiant=true, bool disableInterpolation=false);
+			void getDescriptors(DescriptorField& descriptorField, Normalization  normalizationType = Normalization::Sift, bool scaleInvariant=false, bool rotationInartiant=true, bool disableInterpolation=false);
 			void getDescriptor(float i, float j,Descriptor& out, int orientation=0, Normalization normalizationType=Normalization::Sift,bool disableInterpolation = false);
 		};
 	}

@@ -2,6 +2,7 @@
 
 #include "AlloyImageFeatures.h"
 #include "AlloyImageProcessing.h"
+
 namespace aly {
 	namespace daisy {
 		const float Daisy::sigma_0 = 1.0f;
@@ -237,54 +238,38 @@ namespace aly {
 		}
 		void Smooth(const OrientationLayer & image, OrientationLayer & B, float sigma) {
 			int fsz = (int)(5 * sigma);
-
-			// kernel size must be odd
 			if (fsz % 2 == 0) fsz++;
-
-			// kernel size cannot be smaller than 3
 			if (fsz < 3) fsz = 3;
-
 			std::vector<float> filter(fsz);
-			// cout<<"smooth sigma: "<<sigma<<endl;
 			gaussian_1d(filter, fsz, sigma, 0);
 			B = image;
 			convolve_sym(B.ptr(), image.height, image.width, filter.data(), fsz);
-			/*
-			double sigma = std::max(sigmaX, sigmaY);
-			if (sigma < 1.5f) {
-				Smooth<3, 3>(image, B, sigmaX, sigmaY);
-			}
-			else if (sigma < 2.5f) {
-				Smooth<5, 5>(image, B, sigmaX, sigmaY);
-			}
-			else if (sigma < 3.5f) {
-				Smooth<7, 7>(image, B, sigmaX, sigmaY);
-			}
-			else if (sigma < 5.5f) {
-				Smooth<11, 11>(image, B, sigmaX, sigmaY);
-			}
-			else if (sigma < 6.5f) {
-				Smooth<13, 13>(image, B, sigmaX, sigmaY);
-			}
-			else if (sigma < 7.5f) {
-				Smooth<15, 15>(image, B, sigmaX, sigmaY);
-			}
-			else if (sigma < 8.5f) {
-				Smooth<17, 17>(image, B, sigmaX, sigmaY);
-			}
-			else if (sigma < 9.5f) {
-				Smooth<19, 19>(image, B, sigmaX, sigmaY);
-			}
-			else if (sigma < 10.5f) {
-				Smooth<21, 21>(image, B, sigmaX, sigmaY);
-			}
-			else if (sigma < 11.5f) {
-				Smooth<23, 23>(image, B, sigmaX, sigmaY);
-			}
-			else if (sigma < 12.5f) {
-				Smooth<25, 25>(image, B, sigmaX, sigmaY);
-			}
-			*/
+		}
+		void Smooth(OrientationLayer & image,float sigma) {
+			int fsz = (int)(5 * sigma);
+			if (fsz % 2 == 0) fsz++;
+			if (fsz < 3) fsz = 3;
+			std::vector<float> filter(fsz);
+			gaussian_1d(filter, fsz, sigma, 0);
+			convolve_sym(image.ptr(), image.height, image.width, filter.data(), fsz);
+		}
+		void Smooth(const Image1f & image, Image1f & B, float sigma) {
+			int fsz = (int)(5 * sigma);
+			if (fsz % 2 == 0) fsz++;
+			if (fsz < 3) fsz = 3;
+			std::vector<float> filter(fsz);
+			gaussian_1d(filter, fsz, sigma, 0);
+			B = image;
+			convolve_sym(B.ptr(), image.height, image.width, filter.data(), fsz);
+		}
+
+		void Smooth(Image1f & image, float sigma) {
+			int fsz = (int)(5 * sigma);
+			if (fsz % 2 == 0) fsz++;
+			if (fsz < 3) fsz = 3;
+			std::vector<float> filter(fsz);
+			gaussian_1d(filter, fsz, sigma, 0);
+			convolve_sym(image.ptr(), image.height, image.width, filter.data(), fsz);
 		}
 		Daisy::Daisy(int orientResolutions) :orientationResolutions(orientResolutions) {
 		}
@@ -445,7 +430,7 @@ namespace aly {
 			scaleMap.resize(image.width, image.height);
 			scaleMap.setZero();
 			max_dog.setZero();
-			Smooth(image, sim, sigma, sigma);
+			Smooth(image, sim, sigma);
 			float sigma_prev = sigma_0;
 			float sigma_new;
 			float sigma_inc;
@@ -453,10 +438,9 @@ namespace aly {
 				sigma_new = std::pow(sigma_step, scale_st + i) * sigma_0;
 				sigma_inc = std::sqrt(sigma_new*sigma_new - sigma_prev*sigma_prev);
 				sigma_prev = sigma_new;
-
-				Smooth(sim, next_sim, sigma_inc, sigma_inc);
+				Smooth(sim, next_sim, sigma_inc);
 				for (int p = 0; p < (int)image.size(); p++) {
-					float dog = fabs(next_sim[p] - sim[p]);
+					float dog = std::abs(next_sim[p].x - sim[p].x);
 					if (dog > max_dog[p])
 					{
 						max_dog[p] = float1(dog);
@@ -466,7 +450,7 @@ namespace aly {
 				sim = next_sim;
 			}
 			//smooth scaling map
-			Smooth(scaleMap, sim, 10, 10);
+			Smooth(scaleMap, sim, 10.0f);
 			scaleMap = sim;
 			for (int q = 0; q < (int)sim.size(); q++)
 			{
@@ -755,12 +739,19 @@ namespace aly {
 			Image1f scaleMap;
 			Image1i orientMap;
 			if (scaleInvariant) {
+				//Not really used
 				computeScales(scaleMap);
-			
 			}
 			if (rotationInvariant) {
 				computeOrientations(orientMap, scaleMap, scaleInvariant);
 			}
+			//d::cout << "Scale " << scaleMap << std::endl;
+			//WriteImageToRawFile(MakeString() << GetDesktopDirectory() << ALY_PATH_SEPARATOR << "scale.xml", scaleMap);
+
+			//std::cout << "Orient " << orientMap << std::endl;
+			//WriteImageToRawFile(MakeString() << GetDesktopDirectory() << ALY_PATH_SEPARATOR << "orient.xml", orientMap);
+
+			//std::cout << "Write Descriptor" << std::endl;
 			int orientation;
 			descriptorField.resize(image.width, image.height);
 #pragma omp parallel for
