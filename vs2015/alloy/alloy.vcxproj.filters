@@ -725,9 +725,6 @@
     <ClInclude Include="..\..\include\example\ImageFeaturesEx.h">
       <Filter>include\example</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\core\kutility\general.h">
-      <Filter>include\core</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\core\BendyDescriptor.h">
       <Filter>include\core</Filter>
     </ClInclude>

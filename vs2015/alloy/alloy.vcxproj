@@ -188,7 +188,6 @@
     <ClInclude Include="..\..\include\core\GLFrameBuffer.h" />
     <ClInclude Include="..\..\include\core\GLShader.h" />
     <ClInclude Include="..\..\include\core\GLTexture.h" />
-    <ClInclude Include="..\..\include\core\kutility\general.h" />
     <ClInclude Include="..\..\include\core\libkdtree\allocator.h" />
     <ClInclude Include="..\..\include\core\libkdtree\function.h" />
     <ClInclude Include="..\..\include\core\libkdtree\iterator.h" />
