@@ -393,7 +393,7 @@ public:
 	}
 	virtual void draw(AlloyContext* context) override;
 };
-class Connection {
+class Connection:public AvoidanceConnection {
 protected:
 	std::shared_ptr<SpringItem> springItem;
 	Any contents;
@@ -401,7 +401,14 @@ public:
 	bool selected = false;
 	std::shared_ptr<Port> source;
 	std::shared_ptr<Port> destination;
-	std::vector<float2> path;
+
+	float2 getSourceLocation() const override {
+		return source->getLocation();
+	}
+	float2 getDestinationLocation() const override {
+		return destination->getLocation();
+	}
+	Direction getDirection() const override;
 	void setSelected(bool b) {
 		selected = b;
 	}
@@ -552,7 +559,7 @@ public:
 	}
 	virtual void draw(AlloyContext* context) override;
 };
-class Node: public Composite {
+class Node: public Composite, public AvoidanceNode {
 protected:
 	std::string label;
 	std::string id;
@@ -575,6 +582,7 @@ protected:
 	virtual void pack(const pixel2& pos, const pixel2& dims, const double2& dpmm, double pixelRatio, bool clamp = false) override;
 	std::function<void(float scale)> resizeFunc;
 public:
+	
 	static std::string MakeID(int len=8);
 	bool isSelected() const {
 		return nodeIcon->selected;
@@ -663,14 +671,14 @@ public:
 	void clearContents() {
 		contents.clear();
 	}
-
+	
 	bool hasContents() const {
 		return !contents.isEmpty();
 	}
 	template<class T> T getContents() const {
 		return AnyCast<T>(contents);
 	}
-	box2px getObstacleBounds() const;
+	box2px getObstacleBounds() const override;
 	DataFlow* getGraph() const {
 		return parentFlow;
 	}
