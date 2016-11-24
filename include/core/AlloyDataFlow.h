@@ -925,7 +925,6 @@ protected:
 	float scale = 1.0f;
 	static std::shared_ptr<Group> clipboard;
 	void setup();
-	bool updateSimulation(uint64_t iter);
 	void addConnectionInternal(const std::shared_ptr<Connection>& connection);
 	void addRelationshipInternal(const std::shared_ptr<Relationship>& connection);
 	void addNodeInternal(const std::shared_ptr<Node>& node);

@@ -127,7 +127,6 @@ namespace aly {
 		}
 		void gaussian_1d(std::vector<float>& fltr, int fsz, float sigma, float mean)
 		{
-			assert(fltr != NULL);
 			int sz = (fsz - 1) / 2;
 			int counter = -1;
 			float sum = 0.0;

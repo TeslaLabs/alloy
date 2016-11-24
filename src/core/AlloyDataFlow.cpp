@@ -3446,7 +3446,7 @@ namespace aly {
 			};
 		}
 		ActionAddRelationship::ActionAddRelationship(DataFlow* graph, const std::shared_ptr<Relationship>& con):
-			ActionDataFlow(MakeString() << "Add Relationship " << graph->getName(), graph) {
+			ActionDataFlow(MakeString() << "Add Relationship" << graph->getName(), graph) {
 			executeFunction = [=]() {
 				graph->add(con);
 				return true;
@@ -3456,6 +3456,9 @@ namespace aly {
 				return true;
 			};
 		}
-
+		ActionMoveGraph::ActionMoveGraph(DataFlow* graph, pixel2 position): ActionDataFlow(MakeString() << "Move Graph" << graph->getName(), graph) {
+		}
+		ActionModifyNode::ActionModifyNode(DataFlow* graph, const std::shared_ptr<Node>& node, const std::string& name) : ActionDataFlow(MakeString() << "Modify Name" << graph->getName(), graph) {
+		}
 	}
 }
