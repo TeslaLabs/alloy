@@ -228,6 +228,13 @@ public:
 		mean = mean / (double) data.size();
 		return vec<T, C>(mean);
 	}
+	vec<T, C> sum() const {
+		vec<T, C> sum(T(0));
+		for (const vec<T, C>& val : data) {
+			sum += vec<T, C>(val);
+		}
+		return vec<T, C>(sum);
+	}
 	vec<T, C> median() const {
 		std::vector<T> bands[C];
 		for (int c = 0; c < C; c++) {
