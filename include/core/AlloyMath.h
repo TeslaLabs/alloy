@@ -53,6 +53,12 @@ template<typename T> T sign(const T& a, const T& b) {
 template<typename T> T sign(const T& a) {
 	return (a == 0) ? T(0) : ((a > 0.0) ? T(1) : T(-1));
 }
+template<typename T> T round(const T & v) {
+	return T(std::floor(T(v+0.5)));
+}
+template<typename T> T round(const T & v,int sigs) {
+	return T(std::floor(T(v*pow(10, sigs) + 0.5))*pow(10, -sigs));
+}
 // The intent of this library is to provide the bulk of the functionality
 // you need to write programs that frequently use small, fixed-size vectors
 // and matrices, in domains such as computational geometry or computer
