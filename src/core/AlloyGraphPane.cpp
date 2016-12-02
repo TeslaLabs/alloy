@@ -115,19 +115,19 @@ namespace aly {
 
 		}
 		for (GraphDataPtr& curve : curves) {
-			std::vector<float2> points = curve->points;
+			const std::vector<float2>& points = curve->points;
 			if (points.size() > 1 && graphBounds.dimensions.x > 0.0f
 				&& graphBounds.dimensions.y > 0.0f) {
 				NVGcontext* nvg = context->nvgContext;
 				float2 last = points[0];
-				last = (last - graphBounds.position) / graphBounds.dimensions;
+				last = aly::clamp((last - graphBounds.position) / graphBounds.dimensions,0.0f,1.0f);
 				last.y = 1.0f - last.y;
 				last = last * gbounds.dimensions + gbounds.position;
 				nvgBeginPath(nvg);
 				nvgMoveTo(nvg, last.x, last.y);
 				for (int i = 1; i < (int)points.size(); i++) {
 					float2 pt = points[i];
-					pt = (pt - graphBounds.position) / graphBounds.dimensions;
+					pt = aly::clamp((pt - graphBounds.position) / graphBounds.dimensions, 0.0f, 1.0f);
 					pt.y = 1.0f - pt.y;
 					pt = pt * gbounds.dimensions + gbounds.position;
 					nvgLineTo(nvg, pt.x, pt.y);
@@ -255,15 +255,22 @@ namespace aly {
 		return curvePtr;
 	}
 	box2f GraphPane::updateGraphBounds() {
-		float2 minPt(std::numeric_limits<float>::max());
-		float2 maxPt(std::numeric_limits<float>::min());
+		bool found = false;
+		float2 minPt(1E30f);
+		float2 maxPt(-1E30f);
 		for (GraphDataPtr& curve : curves) {
-			for (float2& pt : curve->points) {
+			for (const float2& pt : curve->points) {
+				found = true;
 				minPt = aly::min(pt, minPt);
 				maxPt = aly::max(pt, maxPt);
 			}
 		}
-		graphBounds = box2f(minPt, maxPt - minPt);
+		if (found) {
+			graphBounds = box2f(minPt, maxPt - minPt);
+
+		} else {
+			graphBounds = box2f(float2(0.0f, 0.0f), float2(1.0f, 1.0f));
+		}
 		return graphBounds;
 	}
 	const float GraphData::NO_INTERSECT = std::numeric_limits<float>::max();
