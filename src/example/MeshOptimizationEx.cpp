@@ -180,7 +180,7 @@ void MeshOptimizationEx::detailTransfer(aly::Mesh& src, const aly::Mesh& tar, bo
 		textLabel->setLabel(MakeString()<< "Detail Transfer [" << innerIter << "] Error: " <<error);
 		return true;
 	});
-	src.vertexLocations.set(X.data());
+	src.vertexLocations.set(X.ptr());
 	src.updateVertexNormals();
 	sourceMesh.setDirty(true);
 	camera.setDirty(true);
@@ -285,7 +285,7 @@ void MeshOptimizationEx::smooth(aly::Mesh& mesh) {
 		textLabel->setLabel(MakeString() << "Smooth [" << iter << "] Error: " << error);
 		return true;
 	});
-	mesh.vertexLocations.set(X.data());
+	mesh.vertexLocations.set(X.ptr());
 	mesh.updateVertexNormals();
 }
 void MeshOptimizationEx::draw(AlloyContext* context) {

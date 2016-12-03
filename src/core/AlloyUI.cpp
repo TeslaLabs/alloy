@@ -2299,7 +2299,6 @@ ModifiableNumber::ModifiableNumber(const std::string& name, const AUnit2D& posit
 	textAltColor = MakeColor(AlloyApplicationContext()->theme.DARK);
 	textColor = MakeColor(AlloyApplicationContext()->theme.LIGHTER);
 	fontSize = UnitPX(24);
-	setValue(name);
 }
 
 void ModifiableNumber::draw(AlloyContext* context) {
