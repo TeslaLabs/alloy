@@ -1146,6 +1146,7 @@ namespace aly {
 	typedef DenseMat<float> DenseMatrixFloat;
 	typedef SparseMat<float> SparseMatrixFloat;
 	typedef Vec<float> VecFloat;
+
 }
 
 #endif /* INCLUDE_CORE_ALLOYOPTIMIZATIONMATH_H_ */
