@@ -27,6 +27,8 @@ namespace aly {
 		graphBounds = box2f(float2(0.0f), float2(-1.0f));
 		backgroundColor = MakeColor(AlloyApplicationContext()->theme.DARK);
 		setRoundCorners(true);
+		xAxisInteger = false;
+		yAxisInteger = false;
 		xAxisLabel = "x";
 		yAxisLabel = "y=f(x)";
 		cursorPosition.x = -1;
@@ -165,7 +167,7 @@ namespace aly {
 		nvgFontSize(nvg, SMALL_TEXT);
 		nvgTextAlign(nvg, NVG_ALIGN_RIGHT | NVG_ALIGN_TOP);
 		drawText(nvg, rbounds.position + float2(GRAPH_PADDING, GRAPH_PADDING),
-			MakeString() << std::setprecision(2)
+			(yAxisInteger) ? MakeString() << int(graphBounds.position.y + graphBounds.dimensions.y) : MakeString() << std::setprecision(2)
 			<< (graphBounds.position.y + graphBounds.dimensions.y),
 			FontStyle::Outline, context->theme.LIGHTER, context->theme.DARK);
 		nvgTextAlign(nvg, NVG_ALIGN_RIGHT | NVG_ALIGN_BOTTOM);
@@ -173,14 +175,14 @@ namespace aly {
 			rbounds.position
 			+ float2(GRAPH_PADDING,
 				rbounds.dimensions.y - GRAPH_PADDING),
-			MakeString() << std::setprecision(2) << graphBounds.position.y,
+			(yAxisInteger)? MakeString() << int(graphBounds.position.y):MakeString() << std::setprecision(2) << graphBounds.position.y,
 			FontStyle::Outline, context->theme.LIGHTER, context->theme.DARK);
 		nvgTextAlign(nvg, NVG_ALIGN_RIGHT | NVG_ALIGN_TOP);
 		drawText(nvg,
 			rbounds.position
 			+ float2(rbounds.dimensions.x - GRAPH_PADDING,
 				rbounds.dimensions.y - GRAPH_PADDING + 2),
-			MakeString() << std::setprecision(2)
+			(xAxisInteger) ? MakeString() << int(graphBounds.position.x + graphBounds.dimensions.x) : MakeString() << std::setprecision(2)
 			<< (graphBounds.position.x + graphBounds.dimensions.x),
 			FontStyle::Outline, context->theme.LIGHTER, context->theme.DARK);
 		nvgTextAlign(nvg, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
@@ -188,7 +190,7 @@ namespace aly {
 			rbounds.position
 			+ float2(GRAPH_PADDING,
 				rbounds.dimensions.y - GRAPH_PADDING + 2),
-			MakeString() << std::setprecision(2) << graphBounds.position.x,
+				(xAxisInteger) ? MakeString() << int(graphBounds.position.x) : MakeString() << std::setprecision(2) << graphBounds.position.x,
 			FontStyle::Outline, context->theme.LIGHTER, context->theme.DARK);
 
 		if (cursorPosition.x >= 0) {
