@@ -2567,7 +2567,12 @@ bool NumberField::validate() {
 			} else {
 				valid = false;
 			}
-			numberValue.setValue(std::stoi(value));
+			try {
+				numberValue.setValue(std::stoi(value));
+			}
+			catch (...) {
+
+			}
 			break;
 		case NumberType::Double:
 		case NumberType::Float:
@@ -2598,10 +2603,15 @@ bool NumberField::validate() {
 			} else {
 				valid = false;
 			}
-			if (numberType == NumberType::Float) {
-				numberValue.setValue(std::stof(value));
-			} else {
-				numberValue.setValue(std::stod(value));
+			try{
+				if (numberType == NumberType::Float) {
+					numberValue.setValue(std::stof(value));
+				} else {
+					numberValue.setValue(std::stod(value));
+				}
+			}
+			catch (...) {
+
 			}
 			break;
 		default:
