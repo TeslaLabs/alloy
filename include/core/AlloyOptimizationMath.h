@@ -127,7 +127,9 @@ namespace aly {
 			return data.data();
 		}
 		void setZero() {
-			data.assign(data.size(), T(0));
+			for (T& val : data) {
+				val = T(0);
+			}
 		}
 		const T& operator[](const size_t i) const {
 			if (i >= data.size())
