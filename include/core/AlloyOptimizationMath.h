@@ -40,6 +40,13 @@ namespace aly {
 		void set(const T& val) {
 			data.assign(data.size(), val);
 		}
+		inline void set(const Vec<T>& val) {
+			if (val.size() == data.size()) {
+				std::memcpy(data.data(), val.ptr(), val.size() * sizeof(T));
+			} else {
+				data = val.data;
+			}
+		}
 		template<class Archive>
 		void save(Archive & archive) const {
 			archive(CEREAL_NVP(data));
