@@ -1326,7 +1326,7 @@ namespace aly {
 
 						} else {
 							NodePtr nodePtr = std::dynamic_pointer_cast<Node>(child);
-							router.nodes.push_back(nodePtr);
+							router.nodes.push_back(std::dynamic_pointer_cast<AvoidanceNode>(nodePtr));
 							data->nodes.push_back(nodePtr);
 							tmpList.push_back(child);
 							if (!notExternalized) {
@@ -1777,7 +1777,7 @@ namespace aly {
 			node->parentFlow = this;
 			Composite::add(node);
 			routingLock.lock();
-			router.add(node);
+			router.add(std::dynamic_pointer_cast<AvoidanceNode>(node));
 			routingLock.unlock();
 			forceSim->addForceItem(node->getForceItem());
 			box2px box = box2px(node->getForceItem()->location - Node::DIMENSIONS * 0.5f, Node::DIMENSIONS);
@@ -1865,7 +1865,7 @@ namespace aly {
 				data->nodes.push_back(node);
 			}
 			routingLock.lock();
-			router.add(node);
+			router.add(std::dynamic_pointer_cast<AvoidanceNode>(node));
 			routingLock.unlock();
 			forceSim->addForceItem(node->getForceItem());
 			box2px box = box2px(node->getForceItem()->location - Node::DIMENSIONS * 0.5f, Node::DIMENSIONS);
@@ -1882,7 +1882,10 @@ namespace aly {
 		}
 		void DataFlow::setGroup(const std::shared_ptr<Group>& g) {
 			routingLock.lock();
-			router.nodes = g->nodes;
+			router.nodes.clear();
+			for (auto n : g->nodes) {
+				router.nodes.push_back(std::dynamic_pointer_cast<AvoidanceNode>(n));
+			}
 			router.update();
 			routingLock.unlock();
 			forceSim->clear();
@@ -2934,6 +2937,22 @@ namespace aly {
 		bool Connection::remove() {
 			return source->getGraph()->remove(this);
 		}
+		Direction Connection::getDirection() const {
+			Direction direction;
+			if (source->getType() == PortType::Parent) {
+				direction = Direction::West;
+			}
+			else if (source->getType() == PortType::Child) {
+				direction = Direction::East;
+			}
+			else if (source->getType() == PortType::Output) {
+				direction = Direction::South;
+			}
+			else if (source->getType() == PortType::Input) {
+				direction = Direction::North;
+			}
+			return direction;
+		}
 		void Connection::update() {
 			if (springItem.get() == nullptr)
 				springItem->update();
@@ -3446,7 +3465,7 @@ namespace aly {
 			};
 		}
 		ActionAddRelationship::ActionAddRelationship(DataFlow* graph, const std::shared_ptr<Relationship>& con):
-			ActionDataFlow(MakeString() << "Add Relationship " << graph->getName(), graph) {
+			ActionDataFlow(MakeString() << "Add Relationship" << graph->getName(), graph) {
 			executeFunction = [=]() {
 				graph->add(con);
 				return true;
@@ -3456,6 +3475,9 @@ namespace aly {
 				return true;
 			};
 		}
-
+		ActionMoveGraph::ActionMoveGraph(DataFlow* graph, pixel2 position): ActionDataFlow(MakeString() << "Move Graph" << graph->getName(), graph) {
+		}
+		ActionModifyNode::ActionModifyNode(DataFlow* graph, const std::shared_ptr<Node>& node, const std::string& name) : ActionDataFlow(MakeString() << "Modify Name" << graph->getName(), graph) {
+		}
 	}
 }

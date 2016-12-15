@@ -44,6 +44,9 @@ namespace aly {
 	public:
 		std::string xAxisLabel;
 		std::string yAxisLabel;
+		bool xAxisInteger;
+		bool yAxisInteger;
+
 		void add(const GraphDataPtr& curve);
 		std::shared_ptr<GraphData> add(const GraphData& curve);
 		void clear() {

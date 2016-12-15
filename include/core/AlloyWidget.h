@@ -201,6 +201,12 @@ public:
 		sliderTrack->startColor = startColor;
 		sliderTrack->endColor = endColor;
 	}
+	void setMinValue(const Number& v) {
+		minValue=v;
+	}
+	void setMaxValue(const Number& v) {
+		maxValue = v;
+	}
 	Slider(const std::string& name, const Number& min, const Number& max,
 			const Number& val) :
 			Composite(name), minValue(min), maxValue(max), value(val), sliderPosition(

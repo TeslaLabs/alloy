@@ -34,9 +34,19 @@
 #include <queue>
 namespace aly {
 	namespace dataflow {
-		class Connection;
-		class Node;
 		enum class Direction { Unkown, North, South, East, West };
+		struct AvoidanceConnection {
+			std::vector<float2> path;
+			virtual Direction getDirection() const = 0;
+			virtual float2 getSourceLocation() const = 0;
+			virtual float2 getDestinationLocation() const = 0;
+		};
+		struct AvoidanceNode {
+			virtual box2px getObstacleBounds() const = 0;
+		};
+		typedef std::shared_ptr<AvoidanceNode> AvoidanceNodePtr;
+		typedef std::shared_ptr<AvoidanceConnection> AvoidanceConnectionPtr;
+
 		template<class C, class R> std::basic_ostream<C, R> & operator <<(
 			std::basic_ostream<C, R> & ss, const Direction& type) {
 			switch (type) {
@@ -102,7 +112,7 @@ namespace aly {
 			box2px getPathBounds(float2 from, float2 to) const;
 			void simplifyPath(std::vector<float2>& path,int parity);
 		public:
-			std::vector<std::shared_ptr<Node>> nodes;
+			std::vector<std::shared_ptr<AvoidanceNode>> nodes;
 			void update();
 			const std::vector<box2px>& getObstacles() const {
 				return obstacles;
@@ -110,13 +120,13 @@ namespace aly {
 			void setBorderSpacing(float b){
 				borderSpace=b;
 			}
-			void evaluate( const std::shared_ptr<Connection>& edge);
+			void evaluate( const std::shared_ptr<AvoidanceConnection>& edge);
 			void evaluate(std::vector<float2>& path, float2 from, float2 to, Direction direction);
-			void add(const std::shared_ptr<Node>& node) {
+			void add(const std::shared_ptr<AvoidanceNode>& node) {
 				nodes.push_back(node);
 			}
-			void erase(const std::shared_ptr<Node>& node);
-			void erase(const std::list<std::shared_ptr<Node>>& node);
+			void erase(const std::shared_ptr<AvoidanceNode>& node);
+			void erase(const std::list<std::shared_ptr<AvoidanceNode>>& node);
 			void clear() {
 				nodes.clear();
 			}

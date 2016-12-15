@@ -19,7 +19,6 @@
 * THE SOFTWARE.
 */
 #include "AvoidanceRouting.h"
-#include "AlloyDataFlow.h"
 namespace aly {
 	namespace dataflow {
 		//Define operator backwards because priority queue creates a MAX heap.
@@ -250,11 +249,11 @@ namespace aly {
 		}
 		void AvoidanceRouting::update() {
 			obstacles.clear();
-			for (NodePtr node : nodes) {
+			for (AvoidanceNodePtr node : nodes) {
 				obstacles.push_back(node->getObstacleBounds());
 			}
 		}
-		void AvoidanceRouting::erase(const std::shared_ptr<Node>& node) {
+		void AvoidanceRouting::erase(const AvoidanceNodePtr& node) {
 			for (auto iter = nodes.begin(); iter != nodes.end(); iter++) {
 				if (node.get() == iter->get()) {
 					nodes.erase(iter);
@@ -263,11 +262,11 @@ namespace aly {
 			}
 			update();
 		}
-		void AvoidanceRouting::erase(const std::list<std::shared_ptr<Node>>& deleteList) {
-			std::vector<std::shared_ptr<Node>> tmpList;
-			for (std::shared_ptr<Node> item:nodes) {
+		void AvoidanceRouting::erase(const std::list<AvoidanceNodePtr>& deleteList) {
+			std::vector<AvoidanceNodePtr> tmpList;
+			for (AvoidanceNodePtr item:nodes) {
 				bool del = false;
-				for (std::shared_ptr<Node> ditem : deleteList) {
+				for (AvoidanceNodePtr ditem : deleteList) {
 					if (item.get() == ditem.get()) {
 						del = true;
 						break;
@@ -373,25 +372,12 @@ namespace aly {
 			float2 maxPt = aly::max(from, to);
 			return box2px(minPt, maxPt - minPt);
 		}
-		void AvoidanceRouting::evaluate(const std::shared_ptr<Connection>& edge) {
+		void AvoidanceRouting::evaluate(const std::shared_ptr<AvoidanceConnection>& edge) {
 			std::vector<float2>& path = edge->path;
-			float2 to = edge->destination->getLocation();
-			float2 from = edge->source->getLocation();
+			float2 to = edge->getDestinationLocation();
+			float2 from = edge->getSourceLocation();
 			Direction direction = Direction::Unkown;
-			PortPtr target = edge->destination;
-			PortPtr src = edge->source;
-			if (src->getType() == PortType::Parent) {
-				direction = Direction::West;
-			}
-			else if (src->getType() == PortType::Child) {
-				direction = Direction::East;
-			}
-			else if (src->getType() == PortType::Output) {
-				direction = Direction::South;
-			}
-			else if (src->getType() == PortType::Input) {
-				direction = Direction::North;
-			}
+			direction = edge->getDirection();
 			evaluate(path, from, to, direction);
 		}
 		void AvoidanceRouting::simplifyPath(std::vector<float2>& path, int parity) {

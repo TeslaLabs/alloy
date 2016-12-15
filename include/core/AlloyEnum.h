@@ -37,6 +37,17 @@ enum class Origin {
 	MiddleCenter,
 	MiddleRight
 };
+enum class MouseButton {
+	Left = 0, //GLFW_MOUSE_BUTTON_LEFT,
+	Right = 1,// GLFW_MOUSE_BUTTON_RIGHT,
+	Middle = 2// GLFW_MOUSE_BUTTON_MIDDLE
+};
+enum class MouseModifier {
+	Shift = 0x0001,
+	Control = 0x0002,
+	Alt = 0x0004,
+	Super=0x0008
+};
 enum class MessageOption {
 	YesNo, OkayCancel, Okay
 };
@@ -101,6 +112,32 @@ enum WindowPosition {
 enum class FontStyle {
 	Normal = 0, Shadow = 1, Glow = 2, Outline = 3
 };
+template<class C, class R> std::basic_ostream<C, R> & operator <<(
+	std::basic_ostream<C, R> & ss, const MouseButton& type) {
+	switch (type) {
+	case MouseButton::Left:
+		return ss << "Left Click";
+	case MouseButton::Right:
+		return ss << "Right Click";
+	case MouseButton::Middle:
+		return ss << "Middle Click";
+	}
+	return ss;
+}
+template<class C, class R> std::basic_ostream<C, R> & operator <<(
+	std::basic_ostream<C, R> & ss, const MouseModifier& type) {
+	switch (type) {
+		case MouseModifier::Alt:
+			return ss << "Alt";
+		case MouseModifier::Control:
+			return ss << "Control";
+		case MouseModifier::Shift:
+			return ss << "Shift";
+		case MouseModifier::Super:
+			return ss << "Super";
+	}
+	return ss;
+}
 template<class C, class R> std::basic_ostream<C, R> & operator <<(
 		std::basic_ostream<C, R> & ss, const GlyphType& type) {
 	switch (type) {

@@ -32,35 +32,40 @@
 #include <list>
 #include <map>
 namespace aly {
-	template<class T> struct Vec: public std::vector<T> {
+	template<class T> struct Vec {
 	public:
-		Vec(size_t sz = 0, T value = T(0)) :
-				std::vector<T>(sz, value) {
+		std::vector<T> data;
+		Vec(size_t sz = 0, T value = T(0)) :data(sz, value) {
 		}
 		void set(const T& val) {
-			std::vector<T>::assign(std::vector<T>::size(), val);
+			data.assign(data.size(), val);
+		}
+		inline void set(const Vec<T>& val) {
+			if (val.size() == data.size()) {
+				std::memcpy(data.data(), val.ptr(), val.size() * sizeof(T));
+			} else {
+				data = val.data;
+			}
 		}
 		template<class Archive>
 		void save(Archive & archive) const {
-			const std::vector<T>* tmp = dynamic_cast<const std::vector<T>>(this);
-			archive(cereal::make_nvp(MakeString() << "vector", *tmp));
+			archive(CEREAL_NVP(data));
 		}
 
 		template<class Archive>
 		void load(Archive & archive) {
-			std::vector<T>* tmp = dynamic_cast<std::vector<T>>(this);
-			archive(cereal::make_nvp(MakeString() << "vector", *tmp));
+			archive(CEREAL_NVP(data));
 		}
 		T min() const {
 			T minVal(std::numeric_limits<T>::max());
-			for (const T& val : *this) {
+			for (const T& val : data) {
 				minVal = std::min(val, minVal);
 			}
 			return minVal;
 		}
 		T max() const {
 			T maxVal(std::numeric_limits<T>::min());
-			for (const T& val : *this) {
+			for (const T& val : data) {
 				maxVal = std::max(val, maxVal);
 			}
 			return maxVal;
@@ -68,7 +73,7 @@ namespace aly {
 		vec<T, 2> range() const {
 			T maxVal(std::numeric_limits<T>::min());
 			T minVal(std::numeric_limits<T>::max());
-			for (const T& val : *this) {
+			for (const T& val : data) {
 				maxVal = std::max(val, maxVal);
 				minVal = std::min(val, minVal);
 			}
@@ -76,36 +81,83 @@ namespace aly {
 		}
 		T mean() const {
 			double mean(0.0);
-			for (const T& val : *this) {
+			for (const T& val : data) {
 				mean += double(val);
 			}
-			mean = mean / (double) std::vector<T>::size();
+			mean = mean / (double) data.size();
 			return T(mean);
 		}
 		T median() const {
-			std::vector<T> bands = *this;
+			std::vector<T> bands = data;
 			std::sort(bands.begin(), bands.end());
 			T med;
-			if (std::vector<T>::size() % 2 == 0) {
-				med = T(((double) bands[std::vector<T>::size() / 2] + (double) bands[std::vector<T>::size() / 2 - 1]) * 0.5f);
+			if (data.size() % 2 == 0) {
+				med = T(((double) bands[data.size() / 2] + (double) bands[data.size() / 2 - 1]) * 0.5f);
 
 			} else {
-				med = bands[std::vector<T>::size() / 2];
+				med = bands[data.size() / 2];
 			}
 			return med;
 		}
 		T stdDev() const {
-			if (std::vector<T>::size() < 2) {
+			if (data.size() < 2) {
 				return T(0);
 			}
 			T avg = mean();
 			double var(0.0);
-			for (const T& val : *this) {
+			for (const T& val : data) {
 				double e = (val - avg);
 				var += e * e;
 			}
-			var = var / (double) (std::vector<T>::size() - 1);
+			var = var / (double) (data.size() - 1);
 			return std::sqrt(var);
+		}
+
+		void resize(size_t sz) {
+			data.resize(sz);
+			data.shrink_to_fit();
+		}
+		void resize(size_t sz, const T& val) {
+			data.resize(sz, val);
+			data.shrink_to_fit();
+		}
+		void append(const T& val) {
+			data.push_back(val);
+		}
+		void push_back(const T& val) {
+			data.push_back(val);
+		}
+		T* ptr() {
+			return data.data();
+		}
+		const T* ptr() const {
+			return data.data();
+		}
+		void setZero() {
+			for (T& val : data) {
+				val = T(0);
+			}
+		}
+		const T& operator[](const size_t i) const {
+			if (i >= data.size())
+				throw std::runtime_error(
+					MakeString() << "Vector index out of bounds " << i << "/"
+					<< data.size());
+			return data[i];
+		}
+		T& operator[](const size_t i) {
+			if (i >= data.size())
+				throw std::runtime_error(
+					MakeString() << "Vector index out of bounds " << i << "/"
+					<< data.size());
+			return data[i];
+		}
+		inline void clear() {
+			data.clear();
+			data.shrink_to_fit();
+		}
+		size_t size() const {
+			return data.size();
 		}
 	};
 
@@ -1146,6 +1198,7 @@ namespace aly {
 	typedef DenseMat<float> DenseMatrixFloat;
 	typedef SparseMat<float> SparseMatrixFloat;
 	typedef Vec<float> VecFloat;
+
 }
 
 #endif /* INCLUDE_CORE_ALLOYOPTIMIZATIONMATH_H_ */
