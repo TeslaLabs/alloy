@@ -28,6 +28,12 @@
     <Filter Include="include\cereal">
       <UniqueIdentifier>{45ae0b41-1376-4320-9da5-fce2f2a9ce90}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\core\nl">
+      <UniqueIdentifier>{d3b4401e-de53-4863-bca5-807f66ed00c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\core\nl">
+      <UniqueIdentifier>{91f974e3-4b0c-4ab9-80cc-d6569eba4795}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\core\nanovg.cpp">
@@ -341,6 +347,33 @@
     </ClCompile>
     <ClCompile Include="..\..\src\example\ImageFeaturesEx.cpp">
       <Filter>src\example</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\nl\nl_api.c">
+      <Filter>src\core\nl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\nl\nl_blas.c">
+      <Filter>src\core\nl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\nl\nl_context.c">
+      <Filter>src\core\nl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\nl\nl_iterative_solvers.c">
+      <Filter>src\core\nl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\nl\nl_matrix.c">
+      <Filter>src\core\nl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\nl\nl_os.c">
+      <Filter>src\core\nl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\nl\nl_preconditioners.c">
+      <Filter>src\core\nl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\OpenNL.cpp">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\AlloyMeshTextureMap.cpp">
+      <Filter>src\core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -739,6 +772,36 @@
     </ClInclude>
     <ClInclude Include="..\..\include\cereal\macros.hpp">
       <Filter>include\cereal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\nl\nl.h">
+      <Filter>include\core\nl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\nl\nl_blas.h">
+      <Filter>include\core\nl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\nl\nl_context.h">
+      <Filter>include\core\nl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\nl\nl_iterative_solvers.h">
+      <Filter>include\core\nl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\nl\nl_linkage.h">
+      <Filter>include\core\nl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\nl\nl_matrix.h">
+      <Filter>include\core\nl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\nl\nl_preconditioners.h">
+      <Filter>include\core\nl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\nl\nl_private.h">
+      <Filter>include\core\nl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\OpenNL.h">
+      <Filter>include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\AlloyMeshTextureMap.h">
+      <Filter>include\core</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

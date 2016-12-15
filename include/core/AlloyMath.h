@@ -1987,5 +1987,11 @@ double RandomUniform(double min, double max);
 double RandomGaussian(double mean, double stddev);
 float RandomGaussian(float mean, float stddev);
 
+template<class T> void Shuffle(std::vector<T>& order){
+	static std::random_device rd;
+	static std::mt19937 g(rd());
+	shuffle(order.begin(), order.end(), g);
+}
+
 }
 #endif

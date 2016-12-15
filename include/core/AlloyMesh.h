@@ -67,7 +67,6 @@ public:
 	virtual void update() override;
 	GLMesh(Mesh& mesh,bool onScreen,const std::shared_ptr<AlloyContext>& context =
 			AlloyDefaultContext());
-	GLMesh(Mesh& mesh,bool onScreen);
 	virtual ~GLMesh();
 };
 class Mesh {
