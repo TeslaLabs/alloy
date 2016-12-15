@@ -21,6 +21,8 @@
 #include "AlloyMeshTextureMap.h"
 #include "AlloyUnits.h"
 #include "OpenNL.h"
+#include "AlloySparseMatrix.h"
+#include "AlloySparseSolve.h"
 #include <algorithm>
 #include <random>
 namespace aly {
@@ -831,6 +833,56 @@ namespace aly {
 
 	}
 	void MeshTexureMap::smooth(aly::Mesh& mesh,  int iters, float errorTolerance){
-		//Use example implementation
+		MeshListNeighborTable nbrTable;
+		CreateOrderedVertexNeighborTable(mesh, nbrTable, true);
+		int index = 0;
+		std::vector<float> angles;
+		std::vector<float> weights;
+		float smoothness = 10.0f;
+		int N = (int)mesh.vertexLocations.size();
+		SparseMatrix1f A(N, N);
+		Vector3f b(N);
+		for (std::list<uint32_t>& nbrs : nbrTable) {
+			int K = (int)nbrs.size() - 1;
+			float3 pt = mesh.vertexLocations[index];
+			angles.resize(K);
+			weights.resize(K);
+			{
+				auto nbrIter = nbrs.begin();
+				for (int k = 0; k < K; k++) {
+					float3 current = mesh.vertexLocations[*nbrIter];
+					nbrIter++;
+					float3 next = mesh.vertexLocations[*nbrIter];
+					angles[k] = std::tan(Angle(next, pt, current) * 0.5f);
+				}
+			}
+			float wsum = 0.0f;
+			{
+				auto nbrIter = nbrs.begin();
+				nbrIter++;
+				for (int k = 0; k < K; k++) {
+					float3 ptNext = mesh.vertexLocations[*nbrIter];
+					float w = (angles[k] + angles[(k + 1) % K])
+						/ distance(pt, ptNext);
+					wsum += w;
+					weights[k] = w;
+					nbrIter++;
+				}
+			}
+			{
+				auto nbrIter = nbrs.begin();
+				nbrIter++;
+				for (int k = 0; k < K; k++) {
+					float w = -smoothness * weights[k] / wsum;
+					A.set(index, *nbrIter, w);
+					nbrIter++;
+				}
+			}
+			A.set(index, index, smoothness + 1);
+			b[index] = pt;
+			index++;
+		}
+		SolveBICGStab(b, A, mesh.vertexLocations, iters,errorTolerance);
+		mesh.updateVertexNormals();
 	}
 }

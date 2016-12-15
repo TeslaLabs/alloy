@@ -375,6 +375,9 @@
     <ClCompile Include="..\..\src\core\AlloyMeshTextureMap.cpp">
       <Filter>src\core</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\example\MeshTextureMapEx.cpp">
+      <Filter>src\example</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\core\nanovg.h">
@@ -802,6 +805,9 @@
     </ClInclude>
     <ClInclude Include="..\..\include\core\AlloyMeshTextureMap.h">
       <Filter>include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\example\MeshTextureMapEx.h">
+      <Filter>include\example</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

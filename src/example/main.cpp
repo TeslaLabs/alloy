@@ -61,6 +61,7 @@
 #include "../../include/example/TimelineEx.h"
 #include "../../include/example/MeshOptimizationEx.h"
 #include "../../include/example/ImageFeaturesEx.h"
+#include "../../include/example/MeshTextureMapEx.h"
 #include <cstring>
 
 /*
@@ -137,7 +138,7 @@ bool SANITY_CHECK() {
 	return ret;
 }
 int main(int argc, char *argv[]) {
-	const int N = 42;
+	const int N = 43;
 	std::array<ExamplePtr,N> apps = { MAKE_EXAMPLE(UnitsEx), MAKE_EXAMPLE(CompositeEx),
 			MAKE_EXAMPLE(EventsEx), MAKE_EXAMPLE(DragEx), MAKE_EXAMPLE(TweenEx),
 			MAKE_EXAMPLE(ImageEx), MAKE_EXAMPLE(ControlsEx), MAKE_EXAMPLE(
@@ -156,7 +157,9 @@ int main(int argc, char *argv[]) {
 					DistanceFieldEx), MAKE_EXAMPLE(ExpandTreeEx),
 					MAKE_EXAMPLE(DataFlowEx),MAKE_EXAMPLE(ForceDirectedGraphEx),
 		MAKE_EXAMPLE(OneEuroFilterEx),MAKE_EXAMPLE(TabPaneEx),
-		MAKE_EXAMPLE(ParameterPaneEx),MAKE_EXAMPLE(TablePaneEx),MAKE_EXAMPLE(TimelineEx),MAKE_EXAMPLE(MeshOptimizationEx),MAKE_EXAMPLE(ImageFeaturesEx)};
+		MAKE_EXAMPLE(ParameterPaneEx),MAKE_EXAMPLE(TablePaneEx),MAKE_EXAMPLE(TimelineEx),
+		MAKE_EXAMPLE(MeshOptimizationEx),MAKE_EXAMPLE(ImageFeaturesEx),
+		MAKE_EXAMPLE(MeshTextureMapEx)};
 	std::sort(apps.begin(),apps.end(),[=](const ExamplePtr& a,const ExamplePtr& b){
 		return std::lexicographical_compare(a->name.begin(), a->name.end(), b->name.begin(), b->name.end());
 	});aly::WorkerTaskPtr workerTask;

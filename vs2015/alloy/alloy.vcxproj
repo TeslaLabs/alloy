@@ -119,6 +119,7 @@
     <ClCompile Include="..\..\src\example\MeshSmoothEx.cpp" />
     <ClCompile Include="..\..\src\example\MeshSubdivideEx.cpp" />
     <ClCompile Include="..\..\src\example\MeshTextureEx.cpp" />
+    <ClCompile Include="..\..\src\example\MeshTextureMapEx.cpp" />
     <ClCompile Include="..\..\src\example\MeshVertexColorEx.cpp" />
     <ClCompile Include="..\..\src\example\MeshWireframeEx.cpp" />
     <ClCompile Include="..\..\src\example\OneEuroFilterEx.cpp" />
@@ -263,6 +264,7 @@
     <ClInclude Include="..\..\include\example\MeshSmoothEx.h" />
     <ClInclude Include="..\..\include\example\MeshSubdivideEx.h" />
     <ClInclude Include="..\..\include\example\MeshTextureEx.h" />
+    <ClInclude Include="..\..\include\example\MeshTextureMapEx.h" />
     <ClInclude Include="..\..\include\example\MeshVertexColorEx.h" />
     <ClInclude Include="..\..\include\example\MeshWireframeEx.h" />
     <ClInclude Include="..\..\include\example\OneEuroFilterEx.h" />
