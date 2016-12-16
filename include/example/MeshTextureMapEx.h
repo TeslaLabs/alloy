@@ -33,6 +33,8 @@ protected:
 	aly::GLTextureRGBAf texImage;
 	aly::Mesh mesh;
 	aly::Camera camera;
+	aly::ImageRGBA img;
+	aly::AdjustableCompositePtr resizeableRegion;
 public:
 	MeshTextureMapEx();
 	bool init(aly::Composite& rootNode);
