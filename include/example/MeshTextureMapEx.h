@@ -28,10 +28,17 @@ class MeshTextureMapEx: public aly::Application {
 protected:
 	aly::RegionPtr renderRegion;
 	aly::GLFrameBuffer depthFrameBuffer;
+	aly::GLFrameBuffer colorFrameBuffer;
+	aly::GLFrameBuffer wireFrameBuffer;
+	aly::WireframeShader wireframeShader;
+	aly::ColorVertexShader colorVertexShader;
 	aly::DepthAndTextureShader depthAndTextureShader;
 	aly::TextureMeshShader textureMeshShader;
+	aly::ImageShader imageShader;
+	aly::FaceIdShader faceIdShader;
 	aly::GLTextureRGBAf texImage;
 	aly::Mesh mesh;
+	std::vector<aly::Color> colors;
 	aly::Camera camera;
 	aly::ImageRGBA img;
 	aly::AdjustableCompositePtr resizeableRegion;

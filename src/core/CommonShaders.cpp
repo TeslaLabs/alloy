@@ -1992,7 +1992,6 @@ void ColorVertexShader::draw(
 	glEnable(GL_BLEND);
 	frameBuffer.end();
 }
-
 DepthAndTextureShader::DepthAndTextureShader(bool onScreen,
 		const std::shared_ptr<AlloyContext>& context) :
 		GLShader(onScreen, context) {

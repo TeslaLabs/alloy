@@ -21,7 +21,10 @@
 
 #include "Alloy.h"
 #include "example/MeshTextureMapEx.h"
+#include "AlloyLocator.h"
+#include "AlloyMeshTextureMap.h"
 using namespace aly;
+
 MeshTextureMapEx::MeshTextureMapEx() :
 		Application(1400, 600, "Automatic Texture Mapping Example") {
 }
@@ -30,10 +33,35 @@ bool MeshTextureMapEx::init(Composite& rootNode) {
 	mesh.load(getFullPath("models/tanya.ply"));
 	mesh.updateVertexNormals();
 	texImage.load(mesh.textureImage);
+	std::vector<int> indexes;
+	std::vector<int> cc;
+	std::vector<int> labels;
+	LabelTextureRegions(mesh, indexes, cc, labels);
+	std::vector<Color> colorMap(cc.size());
+	std::vector<RGBAf> colorMap2(cc.size());
+	for (int i = 0; i < cc.size(); i++) {
+		colorMap[i] = HSVAtoColor(HSVA(RandomUniform(0.0f, 1.0f), RandomUniform(0.2f, 1.0f), RandomUniform(0.3f,0.7f),0.5f));
+		colorMap2[i] = colorMap[i].toDarker(0.7f).toRGBAf();
+	}
+	colors.resize(indexes.size());
+	mesh.vertexColors.resize(colors.size());
+	for (int i = 0; i < colors.size(); i++) {
+		int l = labels[indexes[i]];
+		if (l >= 0 && l < colorMap.size()) {
+			colors[i] = colorMap[l];
+			mesh.vertexColors[i] = colorMap2[l];
+		}
+	}
 	//Make region on screen to render 3d view
 	renderRegion=MakeRegion("Render View",CoordPX(0.0f,0.0f),CoordPercent(1.0f,1.0f),COLOR_NONE,COLOR_WHITE,UnitPX(1.0f));
 	//Initialize depth buffer to store the render
 	depthFrameBuffer.initialize(600,600);
+	faceIdShader.initialize(600, 600);
+	colorFrameBuffer.initialize(600, 600);
+	wireFrameBuffer.initialize(600, 600);
+	wireframeShader.setFaceColor(Color(0.0f, 0.0f, 0.0f, 0.0f));
+	wireframeShader.setEdgeColor(Color(0.8f,0.8f, 0.8f, 1.0f));
+	wireframeShader.setLineWidth(1.25f);
 	//Set up camera
 	camera.setNearFarPlanes(-2.0f, 2.0f);
 	camera.setZoom(0.75f);
@@ -136,12 +164,15 @@ bool MeshTextureMapEx::init(Composite& rootNode) {
 			uv3 = uv3*bounds.dimensions + bounds.position;
 
 			float area = std::abs(crossMag(uv2 - uv1, uv3 - uv1));
+			
 			if (area > 5.0f) {
+				nvgFillColor(nvg, colors[i]);
 				nvgBeginPath(nvg);
 				nvgMoveTo(nvg, uv1.x, uv1.y);
 				nvgLineTo(nvg, uv2.x, uv2.y);
 				nvgLineTo(nvg, uv3.x, uv3.y);
 				nvgClosePath(nvg);
+				nvgFill(nvg);
 				nvgStroke(nvg);
 			}
 		}
@@ -208,8 +239,16 @@ void MeshTextureMapEx::draw(AlloyContext* context){
 	if (camera.isDirty()) {
 		//Compute depth and texture uvs only when camera view changes.
 		depthAndTextureShader.draw(mesh, camera, depthFrameBuffer);
+		faceIdShader.draw(mesh, camera);
+		colorVertexShader.draw(mesh, camera, colorFrameBuffer);
+		wireframeShader.draw(mesh, camera, wireFrameBuffer);
 	}
+	glEnable(GL_BLEND);
+	glDisable(GL_DEPTH_TEST);
 	textureMeshShader.draw(depthFrameBuffer.getTexture(),texImage,camera,context->pixelRatio*renderRegion->getBounds(),context->getViewport());
+	imageShader.draw(wireFrameBuffer.getTexture(), context->pixelRatio*renderRegion->getBounds(), 1.0f, false);
+	imageShader.draw(colorFrameBuffer.getTexture(), context->pixelRatio*renderRegion->getBounds(), 0.5f, false);
+	
 	camera.setDirty(false);
 }
 

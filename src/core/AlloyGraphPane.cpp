@@ -50,6 +50,7 @@ namespace aly {
 		box2px rbounds = getBounds();
 		NVGcontext* nvg = context->nvgContext;
 		box2px gbounds = rbounds;
+		nvgLineCap(nvg, NVG_SQUARE);
 		const float LARGE_TEXT = 18.0f;
 		const float MEDIUM_TEXT = 16.0f;
 		const float SMALL_TEXT = 12.0f;
@@ -116,7 +117,10 @@ namespace aly {
 			nvgStroke(nvg);
 
 		}
+		nvgLineCap(nvg, NVG_ROUND);
+		nvgLineJoin(nvg, NVG_ROUND);
 		for (GraphDataPtr& curve : curves) {
+
 			const std::vector<float2>& points = curve->points;
 			if (points.size() > 1 && graphBounds.dimensions.x > 0.0f
 				&& graphBounds.dimensions.y > 0.0f) {
@@ -140,7 +144,7 @@ namespace aly {
 				nvgStroke(nvg);
 			}
 		}
-
+		nvgLineCap(nvg, NVG_SQUARE);
 		nvgFontFaceId(nvg, context->getFontHandle(FontType::Bold));
 		nvgFontSize(nvg, LARGE_TEXT);
 		nvgTextAlign(nvg, NVG_ALIGN_CENTER | NVG_ALIGN_TOP);

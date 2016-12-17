@@ -459,11 +459,21 @@ void GLMesh::update() {
 					glDeleteBuffers(1, &triColorBuffer[n]);
 				glGenBuffers(1, &triColorBuffer[n]);
 			}
-			for (uint3 face : mesh.triIndexes.data) {
-				for (int n = 0; n < 3; n++) {
-					tris[n][offset] = mesh.vertexColors[face[n]];
+			if (mesh.vertexColors.size() == mesh.vertexLocations.size()) {
+				for (uint3 face : mesh.triIndexes.data) {
+					for (int n = 0; n < 3; n++) {
+						tris[n][offset] = mesh.vertexColors[face[n]];
+					}
+					offset++;
 				}
-				offset++;
+			}
+			else {
+				for (uint3 face : mesh.triIndexes.data) {
+					for (int n = 0; n < 3; n++) {
+						tris[n][offset] = mesh.vertexColors[offset*3+n];
+					}
+					offset++;
+				}
 			}
 			for (int n = 0; n < 3; n++) {
 				if (glIsBuffer(triColorBuffer[n]) == GL_TRUE)

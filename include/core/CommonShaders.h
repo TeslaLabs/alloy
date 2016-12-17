@@ -340,7 +340,6 @@ public:
 			.draw(depthTexture).end();
 		targetDepthBuffer.end();
 	}
-
 };
 class ImageShader: public GLShader {
 public:

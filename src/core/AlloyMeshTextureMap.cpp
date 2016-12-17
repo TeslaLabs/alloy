@@ -26,6 +26,151 @@
 #include <algorithm>
 #include <random>
 namespace aly {
+	int GetConnectedTextureComponents(const std::vector<int>& indexes, int N, std::vector<int>& cclist, std::vector<int>& labels) {
+		std::vector<std::list<int>> vertNbrs(N);
+		int indexCount = (int)indexes.size();
+		for (int i = 0; i < indexCount; i += 3) {
+			int v1 = indexes[i];
+			int v2 = indexes[i + 1];
+			int v3 = indexes[i + 2];
+			vertNbrs[v1].push_back(v2);
+			vertNbrs[v1].push_back(v3);
+			vertNbrs[v2].push_back(v3);
+			vertNbrs[v2].push_back(v1);
+			vertNbrs[v3].push_back(v1);
+			vertNbrs[v3].push_back(v2);
+		}
+		labels.resize(N, -1);
+		int pivot = 0;
+		int cc = 0;
+		std::list<int> queue;
+		bool found = false;
+		cclist.clear();
+		int masked = 0;
+		int ccCount = 0;
+		std::vector<int> nbrs;
+		cclist.clear();
+		do {
+			ccCount = 0;
+			queue.clear();
+			labels[pivot] = cc;
+			ccCount++;
+			queue.push_back(pivot);
+			masked++;
+			int iter = 0;
+			while (queue.size() > 0) {
+				int v = queue.front();
+				queue.pop_front();
+				nbrs.clear();
+				iter++;
+				for (int nbr : vertNbrs[v]) {
+					if (labels[nbr] < 0) {
+						labels[nbr] = cc;
+						ccCount++;
+						masked++;
+						queue.push_back(nbr);
+					}
+				}
+			}
+			cclist.push_back(ccCount);
+			int lastPivot = pivot;
+			pivot = -1;
+			for (int i = lastPivot + 1; i < N; i++) {
+				if (labels[i] < 0) {
+					pivot = i;
+					break;
+				}
+			}
+			cc++;
+		} while (pivot >= 0);
+		return (int)cclist.size();
+	}
+	int GetConnectedVertexComponents(const aly::Mesh& mesh, std::vector<int>& cclist, std::vector<int>& labels) {
+		int vertexCount = (int)mesh.vertexLocations.size();
+		int faceCount = (int)mesh.triIndexes.size();
+		std::vector<std::list<int>> vertNbrs(vertexCount);
+		int indexCount = faceCount * 3;
+		for (int i = 0; i < faceCount; i++) {
+			uint3 face = mesh.triIndexes[i];
+			int v1 = face.x;
+			int v2 = face.y;
+			int v3 = face.z;
+			vertNbrs[v1].push_back(v2);
+			vertNbrs[v1].push_back(v3);
+			vertNbrs[v2].push_back(v3);
+			vertNbrs[v2].push_back(v1);
+			vertNbrs[v3].push_back(v1);
+			vertNbrs[v3].push_back(v2);
+		}
+		labels.resize(vertexCount, -1);
+		int pivot = 0;
+		int cc = 0;
+		std::list<int> queue;
+		bool found = false;
+		cclist.clear();
+		int masked = 0;
+		int ccCount = 0;
+		std::vector<int> nbrs;
+		cclist.clear();
+		do {
+			ccCount = 0;
+			queue.clear();
+			labels[pivot] = cc;
+			ccCount++;
+			queue.push_back(pivot);
+			masked++;
+			int iter = 0;
+			while (queue.size() > 0) {
+				int v = queue.front();
+				queue.pop_front();
+				nbrs.clear();
+				iter++;
+				for (int nbr : vertNbrs[v]) {
+					if (labels[nbr] < 0) {
+						labels[nbr] = cc;
+						ccCount++;
+						masked++;
+						queue.push_back(nbr);
+					}
+				}
+			}
+			cclist.push_back(ccCount);
+			int lastPivot = pivot;
+			pivot = -1;
+			for (int i = lastPivot + 1; i < vertexCount; i++) {
+				if (labels[i] < 0) {
+					pivot = i;
+					break;
+				}
+			}
+			cc++;
+		} while (pivot >= 0);
+		return (int)cclist.size();
+	}
+	int LabelTextureRegions(const aly::Mesh& mesh, std::vector<int>& indexes, std::vector<int>& cclist, std::vector<int>& labels, float distanceTolerance) {
+		const Vector2f& uvs = mesh.textureMap;
+		Locator2f locator(uvs);
+		std::vector<float2i> result;
+		indexes.resize(uvs.size(), -1);
+		labels.resize(uvs.size(), -1);
+		int index = 0;
+		for (int i = 0; i < (int)uvs.size(); i++) {
+			if (indexes[i] < 0) {
+				float2 uv = uvs[i];
+				locator.closest(uv, distanceTolerance, result);
+				indexes[i] = index;
+				for (float2i r : result) {
+					if (indexes[r.index]<0) {
+						indexes[r.index] = index;
+					}
+				}
+				index++;
+			}
+		}
+		std::cout << "UVS " << uvs.size() << " Indexes " << index << std::endl;
+		GetConnectedTextureComponents(indexes, index, cclist, labels);
+		return index;
+	}
 	int MeshTexureMap::makeLabelsUnique(std::vector<int>& vertexLabels, std::vector<int>& relabel, int minLabelSize) {
 		int vertexCount = static_cast<int>(vertexLabels.size());
 		int cc = 0;
@@ -238,7 +383,6 @@ namespace aly {
 			}
 		}
 #endif
-		//mosaic.save("C:\\Users\\bclucas\\Desktop\\capture\\test\\mosaics_mapped2.obj");
 
 	}
 	float2 MeshTexureMap::packNaive(const std::vector<float2i> &rects, std::multimap<float2i, float2, TextureBoxCompare>& boxes, float area){
