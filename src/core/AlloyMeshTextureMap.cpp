@@ -167,7 +167,6 @@ namespace aly {
 				index++;
 			}
 		}
-		std::cout << "UVS " << uvs.size() << " Indexes " << index << std::endl;
 		GetConnectedTextureComponents(indexes, index, cclist, labels);
 		return index;
 	}

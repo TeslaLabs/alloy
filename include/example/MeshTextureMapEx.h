@@ -42,6 +42,10 @@ protected:
 	aly::Camera camera;
 	aly::ImageRGBA img;
 	aly::AdjustableCompositePtr resizeableRegion;
+	aly::CheckBoxPtr textureCheck;
+	aly::CheckBoxPtr uvCheck;
+	aly::CheckBoxPtr wireCheck;
+	void labelRegions();
 public:
 	MeshTextureMapEx();
 	bool init(aly::Composite& rootNode);
