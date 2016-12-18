@@ -49,12 +49,18 @@ void MeshTextureMapEx::labelRegions() {
 		}
 	}
 }
+void MeshTextureMapEx::textureMapMesh() {
+	MeshTexureMap tm;
+	tm.evaluate(mesh, 3);
+}
 bool MeshTextureMapEx::init(Composite& rootNode) {
 	box3f renderBBox = box3f(float3(-0.5f, -0.5f, -0.5f), float3(1.0f, 1.0f, 1.0f));
 	mesh.load(getFullPath("models/tanya.ply"));
 	mesh.updateVertexNormals();
-	texImage.load(mesh.textureImage);
+
+	textureMapMesh();
 	labelRegions();
+	texImage.load(mesh.textureImage);
 	//Make region on screen to render 3d view
 	renderRegion = MakeRegion("Render View", CoordPX(0.0f, 0.0f), CoordPercent(1.0f, 1.0f), COLOR_NONE, COLOR_WHITE, UnitPX(1.0f));
 	renderRegion->borderWidth = UnitPX(1.0f);
@@ -288,15 +294,16 @@ void MeshTextureMapEx::draw(AlloyContext* context) {
 		textureMeshShader.draw(depthFrameBuffer.getTexture(), texImage, camera, context->pixelRatio*renderRegion->getBounds(), context->getViewport());
 	}
 	else {
-
 		wireframeShader.setFaceColor(Color(0.3f, 0.3f, 0.3f, 1.0f));
+	}
+	if (uvCheck->getValue()) {
+		wireframeShader.setFaceColor(Color(0.0f, 0.0f, 0.0f, 0.0f));
+		imageShader.draw(colorFrameBuffer.getTexture(), context->pixelRatio*renderRegion->getBounds(), 1.0f, false);
 	}
 	if (wireCheck->getValue()) {
 		imageShader.draw(wireFrameBuffer.getTexture(), context->pixelRatio*renderRegion->getBounds(), 1.0f, false);
 	}
-	if (uvCheck->getValue()) {
-		imageShader.draw(colorFrameBuffer.getTexture(), context->pixelRatio*renderRegion->getBounds(), 1.0f, false);
-	}
+
 	camera.setDirty(false);
 }
 

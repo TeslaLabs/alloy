@@ -28,20 +28,21 @@
 namespace aly{
 	struct TextureBoxCompare
 	{
-		bool operator() (const float2i& lhs, const float2i& rhs) const
+		bool operator() (const float3& lhs, const float3& rhs) const
 		{
 			if (lhs.x < rhs.x) return true;
 			else if (lhs.x > rhs.x) return false;
 			if (lhs.y < rhs.y) return true;
 			else if (lhs.y > rhs.y) return false;
-			if (lhs.index < rhs.index) return true;
-			else if (lhs.index > rhs.index) return false;
+			if (lhs.z < rhs.z) return true;
+			else if (lhs.z > rhs.z) return false;
 			return false;
 		}
 	};
 	class MeshTexureMap
 	{
 	protected:
+		float angleTolerance;
 		float4x4 fitPlane(const aly::Mesh& mesh, std::list<int2>& indexes,float3* deviations,float* scale);
 		std::vector<std::list<int2>> mosaicIndexes;
 		std::vector<int> vertexLabels;
@@ -51,18 +52,19 @@ namespace aly{
 
 		int makeLabelsUnique(std::vector<int>& labels, std::vector<int>& relabel,int minLabelSize);
 		int splitLabelComponents(std::vector<int>& labels);
-		float pack(std::vector<float2i>& boxes, std::multimap<float2i, float2, TextureBoxCompare>& boxMap);
-		float packAllNaive(std::vector<float2i>& boxes, std::multimap<float2i, float2, TextureBoxCompare>& boxMap);
-		bool pack(const std::vector<float2i> &temp, std::multimap<float2i, float2, TextureBoxCompare>& boxes, const float2 &size);
-		float2 pack(const std::vector<float2i> &temp, std::multimap<float2i, float2, TextureBoxCompare>& boxes, float area);
-		float2 packNaive(const std::vector<float2i> &temp, std::multimap<float2i, float2, TextureBoxCompare>& boxes, float area);
+		float pack(std::vector<float3>& boxes, std::multimap<float3, float2, TextureBoxCompare>& boxMap);
+		float packAllNaive(std::vector<float3>& boxes, std::multimap<float3, float2, TextureBoxCompare>& boxMap);
+		bool pack(const std::vector<float3> &temp, std::multimap<float3, float2, TextureBoxCompare>& boxes, const float2 &size);
+		float2 pack(const std::vector<float3> &temp, std::multimap<float3, float2, TextureBoxCompare>& boxes, float area);
+		float2 packNaive(const std::vector<float3> &temp, std::multimap<float3, float2, TextureBoxCompare>& boxes, float area);
 		void computeMap(aly::Mesh& mesh, const std::function<bool(const std::string& status, float progress)>& statusHandler = nullptr);
 		void labelComponents(aly::Mesh& mesh, const std::function<bool(const std::string& status, float progress)>& statusHandler = nullptr);
 		void smooth(aly::Mesh& mesh, int iterations, float errorTolerance);
 	public:
-		MeshTexureMap() {}
+		MeshTexureMap():angleTolerance(30.0f*(float)ALY_PI / 180.0f) {
+		}
 		~MeshTexureMap() {}
-		void evaluate(aly::Mesh& mesh, const std::function<bool(const std::string& status, float progress)>& statusHandler =nullptr);
+		void evaluate(aly::Mesh& mesh, int smoothIterations=3, const std::function<bool(const std::string& status, float progress)>& statusHandler =nullptr);
 	};
 	int LabelTextureRegions(const aly::Mesh& mesh, std::vector<int>& indexes, std::vector<int>& cc, std::vector<int>& labels, float distanceTolerance=1E-6f);
 	int GetConnectedVertexComponents(const aly::Mesh& mesh, std::vector<int>& cc, std::vector<int>& labels);

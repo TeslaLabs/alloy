@@ -46,6 +46,7 @@ protected:
 	aly::CheckBoxPtr uvCheck;
 	aly::CheckBoxPtr wireCheck;
 	void labelRegions();
+	void textureMapMesh();
 public:
 	MeshTextureMapEx();
 	bool init(aly::Composite& rootNode);

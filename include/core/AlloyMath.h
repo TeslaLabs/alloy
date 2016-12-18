@@ -187,7 +187,7 @@ template<class T> struct vec<T, 2> {
 		return (std::make_tuple(x, y) < std::make_tuple(r.x, r.y));
 	}
 	bool operator >(const vec & r) const {
-		return (std::make_tuple(x, y) < std::make_tuple(r.x, r.y));
+		return (std::make_tuple(x, y) > std::make_tuple(r.x, r.y));
 	}
 	template<class Archive> void serialize(Archive & archive) {
 		archive(CEREAL_NVP(x), CEREAL_NVP(y));
@@ -236,7 +236,7 @@ template<class T> struct vec<T, 3> {
 		return (std::make_tuple(x, y, z) < std::make_tuple(r.x, r.y, r.z));
 	}
 	bool operator >(const vec & r) const {
-		return (std::make_tuple(x, y, z) < std::make_tuple(r.x, r.y, r.z));
+		return (std::make_tuple(x, y, z) > std::make_tuple(r.x, r.y, r.z));
 	}
 	template<class Archive> void serialize(Archive & archive) {
 		archive(CEREAL_NVP(x), CEREAL_NVP(y), CEREAL_NVP(z));
@@ -291,7 +291,7 @@ template<class T> struct vec<T, 4> {
 		return (std::make_tuple(x, y, z, w) < std::make_tuple(r.x, r.y, r.z, r.w));
 	}
 	bool operator >(const vec & r) const {
-		return (std::make_tuple(x, y, z, w) < std::make_tuple(r.x, r.y, r.z, r.w));
+		return (std::make_tuple(x, y, z, w) > std::make_tuple(r.x, r.y, r.z, r.w));
 	}
 
 };

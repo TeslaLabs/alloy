@@ -220,14 +220,21 @@ namespace aly {
 		//std::cout << "Unique "<<scc<<" / "<<cc<<" Relabel list " << relabel.size() <<" / "<<vertexCount<< std::endl;
 		return scc;
 	}
-	void MeshTexureMap::evaluate(aly::Mesh& mesh, const std::function<bool(const std::string& status, float progress)>& statusHandler){
-		Vector3f vertexCopy = mesh.vertexLocations;
-		smooth(mesh,3, 1E-6f);
+	void MeshTexureMap::evaluate(aly::Mesh& mesh,int smoothIterations, const std::function<bool(const std::string& status, float progress)>& statusHandler){
+		mesh.convertQuadsToTriangles();
+		Vector3f vertexCopy;
+		if (smoothIterations > 0) {
+			std::cout << "Smoothing..." << std::endl;
+			vertexCopy = mesh.vertexLocations;
+			smooth(mesh, smoothIterations, 1E-6f);
+		}
 		std::cout << "Label ..." << std::endl;
 		labelComponents(mesh, statusHandler);
 		std::cout << "Compute UVs ..." << std::endl;
 		computeMap(mesh, statusHandler);
-		mesh.vertexLocations = vertexCopy;
+		if (smoothIterations > 0) {
+			mesh.vertexLocations = vertexCopy;
+		}
 		std::cout << "Saving ..." << std::endl;
 	}
 	void MeshTexureMap::computeMap(aly::Mesh& mesh, const std::function<bool(const std::string& status, float progress)>& statusHandler){
@@ -250,8 +257,8 @@ namespace aly {
 				continue;
 			}
 			float4x4 P = fitPlane(mesh, mIndexes, &deviations, &scales[index]);
-			//std::cout << "Pose " << mIndexes.size() << "[" << deviations << "] =\n" << mIndexes.size()<<std::endl;
-
+			std::cout << "Pose " << P << std::endl;
+			std::cout << "Pose " << mIndexes.size() << "[" << deviations << "] =" << mIndexes.size()<<std::endl;
 			std::map<int, int>& uniqueVertexes = uniqueVertexLists[index];
 			int lockCount = 0;
 			int fid = 0;
@@ -288,8 +295,8 @@ namespace aly {
 			index++;
 		}
 		std::vector<int> rectId;
-		std::vector<float2i> rects;
-		OpenNL_Parameterization(std::string("CG"), mosaic, 1E-6, 1000);
+		std::vector<float3> rects;
+		//OpenNL_Parameterization(std::string("CG"), mosaic, 1E-6, 1000);
 		for (index = 0; index < M; index++){
 			std::map<int, int>& uniqueVertexes = uniqueVertexLists[index];
 			if (uniqueVertexes.size() == 0)continue;
@@ -307,7 +314,7 @@ namespace aly {
 			float maxDim = std::max(1E-4f, std::max(maxuv.y - minuv.y, maxuv.x - minuv.x)); //Max dim should already be close to 1.0f
 			float scale = scales[index];
 			//float sc = 1.0f/ maxDim;
-			float2i rect = float2i(float2(scale*(maxuv.x - minuv.x), scale*(maxuv.y - minuv.y)),index);
+			float3 rect = float3(scale*(maxuv.x - minuv.x), scale*(maxuv.y - minuv.y),(float)index);
 			rects.push_back(rect);
 			rectId.push_back(index);
 			totalArea += rect.x*rect.y;
@@ -318,14 +325,14 @@ namespace aly {
 				mosaic.vertex[k].tex_coord.y = (mosaic.vertex[k].tex_coord.y - minuv.y);
 			}
 		}
-		std::multimap<float2i, float2, TextureBoxCompare> boxes;
+		std::multimap<float3, float2, TextureBoxCompare> boxes;
 		totalArea = pack(rects, boxes);
 		float  sc = 1.0f / totalArea;
 		
 		for (int id = 0; id < rectId.size(); id++){
 			int idx = rectId[id];
-			float2i& rect = rects[id];
-			std::multimap<float2i, float2, TextureBoxCompare>::iterator boxPair = boxes.find(rect);
+			float3& rect = rects[id];
+			std::multimap<float3, float2, TextureBoxCompare>::iterator boxPair = boxes.find(rect);
 			std::map<int, int>& uniqueVertexes = uniqueVertexLists[idx];
 			if (boxPair == boxes.end()){
 				for (std::pair<int, int> pr : uniqueVertexes)
@@ -354,44 +361,39 @@ namespace aly {
 				mesh.textureMap[faceList[index++]] = float2((float)V.tex_coord.x, (float)V.tex_coord.y);
 			}
 		}
-		int textureWidth = 2048;// RoundToWorkgroupPower(totalArea, 8);
-		int textureHeight = 2048; //textureWidth;
-		mesh.textureImage.resize(textureHeight,textureWidth);
-		std::cout << "Create texture image" << std::endl;
-#ifdef USE_OPENCV
-		using namespace cv;
-		Mat img(textureHeight, textureWidth, CV_8UC4,&mesh->textureImage[0]);
 
-		for (int id = 0; id < rectId.size(); id++){
-			int idx = rectId[id];
-			float3& rect = rects[id];
-
-			std::multimap<float3, float2, TextureBoxCompare>::iterator boxPair = boxes.find(rect);
-			if (boxPair == boxes.end())continue;
-			float2 pt = boxPair->second;
-			float4 c = (idx<colors.size())?colors[idx]:float4(1.0f);
-			uchar4 rgb((uchar)(c.x * 255), (uchar)(c.y * 255), (uchar)(c.z * 255), (uchar)255);
-			int ymin = std::max((int)0, (int)(textureHeight*pt.y / totalArea));
-			int ymax = std::min((int)(textureHeight*(rect.y + pt.y) / totalArea), (int)textureHeight);
-			int xmin = std::max((int)0, (int)(textureWidth*pt.x / totalArea));
-			int xmax = std::min((int)(textureWidth*(rect.x + pt.x) / totalArea), (int)textureWidth);
-			for (int y = ymin; y < ymax; y++){
-				for (int x = xmin; x < xmax; x++){
-					img.at<uchar4>(y, x) = rgb;
+		if (mesh.textureImage.size() > 0) {
+			mesh.textureImage.set(float4(0.0f));
+			int textureHeight = mesh.textureImage.height;
+			int textureWidth = mesh.textureImage.width;
+			for (int id = 0; id < rectId.size(); id++) {
+				int idx = rectId[id];
+				float3& rect = rects[id];
+				std::multimap<float3, float2, TextureBoxCompare>::iterator boxPair = boxes.find(rect);
+				if (boxPair == boxes.end())continue;
+				float2 pt = boxPair->second;
+				float4 c = (idx < colors.size()) ? colors[idx] : float4(1.0f);
+				int ymin = std::max((int)0, (int)(textureHeight*pt.y / totalArea));
+				int ymax = std::min((int)(textureHeight*(rect.y + pt.y) / totalArea), (int)textureHeight);
+				int xmin = std::max((int)0, (int)(textureWidth*pt.x / totalArea));
+				int xmax = std::min((int)(textureWidth*(rect.x + pt.x) / totalArea), (int)textureWidth);
+				for (int y = ymin; y < ymax; y++) {
+					for (int x = xmin; x < xmax; x++) {
+						mesh.textureImage(x, textureHeight-1-y) = c;
+					}
 				}
+				mesh.setDirty(true);
 			}
 		}
-#endif
-
 	}
-	float2 MeshTexureMap::packNaive(const std::vector<float2i> &rects, std::multimap<float2i, float2, TextureBoxCompare>& boxes, float area){
+	float2 MeshTexureMap::packNaive(const std::vector<float3> &rects, std::multimap<float3, float2, TextureBoxCompare>& boxes, float area){
 		float edgeLength = std::sqrt(area);
 		int N = static_cast<int>(rects.size());
 		int counter = 0;
 		float xOff=0, yOff=0;
 		float2 maxPt(0,0);
-		for (float2i rect : rects){
-			std::pair<float2i, float2> boxPair = std::pair<float2i, float2>(rect, float2(xOff, yOff));
+		for (float3 rect : rects){
+			std::pair<float3, float2> boxPair = std::pair<float3, float2>(rect, float2(xOff, yOff));
 			xOff += rect.x;
 			maxPt = std::max(maxPt,float2(boxPair.first.x,boxPair.first.y) + boxPair.second);
 			if (xOff > edgeLength){
@@ -402,11 +404,11 @@ namespace aly {
 		}
 		return maxPt;
 	}
-	float MeshTexureMap::packAllNaive(std::vector<float2i>& rects, std::multimap<float2i, float2, TextureBoxCompare>& boxMap){
+	float MeshTexureMap::packAllNaive(std::vector<float3>& rects, std::multimap<float3, float2, TextureBoxCompare>& boxMap){
 		double totalArea = 0;
 		int N = static_cast<int>(rects.size());
 		for (int i = 0; i < N; i++){
-			float2i rect = rects[i];
+			float3 rect = rects[i];
 			double a = rect.x*rect.y;
 			totalArea += a;
 		}
@@ -415,23 +417,23 @@ namespace aly {
 		edgeLength = std::max(packedRect.x, packedRect.y);
 		return edgeLength;
 	}
-	float MeshTexureMap::pack(std::vector<float2i>& rects, std::multimap<float2i, float2, TextureBoxCompare>& boxMap){
+	float MeshTexureMap::pack(std::vector<float3>& rects, std::multimap<float3, float2, TextureBoxCompare>& boxMap){
 		double totalArea = 0;
 		int N = static_cast<int>(rects.size());
 		std::vector<std::pair<double, int>> rectSortList(N);
 		for (int i = 0; i < N; i++){
-			float2i rect = rects[i];
+			float3 rect = rects[i];
 			double a = rect.x*rect.y;
 			rectSortList[i] = std::pair<double, int>(-a, i);
 			totalArea += a;
 		}
 		sort(rectSortList.begin(), rectSortList.end());
 	
-		std::list<std::vector<float2i>> rectBatches;
+		std::list<std::vector<float3>> rectBatches;
 		std::list<std::vector<int>> rectIdBatches;
 		std::list<double> areas;
 		
-		std::vector<float2i> rectBatch;
+		std::vector<float3> rectBatch;
 		std::vector<int> rectIdBatch;
 		
 		double area = 0.0;
@@ -440,6 +442,7 @@ namespace aly {
 		for (int i = 0; i < N; i++){
 			int id = rectSortList[i].second;
 			float a = -(float)rectSortList[i].first;
+			std::cout << "Process " << id <<" " << a << std::endl;
 			rectBatch.push_back(rects[id]);
 			area+=a;
 			if (area >= areaThreshold||i==N-1){
@@ -464,45 +467,51 @@ namespace aly {
 		rectBatches.reverse();
 		rectIdBatches.reverse();
 		areas.reverse();
-		std::list<std::vector<float2i>>::iterator rectIter = rectBatches.begin();
+		std::list<std::vector<float3>>::iterator rectIter = rectBatches.begin();
 		std::list<std::vector<int>>::iterator rectIdIter = rectIdBatches.begin();
 		std::list<double>::iterator areaIter = areas.begin();
-		float2i lastRect(float2(0.0f,0.0f),0);
+		float3 lastRect(float2(0.0f,0.0f),0);
 		float2 packedRect(0.0f, 0.0f);
-		std::multimap<float2i, float2, TextureBoxCompare> boxes;
+		std::multimap<float3, float2, TextureBoxCompare> boxes;
 		int count = 0;
 		for (; rectIter != rectBatches.end();rectIter++,areaIter++,rectIdIter++){
 			double area = *areaIter;
 			std::cout << "Pack [" << rectIter->size() << " , " << 100.0*area/totalArea <<" %]"<< std::endl;
 			boxes.clear();
-			std::vector<float2i>& rectList = *rectIter;
+			std::vector<float3>& rectList = *rectIter;
 			if (boxMap.size() > 0){
 				rectList.insert(rectList.begin(),lastRect);
 			}
-			packedRect = (area<0.01f*totalArea) ? packNaive(rectList, boxes, (float)area) : pack(rectList, boxes, (float)area);
+			if (area < 0.01f*totalArea) {
+				std::cout << "Pack Naive " << area <<" "<<totalArea<< std::endl;
+				packedRect = packNaive(rectList, boxes, (float)area);
+			} else {
+				std::cout << "Pack Regular " << area << " " << totalArea << std::endl;
+				packedRect= pack(rectList, boxes, (float)area);
+			}
 			if (boxMap.size() > 0){
 				float2 offset = boxes.find(lastRect)->second;
-				for (std::multimap<float2i, float2, TextureBoxCompare>::iterator boxPair = boxMap.begin(); boxPair != boxMap.end(); boxPair++){
+				for (std::multimap<float3, float2, TextureBoxCompare>::iterator boxPair = boxMap.begin(); boxPair != boxMap.end(); boxPair++){
 					boxPair->second=boxPair->second+offset;				
 				}
 			}
-			for (std::pair<float2i, float2> boxPair : boxes){
-				float2i rect = boxPair.first;
+			for (std::pair<float3, float2> boxPair : boxes){
+				float3 rect = boxPair.first;
 				if (rect.x!=lastRect.x||rect.y!=lastRect.y)boxMap.insert(boxPair);
 			}
-			lastRect = float2i(float2(packedRect.x,packedRect.y),-count);
+			lastRect = float3(packedRect.x,packedRect.y,float(-count));
 			count++;
 		}
 		edgeLength = std::max(packedRect.x, packedRect.y);
 		return edgeLength;
 	}
-	float2 MeshTexureMap::pack(const std::vector<float2i> &rects, std::multimap<float2i, float2, TextureBoxCompare>& boxes, float totalArea){
+	float2 MeshTexureMap::pack(const std::vector<float3> &rects, std::multimap<float3, float2, TextureBoxCompare>& boxes, float totalArea){
 		
 		bool fine = false;
 		int count = 0;
 		totalArea = 0.0f;
 		float edgeLength=0.0f;
-		for (float2i rect:rects){
+		for (float3 rect:rects){
 			totalArea += rect.x*rect.y;
 			edgeLength = std::max(edgeLength,std::max(rect.x, rect.y));
 		}
@@ -514,22 +523,22 @@ namespace aly {
 			count++;
 		} while (!fine);
 		float2 maxPt(-1E30f, -1E30f);
-		for (std::pair<float2i, float2> boxPair : boxes){
+		for (std::pair<float3, float2> boxPair : boxes){
 			maxPt = aly::max(maxPt,(boxPair.second + float2(boxPair.first.x, boxPair.first.y)));
 		}
 		return maxPt;
 	}
 
-	bool MeshTexureMap::pack(const std::vector<float2i> &temp, std::multimap<float2i, float2, TextureBoxCompare>& boxes, const float2 &size)
+	bool MeshTexureMap::pack(const std::vector<float3> &temp, std::multimap<float3, float2, TextureBoxCompare>& boxes, const float2 &size)
 	{
 		std::list<float4> freeBoxes;
 		freeBoxes.push_back(float4(0, 0, size.x, size.y));
-		std::list<float2i> rects(temp.begin(), temp.end());
+		std::list<float3> rects(temp.begin(), temp.end());
 		
 		while (!rects.empty())
 		{
 			int min = (int)std::max(size.x, size.y);
-			std::list<float2i>::iterator minIterRects = rects.end();
+			std::list<float3>::iterator minIterRects = rects.end();
 			std::list<float4>::iterator minIterFreeBoxes = freeBoxes.end();
 
 			for (auto iterRects = rects.begin(); iterRects != rects.end(); iterRects++)
@@ -719,7 +728,7 @@ namespace aly {
 		}
 		Shuffle(order);
 		int FIRST_PASS_MAX_ITERATIONS = vertexCount/16;
-		const float ANGLE_TOL = (float)std::cos(60.0f*(float)ALY_PI / 180.0f);
+		float dotTolerance = std::cos(angleTolerance);
 		for (int iter = 0; iter < FIRST_PASS_MAX_ITERATIONS; iter++){
 			int changeCount = 0;
 			for (count = 0; count < vertexCount; count++){
@@ -728,7 +737,7 @@ namespace aly {
 				float3 norm = normalArray[l];// label corresponds to vertex of seed ... sneaky 
 				for (int nbr : vertNbrs[v]){
 					if (l<vertexLabels[nbr]){
-						if (dot(normalArray[nbr],norm) > ANGLE_TOL){
+						if (dot(normalArray[nbr],norm) > dotTolerance){
 							vertexLabels[nbr] = l;
 							changeCount++;
 						}
@@ -827,7 +836,6 @@ namespace aly {
 				mosaicIndexes[l].push_back(int2(tri.z, 3 * count + 2));
 			}
 		}
-
 		colors.resize(scc);
 		count = 0;
 		for (float4& color : colors){
@@ -976,8 +984,10 @@ namespace aly {
 
 	}
 	void MeshTexureMap::smooth(aly::Mesh& mesh,  int iters, float errorTolerance){
-		MeshListNeighborTable nbrTable;
-		CreateOrderedVertexNeighborTable(mesh, nbrTable, true);
+		/*
+		//Applies only to manifold meshes
+		MeshSetNeighborTable nbrTable;
+		CreateVertexNeighborTable(mesh,nbrTable);
 		int index = 0;
 		std::vector<float> angles;
 		std::vector<float> weights;
@@ -985,7 +995,7 @@ namespace aly {
 		int N = (int)mesh.vertexLocations.size();
 		SparseMatrix1f A(N, N);
 		Vector3f b(N);
-		for (std::list<uint32_t>& nbrs : nbrTable) {
+		for (std::set<uint32_t>& nbrs : nbrTable) {
 			int K = (int)nbrs.size() - 1;
 			float3 pt = mesh.vertexLocations[index];
 			angles.resize(K);
@@ -1027,5 +1037,6 @@ namespace aly {
 		}
 		SolveBICGStab(b, A, mesh.vertexLocations, iters,errorTolerance);
 		mesh.updateVertexNormals();
+		*/
 	}
 }
