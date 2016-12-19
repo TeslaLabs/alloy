@@ -51,7 +51,7 @@ void MeshTextureMapEx::labelRegions() {
 }
 void MeshTextureMapEx::textureMapMesh() {
 	MeshTexureMap tm;
-	tm.evaluate(mesh, 3);
+	tm.evaluate(mesh);
 }
 bool MeshTextureMapEx::init(Composite& rootNode) {
 	box3f renderBBox = box3f(float3(-0.5f, -0.5f, -0.5f), float3(1.0f, 1.0f, 1.0f));

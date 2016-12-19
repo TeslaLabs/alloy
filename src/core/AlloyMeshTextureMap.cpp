@@ -220,7 +220,7 @@ namespace aly {
 		//std::cout << "Unique "<<scc<<" / "<<cc<<" Relabel list " << relabel.size() <<" / "<<vertexCount<< std::endl;
 		return scc;
 	}
-	void MeshTexureMap::evaluate(aly::Mesh& mesh,int smoothIterations, const std::function<bool(const std::string& status, float progress)>& statusHandler){
+	void MeshTexureMap::evaluate(aly::Mesh& mesh, const std::function<bool(const std::string& status, float progress)>& statusHandler){
 		mesh.convertQuadsToTriangles();
 		Vector3f vertexCopy;
 		if (smoothIterations > 0) {
@@ -235,7 +235,6 @@ namespace aly {
 		if (smoothIterations > 0) {
 			mesh.vertexLocations = vertexCopy;
 		}
-		std::cout << "Saving ..." << std::endl;
 	}
 	void MeshTexureMap::computeMap(aly::Mesh& mesh, const std::function<bool(const std::string& status, float progress)>& statusHandler){
 		int index = 0;
@@ -257,8 +256,6 @@ namespace aly {
 				continue;
 			}
 			float4x4 P = fitPlane(mesh, mIndexes, &deviations, &scales[index]);
-			std::cout << "Pose " << P << std::endl;
-			std::cout << "Pose " << mIndexes.size() << "[" << deviations << "] =" << mIndexes.size()<<std::endl;
 			std::map<int, int>& uniqueVertexes = uniqueVertexLists[index];
 			int lockCount = 0;
 			int fid = 0;
@@ -295,13 +292,13 @@ namespace aly {
 			index++;
 		}
 		std::vector<int> rectId;
-		std::vector<float3> rects;
+		std::vector<bvec2f> rects;
 		//OpenNL_Parameterization(std::string("CG"), mosaic, 1E-6, 1000);
 		for (index = 0; index < M; index++){
 			std::map<int, int>& uniqueVertexes = uniqueVertexLists[index];
 			if (uniqueVertexes.size() == 0)continue;
-			float2 minuv(std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
-			float2 maxuv(std::numeric_limits<float>::min(), std::numeric_limits<float>::min());
+			float2 minuv(1E30f);
+			float2 maxuv(-1E30f);
 			for (std::pair<int, int> pr : uniqueVertexes)
 			{
 				int k = pr.second;
@@ -313,8 +310,7 @@ namespace aly {
 
 			float maxDim = std::max(1E-4f, std::max(maxuv.y - minuv.y, maxuv.x - minuv.x)); //Max dim should already be close to 1.0f
 			float scale = scales[index];
-			//float sc = 1.0f/ maxDim;
-			float3 rect = float3(scale*(maxuv.x - minuv.x), scale*(maxuv.y - minuv.y),(float)index);
+			bvec2f rect = bvec2f(scale*(maxuv.x - minuv.x), scale*(maxuv.y - minuv.y),index);
 			rects.push_back(rect);
 			rectId.push_back(index);
 			totalArea += rect.x*rect.y;
@@ -325,14 +321,14 @@ namespace aly {
 				mosaic.vertex[k].tex_coord.y = (mosaic.vertex[k].tex_coord.y - minuv.y);
 			}
 		}
-		std::multimap<float3, float2, TextureBoxCompare> boxes;
+		std::multimap<bvec2f, float2, TextureBoxCompare> boxes;
 		totalArea = pack(rects, boxes);
 		float  sc = 1.0f / totalArea;
 		
 		for (int id = 0; id < rectId.size(); id++){
 			int idx = rectId[id];
-			float3& rect = rects[id];
-			std::multimap<float3, float2, TextureBoxCompare>::iterator boxPair = boxes.find(rect);
+			bvec2f& rect = rects[id];
+			std::multimap<bvec2f, float2, TextureBoxCompare>::iterator boxPair = boxes.find(rect);
 			std::map<int, int>& uniqueVertexes = uniqueVertexLists[idx];
 			if (boxPair == boxes.end()){
 				for (std::pair<int, int> pr : uniqueVertexes)
@@ -368,8 +364,8 @@ namespace aly {
 			int textureWidth = mesh.textureImage.width;
 			for (int id = 0; id < rectId.size(); id++) {
 				int idx = rectId[id];
-				float3& rect = rects[id];
-				std::multimap<float3, float2, TextureBoxCompare>::iterator boxPair = boxes.find(rect);
+				bvec2f& rect = rects[id];
+				std::multimap<bvec2f, float2, TextureBoxCompare>::iterator boxPair = boxes.find(rect);
 				if (boxPair == boxes.end())continue;
 				float2 pt = boxPair->second;
 				float4 c = (idx < colors.size()) ? colors[idx] : float4(1.0f);
@@ -386,16 +382,16 @@ namespace aly {
 			}
 		}
 	}
-	float2 MeshTexureMap::packNaive(const std::vector<float3> &rects, std::multimap<float3, float2, TextureBoxCompare>& boxes, float area){
+	float2 MeshTexureMap::packNaive(const std::vector<bvec2f> &rects, std::multimap<bvec2f, float2, TextureBoxCompare>& boxes, float area){
 		float edgeLength = std::sqrt(area);
 		int N = static_cast<int>(rects.size());
 		int counter = 0;
 		float xOff=0, yOff=0;
 		float2 maxPt(0,0);
-		for (float3 rect : rects){
-			std::pair<float3, float2> boxPair = std::pair<float3, float2>(rect, float2(xOff, yOff));
+		for (bvec2f rect : rects){
+			std::pair<bvec2f, float2> boxPair = std::pair<bvec2f, float2>(rect, float2(xOff, yOff));
 			xOff += rect.x;
-			maxPt = std::max(maxPt,float2(boxPair.first.x,boxPair.first.y) + boxPair.second);
+			maxPt = aly::max(maxPt,float2(boxPair.first.x,boxPair.first.y) + boxPair.second);
 			if (xOff > edgeLength){
 				xOff = 0;
 				yOff = maxPt.y;
@@ -404,11 +400,11 @@ namespace aly {
 		}
 		return maxPt;
 	}
-	float MeshTexureMap::packAllNaive(std::vector<float3>& rects, std::multimap<float3, float2, TextureBoxCompare>& boxMap){
+	float MeshTexureMap::packAllNaive(std::vector<bvec2f>& rects, std::multimap<bvec2f, float2, TextureBoxCompare>& boxMap){
 		double totalArea = 0;
 		int N = static_cast<int>(rects.size());
 		for (int i = 0; i < N; i++){
-			float3 rect = rects[i];
+			bvec2f rect = rects[i];
 			double a = rect.x*rect.y;
 			totalArea += a;
 		}
@@ -417,32 +413,28 @@ namespace aly {
 		edgeLength = std::max(packedRect.x, packedRect.y);
 		return edgeLength;
 	}
-	float MeshTexureMap::pack(std::vector<float3>& rects, std::multimap<float3, float2, TextureBoxCompare>& boxMap){
+	float MeshTexureMap::pack(std::vector<bvec2f>& rects, std::multimap<bvec2f, float2, TextureBoxCompare>& boxMap){
 		double totalArea = 0;
 		int N = static_cast<int>(rects.size());
 		std::vector<std::pair<double, int>> rectSortList(N);
 		for (int i = 0; i < N; i++){
-			float3 rect = rects[i];
+			bvec2f rect = rects[i];
 			double a = rect.x*rect.y;
 			rectSortList[i] = std::pair<double, int>(-a, i);
 			totalArea += a;
 		}
 		sort(rectSortList.begin(), rectSortList.end());
-	
-		std::list<std::vector<float3>> rectBatches;
+		std::list<std::vector<bvec2f>> rectBatches;
 		std::list<std::vector<int>> rectIdBatches;
 		std::list<double> areas;
-		
-		std::vector<float3> rectBatch;
+		std::vector<bvec2f> rectBatch;
 		std::vector<int> rectIdBatch;
-		
 		double area = 0.0;
-		double areaThreshold = totalArea*0.5f;
+		double areaThreshold = totalArea*packingRatio;
 		double areaSum=0.0;
 		for (int i = 0; i < N; i++){
 			int id = rectSortList[i].second;
 			float a = -(float)rectSortList[i].first;
-			std::cout << "Process " << id <<" " << a << std::endl;
 			rectBatch.push_back(rects[id]);
 			area+=a;
 			if (area >= areaThreshold||i==N-1){
@@ -467,51 +459,49 @@ namespace aly {
 		rectBatches.reverse();
 		rectIdBatches.reverse();
 		areas.reverse();
-		std::list<std::vector<float3>>::iterator rectIter = rectBatches.begin();
+		std::list<std::vector<bvec2f>>::iterator rectIter = rectBatches.begin();
 		std::list<std::vector<int>>::iterator rectIdIter = rectIdBatches.begin();
 		std::list<double>::iterator areaIter = areas.begin();
-		float3 lastRect(float2(0.0f,0.0f),0);
+		bvec2f lastRect(0.0f,0.0f,0);
 		float2 packedRect(0.0f, 0.0f);
-		std::multimap<float3, float2, TextureBoxCompare> boxes;
+		std::multimap<bvec2f, float2, TextureBoxCompare> boxes;
 		int count = 0;
 		for (; rectIter != rectBatches.end();rectIter++,areaIter++,rectIdIter++){
 			double area = *areaIter;
 			std::cout << "Pack [" << rectIter->size() << " , " << 100.0*area/totalArea <<" %]"<< std::endl;
 			boxes.clear();
-			std::vector<float3>& rectList = *rectIter;
+			std::vector<bvec2f>& rectList = *rectIter;
 			if (boxMap.size() > 0){
 				rectList.insert(rectList.begin(),lastRect);
 			}
 			if (area < 0.01f*totalArea) {
-				std::cout << "Pack Naive " << area <<" "<<totalArea<< std::endl;
 				packedRect = packNaive(rectList, boxes, (float)area);
 			} else {
-				std::cout << "Pack Regular " << area << " " << totalArea << std::endl;
 				packedRect= pack(rectList, boxes, (float)area);
 			}
 			if (boxMap.size() > 0){
 				float2 offset = boxes.find(lastRect)->second;
-				for (std::multimap<float3, float2, TextureBoxCompare>::iterator boxPair = boxMap.begin(); boxPair != boxMap.end(); boxPair++){
+				for (std::multimap<bvec2f, float2, TextureBoxCompare>::iterator boxPair = boxMap.begin(); boxPair != boxMap.end(); boxPair++){
 					boxPair->second=boxPair->second+offset;				
 				}
 			}
-			for (std::pair<float3, float2> boxPair : boxes){
-				float3 rect = boxPair.first;
+			for (std::pair<bvec2f, float2> boxPair : boxes){
+				bvec2f rect = boxPair.first;
 				if (rect.x!=lastRect.x||rect.y!=lastRect.y)boxMap.insert(boxPair);
 			}
-			lastRect = float3(packedRect.x,packedRect.y,float(-count));
+			lastRect = bvec2f(packedRect.x,packedRect.y,-count);
 			count++;
 		}
 		edgeLength = std::max(packedRect.x, packedRect.y);
 		return edgeLength;
 	}
-	float2 MeshTexureMap::pack(const std::vector<float3> &rects, std::multimap<float3, float2, TextureBoxCompare>& boxes, float totalArea){
+	float2 MeshTexureMap::pack(const std::vector<bvec2f> &rects, std::multimap<bvec2f, float2, TextureBoxCompare>& boxes, float currentArea){
 		
 		bool fine = false;
 		int count = 0;
-		totalArea = 0.0f;
+		float totalArea = 0.0f;
 		float edgeLength=0.0f;
-		for (float3 rect:rects){
+		for (bvec2f rect:rects){
 			totalArea += rect.x*rect.y;
 			edgeLength = std::max(edgeLength,std::max(rect.x, rect.y));
 		}
@@ -519,57 +509,42 @@ namespace aly {
 		do{
 			boxes.clear();
 			edgeLength *= 1.1f;
-			fine = pack(rects, boxes, float2(edgeLength, edgeLength));			
+			fine = pack(rects, boxes, float2(edgeLength, edgeLength));	
 			count++;
 		} while (!fine);
 		float2 maxPt(-1E30f, -1E30f);
-		for (std::pair<float3, float2> boxPair : boxes){
+		for (std::pair<bvec2f, float2> boxPair : boxes){
 			maxPt = aly::max(maxPt,(boxPair.second + float2(boxPair.first.x, boxPair.first.y)));
 		}
 		return maxPt;
 	}
 
-	bool MeshTexureMap::pack(const std::vector<float3> &temp, std::multimap<float3, float2, TextureBoxCompare>& boxes, const float2 &size)
+	bool MeshTexureMap::pack(const std::vector<bvec2f> &temp, std::multimap<bvec2f, float2, TextureBoxCompare>& boxes, const float2 &size)
 	{
 		std::list<float4> freeBoxes;
 		freeBoxes.push_back(float4(0, 0, size.x, size.y));
-		std::list<float3> rects(temp.begin(), temp.end());
-		
-		while (!rects.empty())
-		{
-			int min = (int)std::max(size.x, size.y);
-			std::list<float3>::iterator minIterRects = rects.end();
+		std::list<bvec2f> rects(temp.begin(), temp.end());
+		while (!rects.empty()){
+			float min = std::max(size.x, size.y);
+			std::list<bvec2f>::iterator minIterRects = rects.end();
 			std::list<float4>::iterator minIterFreeBoxes = freeBoxes.end();
-
-			for (auto iterRects = rects.begin(); iterRects != rects.end(); iterRects++)
-			{
-				for (auto iterFreeBoxes = freeBoxes.begin(); iterFreeBoxes != freeBoxes.end(); iterFreeBoxes++)
-				{
-					int distance = (int)std::min(iterFreeBoxes->w - iterRects->y, iterFreeBoxes->z - iterRects->x);
-					if (distance < 0)
-					{
-						//std::cout<<"The box "<<iterFreeBoxes->pos<<" with a size "<<iterFreeBoxes->size<<" is too small for "<<*iterRects<<std::endl;
+			for (auto iterRects = rects.begin(); iterRects != rects.end(); iterRects++){
+				for (auto iterFreeBoxes = freeBoxes.begin(); iterFreeBoxes != freeBoxes.end(); iterFreeBoxes++){
+					float distance = std::min(iterFreeBoxes->w - iterRects->y, iterFreeBoxes->z - iterRects->x);
+					if (distance < 0){
 						continue;
 					}
-					if (distance < min)
-					{
-						//std::cout<<"The box "<<iterFreeBoxes->pos<<" with a size "<<iterFreeBoxes->size<<" is ok for "<<*iterRects<<std::endl;
+					if (distance < min){
 						min = distance;
 						minIterRects = iterRects;
 						minIterFreeBoxes = iterFreeBoxes;
 					}
 				}
 			}
-
-			if (minIterRects == rects.end() || minIterFreeBoxes == freeBoxes.end())
-			{
+			if (minIterRects == rects.end() || minIterFreeBoxes == freeBoxes.end()){
 				boxes.clear();
 				return false;
 			}
-
-			//std::cout<<"I am placing the box "<<*minIterRects<<" into the position "<<minIterFreeBoxes->pos<<std::endl;
-			//std::cout<<minIterFreeBoxes->pos<<std::endl;
-
 			float4 insertedBox = float4(minIterFreeBoxes->x, minIterFreeBoxes->y, (*minIterRects).x, (*minIterRects).y);
 			boxes.insert(std::make_pair(*minIterRects, float2(minIterFreeBoxes->x, minIterFreeBoxes->y)));
 
@@ -592,10 +567,8 @@ namespace aly {
 			float2 a3 = float2(insertedBox.x + insertedBox.z, insertedBox.y + insertedBox.w);
 			float2 a4 = float2(insertedBox.x, insertedBox.y + insertedBox.w);
 
-			for (auto iterFreeBoxes = freeBoxes.begin(); iterFreeBoxes != freeBoxes.end();)
-			{
+			for (auto iterFreeBoxes = freeBoxes.begin(); iterFreeBoxes != freeBoxes.end();){
 				assert(iterFreeBoxes != freeBoxes.end());
-				//assert(!(iterFreeBoxes->pos == insertedBox.pos));
 				float2 b1 = float2(iterFreeBoxes->x, iterFreeBoxes->y);
 				float2 b2 = float2(iterFreeBoxes->x + iterFreeBoxes->z, iterFreeBoxes->y);
 				float2 b3 = float2(iterFreeBoxes->x + iterFreeBoxes->z, iterFreeBoxes->y + iterFreeBoxes->w);
@@ -609,7 +582,7 @@ namespace aly {
 				}
 
 
-				if ((a1.x > b1.x) /*  && (a1.x < b3.x) */) // If there is a chance that line a1,a2 is in the shape b
+				if ((a1.x > b1.x)  /*&& (a1.x < b3.x)*/ ) // If there is a chance that line a1,a2 is in the shape b
 				{
 					freeBoxes.push_front(float4(
 						iterFreeBoxes->x,
@@ -618,7 +591,7 @@ namespace aly {
 						iterFreeBoxes->w));
 				}
 
-				if ((a3.x < b3.x) /*  && (a1.x < b3.x) */) // If there is a chance that line a1,a2 is in the shape b
+				if ((a3.x < b3.x) /* && (a1.x < b3.x) */) // If there is a chance that line a1,a2 is in the shape b
 				{
 					freeBoxes.push_front(float4(
 						a3.x,
@@ -692,7 +665,6 @@ namespace aly {
 	}
 
 	void MeshTexureMap::labelComponents(aly::Mesh& mesh, const std::function<bool(const std::string& status, float progress)>& statusHandler){
-		const int MIN_PATCH_SIZE = 128;
 		std::vector<int> cclist;
 		Vector3ui& faceArray = mesh.triIndexes;
 		Vector3f& vertexArray = mesh.vertexLocations;
@@ -744,14 +716,13 @@ namespace aly {
 					}
 				}
 			}
-			std::cout << "Iteration " << iter<<" "<<changeCount << std::endl;
 			if (changeCount == 0)break;
 			if(iter%4==0) Shuffle(order);
 		}
 
 		int cc = 0;
 		std::vector<int> relabel;
-		int scc = makeLabelsUnique(vertexLabels, relabel, MIN_PATCH_SIZE);
+		int scc = makeLabelsUnique(vertexLabels, relabel, minVertexPatchSize);
 		
 		const int SECOND_PASS_MAX_ITERATIONS =vertexCount/16;
 		for (int iter = 0; iter < SECOND_PASS_MAX_ITERATIONS; iter++){
@@ -905,7 +876,7 @@ namespace aly {
 	
 
 	float4x4 MeshTexureMap::fitPlane(const aly::Mesh& mesh, std::list<int2>& indexes,float3* deviations,float* scale){
-		float3x3 AtA;
+		float3x3 AtA= float3x3::zero();
 		float3 v;
 		float3 centerPoint(0.0f);
 
@@ -935,8 +906,8 @@ namespace aly {
 		Eigen(AtA, Q, D);
 		
 		*deviations = float3((float)std::sqrt(D(2,2)), (float)std::sqrt(D(1,1)), (float)std::sqrt(D(0,0)));
-		float3 zaxis=Q.row(2);
-		float3 xaxis=Q.row(0);
+		float3 zaxis=Q.z;
+		float3 xaxis=Q.x;
 		float3 yaxis = cross(zaxis,xaxis);
 		float4x4 Pose = float4x4::identity();
 		Pose(0, 0) = xaxis.x;
@@ -977,7 +948,9 @@ namespace aly {
 			maxPt = aly::max(maxPt,qt);
 		}
 		float3 delta = maxPt-minPt;
+		
 		float maxDim = std::max(std::max(delta.x, delta.y), std::max(1E-12f,delta.z));
+		//std::cout << "Delta " << delta << " " << maxDim <<" "<<*deviations<< std::endl;
 		*scale = maxDim;
 		PInv = MakeScale(float3(1.0f/maxDim))*MakeTranslation(-1.0f*minPt)*PInv;
 		return PInv;
@@ -997,15 +970,15 @@ namespace aly {
 		Vector3f b(N);
 		for (std::set<uint32_t>& nbrs : nbrTable) {
 			int K = (int)nbrs.size() - 1;
-			float3 pt = mesh.vertexLocations[index];
+			bvec2f pt = mesh.vertexLocations[index];
 			angles.resize(K);
 			weights.resize(K);
 			{
 				auto nbrIter = nbrs.begin();
 				for (int k = 0; k < K; k++) {
-					float3 current = mesh.vertexLocations[*nbrIter];
+					bvec2f current = mesh.vertexLocations[*nbrIter];
 					nbrIter++;
-					float3 next = mesh.vertexLocations[*nbrIter];
+					bvec2f next = mesh.vertexLocations[*nbrIter];
 					angles[k] = std::tan(Angle(next, pt, current) * 0.5f);
 				}
 			}
@@ -1014,7 +987,7 @@ namespace aly {
 				auto nbrIter = nbrs.begin();
 				nbrIter++;
 				for (int k = 0; k < K; k++) {
-					float3 ptNext = mesh.vertexLocations[*nbrIter];
+					bvec2f ptNext = mesh.vertexLocations[*nbrIter];
 					float w = (angles[k] + angles[(k + 1) % K])
 						/ distance(pt, ptNext);
 					wsum += w;
