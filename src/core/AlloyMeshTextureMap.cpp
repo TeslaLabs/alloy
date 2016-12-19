@@ -223,14 +223,11 @@ namespace aly {
 	void MeshTexureMap::evaluate(aly::Mesh& mesh, const std::function<bool(const std::string& status, float progress)>& statusHandler){
 		mesh.convertQuadsToTriangles();
 		Vector3f vertexCopy;
-		if (smoothIterations > 0) {
-			std::cout << "Smoothing..." << std::endl;
+		if (smoothIterations > 0) {		
 			vertexCopy = mesh.vertexLocations;
-			smooth(mesh, smoothIterations, 1E-6f);
+			smooth(mesh, smoothIterations, 1E-10f);
 		}
-		std::cout << "Label ..." << std::endl;
 		labelComponents(mesh, statusHandler);
-		std::cout << "Compute UVs ..." << std::endl;
 		computeMap(mesh, statusHandler);
 		if (smoothIterations > 0) {
 			mesh.vertexLocations = vertexCopy;
@@ -957,50 +954,23 @@ namespace aly {
 
 	}
 	void MeshTexureMap::smooth(aly::Mesh& mesh,  int iters, float errorTolerance){
-		/*
-		//Applies only to manifold meshes
+
 		MeshSetNeighborTable nbrTable;
-		CreateVertexNeighborTable(mesh,nbrTable);
+		CreateVertexNeighborTable(mesh, nbrTable);
 		int index = 0;
-		std::vector<float> angles;
-		std::vector<float> weights;
-		float smoothness = 10.0f;
-		int N = (int)mesh.vertexLocations.size();
+		int N =  (int)mesh.vertexLocations.size();
 		SparseMatrix1f A(N, N);
 		Vector3f b(N);
 		for (std::set<uint32_t>& nbrs : nbrTable) {
 			int K = (int)nbrs.size() - 1;
-			bvec2f pt = mesh.vertexLocations[index];
-			angles.resize(K);
-			weights.resize(K);
-			{
-				auto nbrIter = nbrs.begin();
-				for (int k = 0; k < K; k++) {
-					bvec2f current = mesh.vertexLocations[*nbrIter];
-					nbrIter++;
-					bvec2f next = mesh.vertexLocations[*nbrIter];
-					angles[k] = std::tan(Angle(next, pt, current) * 0.5f);
-				}
-			}
-			float wsum = 0.0f;
+			float3 pt = mesh.vertexLocations[index];
 			{
 				auto nbrIter = nbrs.begin();
 				nbrIter++;
 				for (int k = 0; k < K; k++) {
-					bvec2f ptNext = mesh.vertexLocations[*nbrIter];
-					float w = (angles[k] + angles[(k + 1) % K])
-						/ distance(pt, ptNext);
-					wsum += w;
-					weights[k] = w;
-					nbrIter++;
-				}
-			}
-			{
-				auto nbrIter = nbrs.begin();
-				nbrIter++;
-				for (int k = 0; k < K; k++) {
-					float w = -smoothness * weights[k] / wsum;
-					A.set(index, *nbrIter, w);
+					float w = -smoothness / K;
+					int offset = *nbrIter;
+					A.set(index, offset, w);
 					nbrIter++;
 				}
 			}
@@ -1008,8 +978,7 @@ namespace aly {
 			b[index] = pt;
 			index++;
 		}
-		SolveBICGStab(b, A, mesh.vertexLocations, iters,errorTolerance);
+		SolveBICGStab(b, A, mesh.vertexLocations, smoothIterations,errorTolerance);
 		mesh.updateVertexNormals();
-		*/
 	}
 }

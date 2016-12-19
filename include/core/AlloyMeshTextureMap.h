@@ -83,6 +83,7 @@ namespace aly{
 	protected:
 		float angleTolerance;
 		float packingRatio;
+		float smoothness;
 		int minVertexPatchSize;
 		int smoothIterations;
 		float4x4 fitPlane(const aly::Mesh& mesh, std::list<int2>& indexes,aly::float3* deviations,float* scale);
@@ -103,7 +104,7 @@ namespace aly{
 		void labelComponents(aly::Mesh& mesh, const std::function<bool(const std::string& status, float progress)>& statusHandler = nullptr);
 		void smooth(aly::Mesh& mesh, int iterations, float errorTolerance);
 	public:
-		MeshTexureMap():angleTolerance(30.0f*(float)ALY_PI / 180.0f),packingRatio(0.8f),minVertexPatchSize(64), smoothIterations(0) {
+		MeshTexureMap():angleTolerance(30.0f*(float)ALY_PI / 180.0f),packingRatio(0.8f),minVertexPatchSize(64), smoothIterations(20),smoothness(20.0f) {
 		}
 		void setMinVertexPatchSize(int sz) {
 			minVertexPatchSize = sz;
@@ -116,6 +117,9 @@ namespace aly{
 		}
 		void setSmoothingIteartions(int iters) {
 			smoothIterations = iters;
+		}
+		void setSmoothness(float w) {
+			smoothness = w;
 		}
 		~MeshTexureMap() {}
 		void evaluate(aly::Mesh& mesh,const std::function<bool(const std::string& status, float progress)>& statusHandler =nullptr);
