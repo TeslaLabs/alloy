@@ -20,7 +20,6 @@
 */
 #include "AlloyMeshTextureMap.h"
 #include "AlloyUnits.h"
-#include "OpenNL.h"
 #include "AlloySparseMatrix.h"
 #include "AlloySparseSolve.h"
 #include "AlloyOptimization.h"
@@ -456,6 +455,12 @@ namespace aly {
 			}
 		}	
 		if (mesh.textureImage.size() > 0) {
+			const int horizTiles = 32;
+			const int vertTiles = 32;
+			const int width = mesh.textureImage.width;
+			const int height = mesh.textureImage.height;
+			const int cellWidth = width / horizTiles;
+			const int cellHeight = height / vertTiles;
 			mesh.textureImage.set(float4(0.0f));
 			int textureHeight = mesh.textureImage.height;
 			int textureWidth = mesh.textureImage.width;
@@ -465,19 +470,23 @@ namespace aly {
 				std::multimap<bvec2f, float2, TextureBoxCompare>::iterator boxPair = boxes.find(rect);
 				if (boxPair == boxes.end())continue;
 				float2 pt = boxPair->second;
-				float4 c = (idx < colors.size()) ? colors[idx] : float4(1.0f);
 				int ymin = std::max((int)0, (int)(textureHeight*pt.y / totalArea));
 				int ymax = std::min((int)(textureHeight*(rect.y + pt.y) / totalArea), (int)textureHeight);
 				int xmin = std::max((int)0, (int)(textureWidth*pt.x / totalArea));
 				int xmax = std::min((int)(textureWidth*(rect.x + pt.x) / totalArea), (int)textureWidth);
 				for (int y = ymin; y < ymax; y++) {
 					for (int x = xmin; x < xmax; x++) {
-						mesh.textureImage(x, textureHeight-1-y) = c;
+						int i = x;
+						int j = textureHeight - 1 - y;
+						bool vt = (i / cellWidth) % 2 == 0;
+						bool ht = (j / cellHeight) % 2 == 0;
+						mesh.textureImage(i, j) = ((vt && !ht) || (!vt && ht)) ? RGBAf(0.1f, 0.1f, 0.1f, 1.0f) : RGBAf(0.35f, 0.35f, 0.35f, 1.0f);
 					}
 				}
-				mesh.setDirty(true);
 			}
 		}
+		mesh.setDirty(true);
+
 	}
 	float2 MeshTextureMap::packNaive(const std::vector<bvec2f> &rects, std::multimap<bvec2f, float2, TextureBoxCompare>& boxes, float area){
 		float edgeLength = std::sqrt(area);
@@ -911,13 +920,6 @@ namespace aly {
 				}
 			}
 		}
-		colors.resize(scc);
-		count = 0;
-		for (float4& color : colors){
-			color = HSVAtoRGBAf(float4(count / (float)scc, 0.7f, 0.7f, 1.0f));
-			count++;
-		}
-		Shuffle(colors);
 	}
 	int MeshTextureMap::splitLabelComponents(std::vector<int>& vertxLabels){
 		std::vector<int> cclist;

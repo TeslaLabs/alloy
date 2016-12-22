@@ -296,14 +296,15 @@ void MeshTextureMapEx::draw(AlloyContext* context) {
 	else {
 		wireframeShader.setFaceColor(Color(0.3f, 0.3f, 0.3f, 1.0f));
 	}
-	if (uvCheck->getValue()) {
-		wireframeShader.setFaceColor(Color(0.0f, 0.0f, 0.0f, 0.0f));
-		imageShader.draw(colorFrameBuffer.getTexture(), context->pixelRatio*renderRegion->getBounds(), 1.0f, false);
-	}
 	if (wireCheck->getValue()) {
 		imageShader.draw(wireFrameBuffer.getTexture(), context->pixelRatio*renderRegion->getBounds(), 1.0f, false);
 	}
 
+	if (uvCheck->getValue()) {
+		wireframeShader.setFaceColor(Color(0.0f, 0.0f, 0.0f, 0.0f));
+		imageShader.draw(colorFrameBuffer.getTexture(), context->pixelRatio*renderRegion->getBounds(), 1.0f, false);
+	}
+	
 	camera.setDirty(false);
 }
 

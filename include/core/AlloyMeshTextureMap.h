@@ -110,7 +110,6 @@ namespace aly{
 		std::vector<int> vertexLabels;
 		std::vector<int> faceLabels;
 		std::vector<std::list<int>> vertNbrs;
-		std::vector<float4> colors;
 		void projectTriangle(const float3& p0, const float3& p1, const float3& p2, float2& z0, float2& z1, float2& z2);
 		int makeLabelsUnique(std::vector<int>& labels, std::vector<int>& relabel,int minLabelSize);
 		int splitLabelComponents(std::vector<int>& labels);
