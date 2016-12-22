@@ -36,8 +36,8 @@ void MeshTextureMapEx::labelRegions() {
 	std::vector<Color> colorMap(cc.size());
 	std::vector<RGBAf> colorMap2(cc.size());
 	for (int i = 0; i < cc.size(); i++) {
-		colorMap[i] = HSVAtoColor(HSVA(RandomUniform(0.0f, 1.0f), RandomUniform(0.2f, 1.0f), RandomUniform(0.4f, 0.8f), 0.5f));
-		colorMap2[i] = colorMap[i].toDarker(0.7f).toRGBAf();
+		colorMap[i] = HSVAtoColor(HSVA(RandomUniform(0.0f, 1.0f), RandomUniform(0.3f, 1.0f), RandomUniform(0.5f, 1.0f), 0.5f));
+		colorMap2[i] = colorMap[i].toDarker(0.5f).toRGBAf();
 	}
 	colors.resize(indexes.size());
 	mesh.vertexColors.resize(colors.size());
@@ -51,6 +51,7 @@ void MeshTextureMapEx::labelRegions() {
 }
 void MeshTextureMapEx::textureMapMesh() {
 	MeshTextureMap tm;
+	mesh.textureImage.resize(512, 512);
 	tm.evaluate(mesh);
 }
 bool MeshTextureMapEx::init(Composite& rootNode) {
@@ -204,7 +205,10 @@ bool MeshTextureMapEx::init(Composite& rootNode) {
 				float area = std::abs(crossMag(uv2 - uv1, uv3 - uv1));
 
 				if (area > minArea) {
-					if (fill)nvgFillColor(nvg, colors[i]);
+					if (fill) {
+						nvgFillColor(nvg, colors[i]);
+						nvgStrokeColor(nvg, colors[i].toSemiTransparent(1.0f));
+					}
 					nvgBeginPath(nvg);
 					nvgMoveTo(nvg, uv1.x, uv1.y);
 					nvgLineTo(nvg, uv2.x, uv2.y);
