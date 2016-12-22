@@ -78,7 +78,25 @@ namespace aly{
 			else return false;
 		}
 	};
-	class MeshTexureMap
+	struct MosaicVertex
+	{
+		float3 pt;
+		float2 uv;
+		bool locked;
+		bool boundary;
+		int id;
+		MosaicVertex(float3 pt,float2 uv) : pt(pt), uv(uv), locked(false),boundary(false), id(-1) {
+		}
+	};
+	struct Mosaic {
+		std::list<int2> indexes;
+		std::vector<MosaicVertex> vertexes;
+		std::map<int, size_t> vertexMap;
+		MosaicVertex& getVertex(int uid) {
+			return vertexes[vertexMap[uid]];
+		}
+	};
+	class MeshTextureMap
 	{
 	protected:
 		float angleTolerance;
@@ -86,13 +104,14 @@ namespace aly{
 		float smoothness;
 		int minVertexPatchSize;
 		int smoothIterations;
-		float4x4 fitPlane(const aly::Mesh& mesh, std::list<int2>& indexes,aly::float3* deviations,float* scale);
-		std::vector<std::list<int2>> mosaicIndexes;
+		int conformalIterations;
+		float4x4 fitPlane(const aly::Mesh& mesh, std::list<int2>& indexes,aly::float3* deviations);
+		std::vector<Mosaic> mosaics;
 		std::vector<int> vertexLabels;
 		std::vector<int> faceLabels;
 		std::vector<std::list<int>> vertNbrs;
 		std::vector<float4> colors;
-
+		void projectTriangle(const float3& p0, const float3& p1, const float3& p2, float2& z0, float2& z1, float2& z2);
 		int makeLabelsUnique(std::vector<int>& labels, std::vector<int>& relabel,int minLabelSize);
 		int splitLabelComponents(std::vector<int>& labels);
 		float pack(std::vector<bvec2f>& boxes, std::multimap<bvec2f, float2, TextureBoxCompare>& boxMap);
@@ -103,8 +122,9 @@ namespace aly{
 		void computeMap(aly::Mesh& mesh, const std::function<bool(const std::string& status, float progress)>& statusHandler = nullptr);
 		void labelComponents(aly::Mesh& mesh, const std::function<bool(const std::string& status, float progress)>& statusHandler = nullptr);
 		void smooth(aly::Mesh& mesh, int iterations, float errorTolerance);
+		void unfold(aly::Mesh& mesh, std::vector<int>& rectId, std::vector<bvec2f>& rects);
 	public:
-		MeshTexureMap():angleTolerance(30.0f*(float)ALY_PI / 180.0f),packingRatio(0.8f),minVertexPatchSize(64), smoothIterations(20),smoothness(20.0f) {
+		MeshTextureMap():angleTolerance(30.0f*(float)ALY_PI / 180.0f),packingRatio(0.8f),minVertexPatchSize(64), smoothIterations(20), conformalIterations(128), smoothness(20.0f) {
 		}
 		void setMinVertexPatchSize(int sz) {
 			minVertexPatchSize = sz;
@@ -118,10 +138,13 @@ namespace aly{
 		void setSmoothingIteartions(int iters) {
 			smoothIterations = iters;
 		}
+		void setConformalIterations(int iters) {
+			conformalIterations = iters;
+		}
 		void setSmoothness(float w) {
 			smoothness = w;
 		}
-		~MeshTexureMap() {}
+		~MeshTextureMap() {}
 		void evaluate(aly::Mesh& mesh,const std::function<bool(const std::string& status, float progress)>& statusHandler =nullptr);
 	};
 	int LabelTextureRegions(const aly::Mesh& mesh, std::vector<int>& indexes, std::vector<int>& cc, std::vector<int>& labels, float distanceTolerance=1E-6f);

@@ -19,8 +19,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MESHTEXTURE_EX_H_
-#define MESHTEXTURE_EX_H_
+#ifndef MeshTexture_EX_H_
+#define MeshTexture_EX_H_
 
 #include "AlloyApplication.h"
 #include "CommonShaders.h"

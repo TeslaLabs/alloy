@@ -50,7 +50,7 @@ void MeshTextureMapEx::labelRegions() {
 	}
 }
 void MeshTextureMapEx::textureMapMesh() {
-	MeshTexureMap tm;
+	MeshTextureMap tm;
 	tm.evaluate(mesh);
 }
 bool MeshTextureMapEx::init(Composite& rootNode) {

@@ -23,6 +23,7 @@
 #include "OpenNL.h"
 #include "AlloySparseMatrix.h"
 #include "AlloySparseSolve.h"
+#include "AlloyOptimization.h"
 #include <algorithm>
 #include <random>
 namespace aly {
@@ -170,7 +171,7 @@ namespace aly {
 		GetConnectedTextureComponents(indexes, index, cclist, labels);
 		return index;
 	}
-	int MeshTexureMap::makeLabelsUnique(std::vector<int>& vertexLabels, std::vector<int>& relabel, int minLabelSize) {
+	int MeshTextureMap::makeLabelsUnique(std::vector<int>& vertexLabels, std::vector<int>& relabel, int minLabelSize) {
 		int vertexCount = static_cast<int>(vertexLabels.size());
 		int cc = 0;
 		int count = 0;
@@ -220,7 +221,7 @@ namespace aly {
 		//std::cout << "Unique "<<scc<<" / "<<cc<<" Relabel list " << relabel.size() <<" / "<<vertexCount<< std::endl;
 		return scc;
 	}
-	void MeshTexureMap::evaluate(aly::Mesh& mesh, const std::function<bool(const std::string& status, float progress)>& statusHandler){
+	void MeshTextureMap::evaluate(aly::Mesh& mesh, const std::function<bool(const std::string& status, float progress)>& statusHandler){
 		mesh.convertQuadsToTriangles();
 		Vector3f vertexCopy;
 		if (smoothIterations > 0) {		
@@ -233,128 +234,227 @@ namespace aly {
 			mesh.vertexLocations = vertexCopy;
 		}
 	}
-	void MeshTexureMap::computeMap(aly::Mesh& mesh, const std::function<bool(const std::string& status, float progress)>& statusHandler){
+	void MeshTextureMap::unfold(aly::Mesh& mesh, std::vector<int>& rectId,std::vector<bvec2f>& rects) {
+		int M = static_cast<int>(mosaics.size());
+		int N = 0;
+		for (Mosaic& mIndexes : mosaics) {
+			N += static_cast<int>(mIndexes.indexes.size());
+		}
+		int v = 0;
 		int index = 0;
 		float3 deviations;
 		float totalArea = 0.0f;
-		IndexedMesh mosaic;
-		int M = static_cast<int>(mosaicIndexes.size());
-		std::vector<std::map<int, int>> uniqueVertexLists(M);
-		std::vector<float> scales(M, 1.0f);
-		int N = 0;
-		for (std::list<int2>& mIndexes : mosaicIndexes){
-			N += static_cast<int>(mIndexes.size());
-		}
-		std::vector<int> faceList(N);
-		int v = 0;
-		for (std::list<int2>& mIndexes : mosaicIndexes){
-			if (mIndexes.size() == 0){
-				index++;
-				continue;
-			}
-			float4x4 P = fitPlane(mesh, mIndexes, &deviations, &scales[index]);
-			std::map<int, int>& uniqueVertexes = uniqueVertexLists[index];
+		size_t F = 0;
+		size_t C = 0;
+		size_t T = 0;
+		int V = 0;
+		std::list<int> lockedList;
+		for (Mosaic& mosaic : mosaics) {
+			float4x4 P = fitPlane(mesh, mosaic.indexes, &deviations);
 			int lockCount = 0;
 			int fid = 0;
-			for (int2 fid : mIndexes){
+			std::map<int,size_t> uniqueSet;
+			for (int2 fid : mosaic.indexes) {
 				int vid = fid.x;
-				if (uniqueVertexes.find(vid) == uniqueVertexes.end()) {
+				if (uniqueSet.find(vid) == uniqueSet.end()) {
 					float3 pt = mesh.vertexLocations[vid];
 					float3 qt = Transform(P, pt);
-					Vertex* V = mosaic.add_vertex(Vector3(pt.x, pt.y, pt.z), Vector2(qt.x, qt.y));
-					uniqueVertexes[vid] = V->id;
+					MosaicVertex mv(pt, qt.xy());
 					int commonCount = 0;
 					int pivot = vertexLabels[vid];
 					std::list<int>& nbrs = vertNbrs[vid];
-					for (int nbr : nbrs){
-						if (vertexLabels[nbr] == pivot){
+					for (int nbr : nbrs) {
+						if (vertexLabels[nbr] == pivot) {
 							commonCount++;
 						}
 					}
-					V->locked = (commonCount < 4);
-					if (V->locked)lockCount++;
+					mv.boundary = (commonCount <= 4);//Guess at whether point is boundary / butterfly
+					mosaic.vertexMap[fid.y] = mosaic.vertexes.size();
+					uniqueSet[vid] = mosaic.vertexes.size();
+					mosaic.vertexes.push_back(mv);
+				} else {
+					mosaic.vertexMap[fid.y] = uniqueSet[vid];
 				}
-				faceList[v] = fid.y;
-				int id = uniqueVertexes[vid];
-				if (v % 3 == 0){
-					mosaic.begin_facet();
-				}
-				mosaic.add_vertex_to_facet(id);
-				v++;
-				if (v % 3 == 0){
-					mosaic.end_facet();
-				}
-
 			}
+			T += mosaic.indexes.size() / 3;
+			int minIdx = -1;
+			int maxIdx = -1;
+			float minu = 1E30f;
+			float maxu = -1E30f;
+			int idx = 0;
+
+			F += mosaic.vertexes.size();
+
+			for (MosaicVertex& mv : mosaic.vertexes)
+			{
+				mv.id = V++;
+				if (mv.boundary) {
+					if (mv.uv.x < minu) {
+						minIdx = idx;
+						minu = mv.uv.x;
+					}
+					if (mv.uv.x > maxu) {
+						maxIdx = idx;
+						maxu = mv.uv.x;
+					}
+				}
+				idx++;
+			}
+			
+			if (minIdx >= 0) {
+				mosaic.vertexes[minIdx].locked = true;
+				lockedList.push_back(mosaic.vertexes[minIdx].id);
+			}
+			if (maxIdx >= 0&&maxIdx!=minIdx) {
+				mosaic.vertexes[maxIdx].locked = true;
+				lockedList.push_back(mosaic.vertexes[maxIdx].id);
+			}
+			
 			index++;
 		}
-		std::vector<int> rectId;
-		std::vector<bvec2f> rects;
-		//OpenNL_Parameterization(std::string("CG"), mosaic, 1E-6, 1000);
-		for (index = 0; index < M; index++){
-			std::map<int, int>& uniqueVertexes = uniqueVertexLists[index];
-			if (uniqueVertexes.size() == 0)continue;
-			float2 minuv(1E30f);
-			float2 maxuv(-1E30f);
-			for (std::pair<int, int> pr : uniqueVertexes)
-			{
-				int k = pr.second;
-				minuv.x = std::min(minuv.x, float(mosaic.vertex[k].tex_coord.x));
-				minuv.y = std::min(minuv.y, float(mosaic.vertex[k].tex_coord.y));
-				maxuv.x = std::max(maxuv.x, float(mosaic.vertex[k].tex_coord.x));
-				maxuv.y = std::max(maxuv.y, float(mosaic.vertex[k].tex_coord.y));
+		C = (int)lockedList.size();
+		SparseMat<double> A(2*(C+T), 2 * F);
+		Vec<double> B(2 * (C + T));
+		Vec<double> X(2 * F);
+		float2x2 Rot;
+		Rot(0, 0) =  0.0f;
+		Rot(0, 1) = -1.0f;
+		Rot(1, 0) =  1.0f;
+		Rot(1, 1) =  0.0f;
+		float2x3 Mt,Mr;
+		int R = 0;
+		int2 fid;
+		float2 p1, p2, p3;
+		float2 q1, q2, q3;
+		float3 pv1, qv1, pv2, qv2;
+		int ui1, vi1, ui2, vi2, ui3, vi3;
+		for (Mosaic& mosaic : mosaics) {
+			for (MosaicVertex& mv : mosaic.vertexes) {
+				X[2 * mv.id  ] = mv.uv.x;
+				X[2 * mv.id+1] = mv.uv.y;
 			}
 
+			for (auto iter = mosaic.indexes.begin(); iter != mosaic.indexes.end();) {
+				fid = *iter;
+				MosaicVertex& v1 = mosaic.getVertex(fid.y);
+				iter++; 
+				fid = *iter;
+				MosaicVertex& v2 = mosaic.getVertex(fid.y);
+				iter++; 
+				fid = *iter;
+				MosaicVertex& v3 = mosaic.getVertex(fid.y);
+				iter++;
+				projectTriangle(v1.pt, v2.pt, v3.pt, p1, p2, p3);
+				float a2 = (crossMag(p3 - p1, p2 - p1));
+				Mt(0, 0) = p2.y - p3.y;
+				Mt(0, 1) = p3.y - p1.y;
+				Mt(0, 2) = p1.y - p2.y;
+				Mt(1, 0) = p3.x - p2.x;
+				Mt(1, 1) = p1.x - p3.x;
+				Mt(1, 2) = p2.x - p1.x;
+				Mr=Rot*Mt;
+				ui1 = 2 * v1.id;
+				vi1 = 2 * v1.id + 1;
+				ui2 = 2 * v2.id;
+				vi2 = 2 * v2.id + 1;
+				ui3 = 2 * v3.id;
+				vi3 = 2 * v3.id + 1;
+
+				// Real part
+				A.set(R, vi1,  Mt(0, 0));
+				A.set(R, vi2,  Mt(0, 1));
+				A.set(R, vi3,  Mt(0, 2));
+				A.set(R, ui1, -Mr(0, 0));
+				A.set(R, ui2, -Mr(0, 1));
+				A.set(R, ui3, -Mr(0, 2));
+				B[R] = 0.0f;
+				R++;
+				// Imaginary part
+				A.set(R, vi1,  Mt(1, 0));
+				A.set(R, vi2,  Mt(1, 1));
+				A.set(R, vi3,  Mt(1, 2));
+				A.set(R, ui1, -Mr(1, 0));
+				A.set(R, ui2, -Mr(1, 1));
+				A.set(R, ui3, -Mr(1, 2));
+				B[R] = 0.0f;
+				R++;
+			}
+		}
+		for (int id : lockedList) {
+			B[R] = X[2 * id];
+			B[R+1] = X[2 * id+1];
+			A.set(R,   2 * id  , 1.0f);
+			A.set(R+1, 2 * id+1, 1.0f);
+			R+=2;
+		}
+		SparseMat<double> At = A.transpose();
+		SparseMat<double> AtA = At * A;
+		Vec<double> Atb = At*B;
+		SolveBICGStab(Atb, AtA, X, conformalIterations, 1E-30/*, [=](int iter, double err) {
+			std::cout << "Iteration " << iter << " " << err << std::endl;
+			return true;
+		}*/);
+		index = 0;
+		for (Mosaic& mosaic:mosaics) {
+			float2 minuv(1E30f);
+			float2 maxuv(-1E30f);
+			int idx = 0;
+			for(MosaicVertex& mv: mosaic.vertexes)
+			{
+				mv.uv = float2(float(X[2 * mv.id]), float(X[2 * mv.id + 1]));
+				minuv = aly::min(minuv, mv.uv);
+				maxuv = aly::max(maxuv, mv.uv);
+				idx++;
+			}
+			//Lock off only u-dimension extremes
 			float maxDim = std::max(1E-4f, std::max(maxuv.y - minuv.y, maxuv.x - minuv.x)); //Max dim should already be close to 1.0f
-			float scale = scales[index];
-			bvec2f rect = bvec2f(scale*(maxuv.x - minuv.x), scale*(maxuv.y - minuv.y),index);
+			bvec2f rect = bvec2f((maxuv.x - minuv.x), (maxuv.y - minuv.y), index);
 			rects.push_back(rect);
 			rectId.push_back(index);
 			totalArea += rect.x*rect.y;
-			for (std::pair<int, int> pr : uniqueVertexes)
-			{
-				int k = pr.second;
-				mosaic.vertex[k].tex_coord.x = (mosaic.vertex[k].tex_coord.x - minuv.x);
-				mosaic.vertex[k].tex_coord.y = (mosaic.vertex[k].tex_coord.y - minuv.y);
+			//Is this necessary?
+			for (MosaicVertex& mv : mosaic.vertexes) {
+				mv.uv = mv.uv - minuv;
 			}
+			index++;
 		}
+	}
+	void MeshTextureMap::projectTriangle(const float3& p0, const float3& p1, const float3& p2,float2& z0, float2& z1, float2& z2) {
+			float3 X =normalize(p1 - p0);
+			float3 Z = cross(X ,p2 - p0);
+			float3 Y = normalize(cross(X , Z));
+			z0 = float2(0.0f,0.0f);
+			z1 = float2(length(p1 - p0), 0.0f);
+			z2 = float2(dot(p2 - p0, X), dot(p2 - p0, Y));
+
+	}
+	void MeshTextureMap::computeMap(aly::Mesh& mesh, const std::function<bool(const std::string& status, float progress)>& statusHandler){
 		std::multimap<bvec2f, float2, TextureBoxCompare> boxes;
-		totalArea = pack(rects, boxes);
+		std::vector<int> rectId;
+		std::vector<bvec2f> rects;
+		unfold(mesh, rectId, rects);
+		float totalArea = pack(rects, boxes);
 		float  sc = 1.0f / totalArea;
-		
+		int index = 0;
+		mesh.textureMap.resize(mesh.triIndexes.size() * 3, float2(0, 0));
 		for (int id = 0; id < rectId.size(); id++){
+			Mosaic& mosaic = mosaics[id];
 			int idx = rectId[id];
 			bvec2f& rect = rects[id];
 			std::multimap<bvec2f, float2, TextureBoxCompare>::iterator boxPair = boxes.find(rect);
-			std::map<int, int>& uniqueVertexes = uniqueVertexLists[idx];
+			index = 0;
 			if (boxPair == boxes.end()){
-				for (std::pair<int, int> pr : uniqueVertexes)
-				{
-					int k = pr.second;
-					mosaic.vertex[k].tex_coord.x = 0.0f;
-					mosaic.vertex[k].tex_coord.y = 0.0f;
+				for (int2 fid:mosaic.indexes){
+					mesh.textureMap[fid.y]= float2(0.0f);
 				}
-			}
-			else {
+			} else {
 				float2 pt = boxPair->second;
-				float scale = scales[idx];
-				for (std::pair<int, int> pr : uniqueVertexes)
-				{
-					int k = pr.second;
-					mosaic.vertex[k].tex_coord.x = (scale*mosaic.vertex[k].tex_coord.x + pt.x)*sc;
-					mosaic.vertex[k].tex_coord.y = (scale*mosaic.vertex[k].tex_coord.y + pt.y)*sc;
+				for (int2 fid : mosaic.indexes) {
+					MosaicVertex& mv = mosaic.vertexes[mosaic.vertexMap[fid.y]];
+					mesh.textureMap[fid.y] = (mv.uv + pt)*sc;
 				}
 			}
 		}	
-		mesh.textureMap.resize(mesh.triIndexes.size()*3,float2(0,0));
-		index = 0;
-		for (Facet F:mosaic.facet){
-			for (int vid : F){
-				Vertex& V = mosaic.vertex[vid];
-				mesh.textureMap[faceList[index++]] = float2((float)V.tex_coord.x, (float)V.tex_coord.y);
-			}
-		}
-
 		if (mesh.textureImage.size() > 0) {
 			mesh.textureImage.set(float4(0.0f));
 			int textureHeight = mesh.textureImage.height;
@@ -379,7 +479,7 @@ namespace aly {
 			}
 		}
 	}
-	float2 MeshTexureMap::packNaive(const std::vector<bvec2f> &rects, std::multimap<bvec2f, float2, TextureBoxCompare>& boxes, float area){
+	float2 MeshTextureMap::packNaive(const std::vector<bvec2f> &rects, std::multimap<bvec2f, float2, TextureBoxCompare>& boxes, float area){
 		float edgeLength = std::sqrt(area);
 		int N = static_cast<int>(rects.size());
 		int counter = 0;
@@ -397,7 +497,7 @@ namespace aly {
 		}
 		return maxPt;
 	}
-	float MeshTexureMap::packAllNaive(std::vector<bvec2f>& rects, std::multimap<bvec2f, float2, TextureBoxCompare>& boxMap){
+	float MeshTextureMap::packAllNaive(std::vector<bvec2f>& rects, std::multimap<bvec2f, float2, TextureBoxCompare>& boxMap){
 		double totalArea = 0;
 		int N = static_cast<int>(rects.size());
 		for (int i = 0; i < N; i++){
@@ -410,7 +510,7 @@ namespace aly {
 		edgeLength = std::max(packedRect.x, packedRect.y);
 		return edgeLength;
 	}
-	float MeshTexureMap::pack(std::vector<bvec2f>& rects, std::multimap<bvec2f, float2, TextureBoxCompare>& boxMap){
+	float MeshTextureMap::pack(std::vector<bvec2f>& rects, std::multimap<bvec2f, float2, TextureBoxCompare>& boxMap){
 		double totalArea = 0;
 		int N = static_cast<int>(rects.size());
 		std::vector<std::pair<double, int>> rectSortList(N);
@@ -465,7 +565,7 @@ namespace aly {
 		int count = 0;
 		for (; rectIter != rectBatches.end();rectIter++,areaIter++,rectIdIter++){
 			double area = *areaIter;
-			std::cout << "Pack [" << rectIter->size() << " , " << 100.0*area/totalArea <<" %]"<< std::endl;
+			//std::cout << "Pack [" << rectIter->size() << " , " << 100.0*area/totalArea <<" %]"<< std::endl;
 			boxes.clear();
 			std::vector<bvec2f>& rectList = *rectIter;
 			if (boxMap.size() > 0){
@@ -492,7 +592,7 @@ namespace aly {
 		edgeLength = std::max(packedRect.x, packedRect.y);
 		return edgeLength;
 	}
-	float2 MeshTexureMap::pack(const std::vector<bvec2f> &rects, std::multimap<bvec2f, float2, TextureBoxCompare>& boxes, float currentArea){
+	float2 MeshTextureMap::pack(const std::vector<bvec2f> &rects, std::multimap<bvec2f, float2, TextureBoxCompare>& boxes, float currentArea){
 		
 		bool fine = false;
 		int count = 0;
@@ -516,7 +616,7 @@ namespace aly {
 		return maxPt;
 	}
 
-	bool MeshTexureMap::pack(const std::vector<bvec2f> &temp, std::multimap<bvec2f, float2, TextureBoxCompare>& boxes, const float2 &size)
+	bool MeshTextureMap::pack(const std::vector<bvec2f> &temp, std::multimap<bvec2f, float2, TextureBoxCompare>& boxes, const float2 &size)
 	{
 		std::list<float4> freeBoxes;
 		freeBoxes.push_back(float4(0, 0, size.x, size.y));
@@ -661,7 +761,7 @@ namespace aly {
 		return true;
 	}
 
-	void MeshTexureMap::labelComponents(aly::Mesh& mesh, const std::function<bool(const std::string& status, float progress)>& statusHandler){
+	void MeshTextureMap::labelComponents(aly::Mesh& mesh, const std::function<bool(const std::string& status, float progress)>& statusHandler){
 		std::vector<int> cclist;
 		Vector3ui& faceArray = mesh.triIndexes;
 		Vector3f& vertexArray = mesh.vertexLocations;
@@ -747,7 +847,6 @@ namespace aly {
 					changeCount++;
 				}
 			}
-			std::cout << "Iteration " << iter << " " << changeCount << std::endl;
 			if (changeCount == 0)break;
 		}
 		
@@ -755,7 +854,7 @@ namespace aly {
 		scc = splitLabelComponents(vertexLabels);
 		scc = makeLabelsUnique(vertexLabels, relabel, 0);
 
-		mosaicIndexes.resize(scc);
+		mosaics.resize(scc);
 		int idx = 0;
 		for (count = 0; count < faceCount; count++){
 			uint3 tri = faceArray[count];
@@ -792,16 +891,24 @@ namespace aly {
 			vertexLabels[tri.z] = faceLabels[count];
 		}
 	
-		mosaicIndexes.clear();
-		mosaicIndexes.resize(scc);
+		mosaics.clear();
+		mosaics.resize(scc);
 
 		for (count = 0; count < faceCount; count++){
 			int l = faceLabels[count];
 			if (l < scc){
 				uint3 tri = faceArray[count];
-				mosaicIndexes[l].push_back(int2(tri.x, 3*count));
-				mosaicIndexes[l].push_back(int2(tri.y, 3 * count + 1));
-				mosaicIndexes[l].push_back(int2(tri.z, 3 * count + 2));
+				mosaics[l].indexes.push_back(int2(tri.x, 3 * count));
+				mosaics[l].indexes.push_back(int2(tri.y, 3 * count + 1));
+				mosaics[l].indexes.push_back(int2(tri.z, 3 * count + 2));
+			}
+		}
+		for (auto iter = mosaics.begin(); iter != mosaics.end();iter++) {
+			if (iter->indexes.size() == 0) {
+				mosaics.erase(iter);
+				if (mosaics.size() > 0) {
+					iter--;
+				}
 			}
 		}
 		colors.resize(scc);
@@ -812,7 +919,7 @@ namespace aly {
 		}
 		Shuffle(colors);
 	}
-	int MeshTexureMap::splitLabelComponents(std::vector<int>& vertxLabels){
+	int MeshTextureMap::splitLabelComponents(std::vector<int>& vertxLabels){
 		std::vector<int> cclist;
 		
 		int vertexCount = static_cast<int>(vertxLabels.size());
@@ -872,7 +979,7 @@ namespace aly {
 	}
 	
 
-	float4x4 MeshTexureMap::fitPlane(const aly::Mesh& mesh, std::list<int2>& indexes,float3* deviations,float* scale){
+	float4x4 MeshTextureMap::fitPlane(const aly::Mesh& mesh, std::list<int2>& indexes,float3* deviations){
 		float3x3 AtA= float3x3::zero();
 		float3 v;
 		float3 centerPoint(0.0f);
@@ -936,24 +1043,11 @@ namespace aly {
 		if (dotSum < 0.0f){
 			PInv = MakeRotationX((float)ALY_PI)*PInv;
 		}
-		float3 minPt = float3(1E30f, 1E30f, 1E30f);
-		float3 maxPt= float3(-1E30f, -1E30f, -1E30f);
-		for (int2 idx : indexes){
-			float3 pt = mesh.vertexLocations[idx.x];
-			float3 qt= Transform(PInv,pt);
-			minPt = aly::min(minPt,qt);
-			maxPt = aly::max(maxPt,qt);
-		}
-		float3 delta = maxPt-minPt;
-		
-		float maxDim = std::max(std::max(delta.x, delta.y), std::max(1E-12f,delta.z));
-		//std::cout << "Delta " << delta << " " << maxDim <<" "<<*deviations<< std::endl;
-		*scale = maxDim;
-		PInv = MakeScale(float3(1.0f/maxDim))*MakeTranslation(-1.0f*minPt)*PInv;
+
 		return PInv;
 
 	}
-	void MeshTexureMap::smooth(aly::Mesh& mesh,  int iters, float errorTolerance){
+	void MeshTextureMap::smooth(aly::Mesh& mesh,  int iters, float errorTolerance){
 
 		MeshSetNeighborTable nbrTable;
 		CreateVertexNeighborTable(mesh, nbrTable);
