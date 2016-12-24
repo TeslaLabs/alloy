@@ -75,7 +75,8 @@ bool MeshTextureMapEx::init(Composite& rootNode) {
 	wireFrameBuffer.initialize(iw, ih);
 	wireframeShader.setFaceColor(Color(0.0f, 0.0f, 0.0f, 0.0f));
 	wireframeShader.setEdgeColor(Color(0.8f, 0.8f, 0.8f, 1.0f));
-	wireframeShader.setLineWidth(1.25f);
+	wireframeShader.setLineWidth(1.0f);
+
 	//Set up camera
 	camera.setNearFarPlanes(-2.0f, 2.0f);
 	camera.setZoom(0.75f);

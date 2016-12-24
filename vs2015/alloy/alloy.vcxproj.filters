@@ -28,6 +28,12 @@
     <Filter Include="include\cereal">
       <UniqueIdentifier>{45ae0b41-1376-4320-9da5-fce2f2a9ce90}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\core\poisson">
+      <UniqueIdentifier>{ddfc605c-dd7d-4e0f-bc50-851c72c25847}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\core\poisson">
+      <UniqueIdentifier>{68a0340d-1c78-4953-9520-3089e08cb6ed}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\core\nanovg.cpp">
@@ -347,6 +353,39 @@
     </ClCompile>
     <ClCompile Include="..\..\src\example\MeshTextureMapEx.cpp">
       <Filter>src\example</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\example\MeshReconstructionEx.cpp">
+      <Filter>src\example</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\core\poisson\CmdLineParser.cpp">
+      <Filter>src\core\poisson</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\core\poisson\Factor.cpp">
+      <Filter>src\core\poisson</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\core\poisson\Geometry.cpp">
+      <Filter>src\core\poisson</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\core\poisson\MarchingCubes.cpp">
+      <Filter>src\core\poisson</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\core\poisson\PlyFile.cpp">
+      <Filter>src\core\poisson</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\core\poisson\PoissonRecon.cpp">
+      <Filter>src\core\poisson</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\core\poisson\SSDRecon.cpp">
+      <Filter>src\core\poisson</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\core\poisson\SurfaceTrimmer.cpp">
+      <Filter>src\core\poisson</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\AlloyReconstruction.cpp">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\core\poisson\MultiGridOctreeData.SortedTreeNodes.hpp">
+      <Filter>include\core\poisson</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -751,6 +790,117 @@
     </ClInclude>
     <ClInclude Include="..\..\include\example\MeshTextureMapEx.h">
       <Filter>include\example</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\example\MeshReconstructionEx.h">
+      <Filter>include\example</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\Allocator.h">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\Array.h">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\BinaryNode.h">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\BSplineData.h">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\CmdLineParser.h">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\Factor.h">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\FunctionData.h">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\Geometry.h">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\MarchingCubes.h">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\MAT.h">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\MemoryUsage.h">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\MultiGridOctreeData.h">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\MyTime.h">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\Octree.h">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\Ply.h">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\PointStream.h">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\Polynomial.h">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\PPolynomial.h">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\SparseMatrix.h">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\MAT.hpp">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\AlloyReconstruction.h">
+      <Filter>include\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\Array.hpp">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\BSplineData.hpp">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\CmdLineParser.hpp">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\FunctionData.hpp">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\Geometry.hpp">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\MultiGridOctreeData.hpp">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\MultiGridOctreeData.IsoSurface.hpp">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\MultiGridOctreeData.System.hpp">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\MultiGridOctreeData.WeightedSamples.hpp">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\Octree.hpp">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\PointStream.hpp">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\Polynomial.hpp">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\PPolynomial.hpp">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\SparseMatrix.hpp">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\MultiGridOctreeData.Evaluation.hpp">
+      <Filter>include\core\poisson</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

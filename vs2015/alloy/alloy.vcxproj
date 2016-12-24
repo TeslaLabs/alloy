@@ -19,6 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\include\core\poisson\CmdLineParser.cpp" />
+    <ClCompile Include="..\..\include\core\poisson\Factor.cpp" />
+    <ClCompile Include="..\..\include\core\poisson\Geometry.cpp" />
+    <ClCompile Include="..\..\include\core\poisson\MarchingCubes.cpp" />
+    <ClCompile Include="..\..\include\core\poisson\MultiGridOctreeData.SortedTreeNodes.hpp" />
+    <ClCompile Include="..\..\include\core\poisson\PlyFile.cpp" />
+    <ClCompile Include="..\..\include\core\poisson\PoissonRecon.cpp" />
+    <ClCompile Include="..\..\include\core\poisson\SSDRecon.cpp" />
+    <ClCompile Include="..\..\include\core\poisson\SurfaceTrimmer.cpp" />
     <ClCompile Include="..\..\src\core\AlloyAnimator.cpp" />
     <ClCompile Include="..\..\src\core\AlloyAny.cpp" />
     <ClCompile Include="..\..\src\core\AlloyApplication.cpp" />
@@ -48,6 +57,7 @@
     <ClCompile Include="..\..\src\core\AlloyOptimization.cpp" />
     <ClCompile Include="..\..\src\core\AlloyParameterPane.cpp" />
     <ClCompile Include="..\..\src\core\AlloyPLY.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyReconstruction.cpp" />
     <ClCompile Include="..\..\src\core\AlloySimulation.cpp" />
     <ClCompile Include="..\..\src\core\AlloySparseBitSet.cpp" />
     <ClCompile Include="..\..\src\core\AlloySparseMatrix.cpp" />
@@ -118,6 +128,7 @@
     <ClCompile Include="..\..\src\example\ParameterPaneEx.cpp" />
     <ClCompile Include="..\..\src\example\PoissonBlendEx.cpp" />
     <ClCompile Include="..\..\src\example\PoissonInpaintEx.cpp" />
+    <ClCompile Include="..\..\src\example\MeshReconstructionEx.cpp" />
     <ClCompile Include="..\..\src\example\SplineEx.cpp" />
     <ClCompile Include="..\..\src\example\TablePaneEx.cpp" />
     <ClCompile Include="..\..\src\example\TabPaneEx.cpp" />
@@ -167,6 +178,7 @@
     <ClInclude Include="..\..\include\core\AlloyOptimizationMath.h" />
     <ClInclude Include="..\..\include\core\AlloyParameterPane.h" />
     <ClInclude Include="..\..\include\core\AlloyPLY.h" />
+    <ClInclude Include="..\..\include\core\AlloyReconstruction.h" />
     <ClInclude Include="..\..\include\core\AlloySimulation.h" />
     <ClInclude Include="..\..\include\core\AlloySparseBitSet.h" />
     <ClInclude Include="..\..\include\core\AlloySparseMatrix.h" />
@@ -205,6 +217,41 @@
     <ClInclude Include="..\..\include\core\nanovg_gl.h" />
     <ClInclude Include="..\..\include\core\nanovg_gl_utils.h" />
     <ClInclude Include="..\..\include\core\OneEuroFilter.h" />
+    <ClInclude Include="..\..\include\core\poisson\Allocator.h" />
+    <ClInclude Include="..\..\include\core\poisson\Array.h" />
+    <ClInclude Include="..\..\include\core\poisson\Array.hpp" />
+    <ClInclude Include="..\..\include\core\poisson\BinaryNode.h" />
+    <ClInclude Include="..\..\include\core\poisson\BSplineData.h" />
+    <ClInclude Include="..\..\include\core\poisson\BSplineData.hpp" />
+    <ClInclude Include="..\..\include\core\poisson\CmdLineParser.h" />
+    <ClInclude Include="..\..\include\core\poisson\CmdLineParser.hpp" />
+    <ClInclude Include="..\..\include\core\poisson\Factor.h" />
+    <ClInclude Include="..\..\include\core\poisson\FunctionData.h" />
+    <ClInclude Include="..\..\include\core\poisson\FunctionData.hpp" />
+    <ClInclude Include="..\..\include\core\poisson\Geometry.h" />
+    <ClInclude Include="..\..\include\core\poisson\Geometry.hpp" />
+    <ClInclude Include="..\..\include\core\poisson\MarchingCubes.h" />
+    <ClInclude Include="..\..\include\core\poisson\MAT.h" />
+    <ClInclude Include="..\..\include\core\poisson\MAT.hpp" />
+    <ClInclude Include="..\..\include\core\poisson\MemoryUsage.h" />
+    <ClInclude Include="..\..\include\core\poisson\MultiGridOctreeData.Evaluation.hpp" />
+    <ClInclude Include="..\..\include\core\poisson\MultiGridOctreeData.h" />
+    <ClInclude Include="..\..\include\core\poisson\MultiGridOctreeData.hpp" />
+    <ClInclude Include="..\..\include\core\poisson\MultiGridOctreeData.IsoSurface.hpp" />
+    <ClInclude Include="..\..\include\core\poisson\MultiGridOctreeData.System.hpp" />
+    <ClInclude Include="..\..\include\core\poisson\MultiGridOctreeData.WeightedSamples.hpp" />
+    <ClInclude Include="..\..\include\core\poisson\MyTime.h" />
+    <ClInclude Include="..\..\include\core\poisson\Octree.h" />
+    <ClInclude Include="..\..\include\core\poisson\Octree.hpp" />
+    <ClInclude Include="..\..\include\core\poisson\Ply.h" />
+    <ClInclude Include="..\..\include\core\poisson\PointStream.h" />
+    <ClInclude Include="..\..\include\core\poisson\PointStream.hpp" />
+    <ClInclude Include="..\..\include\core\poisson\Polynomial.h" />
+    <ClInclude Include="..\..\include\core\poisson\Polynomial.hpp" />
+    <ClInclude Include="..\..\include\core\poisson\PPolynomial.h" />
+    <ClInclude Include="..\..\include\core\poisson\PPolynomial.hpp" />
+    <ClInclude Include="..\..\include\core\poisson\SparseMatrix.h" />
+    <ClInclude Include="..\..\include\core\poisson\SparseMatrix.hpp" />
     <ClInclude Include="..\..\include\core\process_unix.h" />
     <ClInclude Include="..\..\include\core\process_win.h" />
     <ClInclude Include="..\..\include\core\sha1.h" />
@@ -254,6 +301,7 @@
     <ClInclude Include="..\..\include\example\ParameterPaneEx.h" />
     <ClInclude Include="..\..\include\example\PoissonBlendEx.h" />
     <ClInclude Include="..\..\include\example\PoissonInpaintEx.h" />
+    <ClInclude Include="..\..\include\example\MeshReconstructionEx.h" />
     <ClInclude Include="..\..\include\example\SplineEx.h" />
     <ClInclude Include="..\..\include\example\TablePaneEx.h" />
     <ClInclude Include="..\..\include\example\TabPaneEx.h" />
