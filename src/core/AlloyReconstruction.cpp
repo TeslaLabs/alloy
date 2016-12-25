@@ -366,9 +366,7 @@ template<class Real, int Degree, class Vertex, BoundaryType BType> bool ExecuteI
 		std::shared_ptr<DensityEstimator> density;
 		std::shared_ptr<InterpolationInfo> iInfo;
 		SparseNodeData<Point3D< Real >, NORMAL_DEGREE > normalInfo;
-		SparseNodeData<ProjectiveData< Point3D< Real >, Real >, DATA_DEGREE > colorData;
 		DenseNodeData< Real, Degree > constraints;
-
 		int pointCount = 0;
 		//DumpOutput("Poisson Reconstruction:: Threads: %d Tree Depth: %d\n", params.Threads.value, params.Depth.value);
 		{
@@ -376,11 +374,9 @@ template<class Real, int Degree, class Vertex, BoundaryType BType> bool ExecuteI
 			pointCount = tree.template init< Point3D< Real > >(pointStream, params.Depth.value, params.Confidence.set, samples, &sampleData);
 
 		}
-
 		Real pointWeightSum;
 		density.reset(tree.template setDensityEstimator< WEIGHT_DEGREE >(samples, kernelDepth, params.SamplesPerNode.value));
 		normalInfo=tree.template setNormalField< NORMAL_DEGREE >(samples, *density, pointWeightSum, BType == BOUNDARY_NEUMANN);
-		colorData=tree.template setDataField< DATA_DEGREE, false >(samples, sampleData, (DensityEstimator*)nullptr);
 		{
 			std::vector< int > indexMap;
 			constexpr int MAX_DEGREE = NORMAL_DEGREE > Degree ? NORMAL_DEGREE : Degree;
@@ -399,7 +395,12 @@ template<class Real, int Degree, class Vertex, BoundaryType BType> bool ExecuteI
 		}
 		
 		typename Octree< Real >::SolverInfo solverInfo;
-		solverInfo.cgDepth = params.CGDepth.value, solverInfo.iters = params.Iters.value, solverInfo.cgAccuracy = params.CGSolverAccuracy.value, solverInfo.verbose =false, solverInfo.showResidual = params.ShowResidual.set, solverInfo.lowResIterMultiplier = std::max< double >(1., params.LowResIterMultiplier.value);
+		solverInfo.cgDepth = params.CGDepth.value;
+		solverInfo.iters = params.Iters.value;
+		solverInfo.cgAccuracy = params.CGSolverAccuracy.value;
+		solverInfo.verbose = false;
+		solverInfo.showResidual = params.ShowResidual.set;
+		solverInfo.lowResIterMultiplier = std::max< double >(1., params.LowResIterMultiplier.value);
 		DenseNodeData< Real, Degree > solution = tree.template solveSystem< Degree, BType >(FEMSystemFunctor< Degree, BType >(0, 1., 0), iInfo.get(), constraints, solveDepth, solverInfo);
 
 		double valueSum = 0, weightSum = 0;
@@ -412,6 +413,14 @@ template<class Real, int Degree, class Vertex, BoundaryType BType> bool ExecuteI
 			if (w>0) weightSum += w, valueSum += evaluator.value(sample.data.p / sample.weight, omp_get_thread_num(), samples[j].node) * w;
 		}
 		isoValue = (Real)(valueSum / weightSum);
+		SparseNodeData<ProjectiveData< Point3D< Real >, Real >, DATA_DEGREE > colorData= tree.template setDataField< DATA_DEGREE, false >(samples, sampleData, (DensityEstimator*)nullptr);
+		sampleData.clear();
+		for (const OctNode< TreeNodeData >* n = tree.tree().nextNode(); n; n = tree.tree().nextNode(n))
+		{
+			ProjectiveData< Point3D< Real >, Real >* clr = colorData(n);
+			if (clr) (*clr) *= (Real)std::pow(params.Color.value, tree.depth(n));
+		}
+
 		tree.template getMCIsoSurface< Degree, BType, WEIGHT_DEGREE, DATA_DEGREE >(density.get(), &colorData, solution, isoValue, mesh, !params.LinearFit.set, !params.NonManifold.set, params.PolygonMesh.set);
 
 	}
@@ -489,7 +498,7 @@ template<class Real, int Degree, class Vertex, BoundaryType BType> bool ExecuteI
 		}
 	}
 	printf("Density Value Range: [%f,%f] Trim Value: %f \n", min, max, trim);
-
+	
 	std::map<uint64_t, int> vertexTable;
 	std::vector<std::vector<int> > ltPolygons, gtPolygons;
 	std::vector<bool> ltFlags, gtFlags;
@@ -558,7 +567,9 @@ template<class Real, int Degree, class Vertex, BoundaryType BType> bool ExecuteI
 	}
 	RemoveHangingVertices(vertices, gtPolygons);
 	ltPolygons.clear();
+
 	polygons = gtPolygons;
+	
 	{
 		size_t vertCount = vertices.size();
 		size_t faceCount = polygons.size();
@@ -570,11 +581,10 @@ template<class Real, int Degree, class Vertex, BoundaryType BType> bool ExecuteI
 		{
 			Vertex vertex = vertices[i];
 			Point3D<float> pt = vertex.point;
-			unsigned char* c = vertex.color;
-			output.vertexLocations[i] = float3(pt[0], pt[1], pt[2]);
-			RGBAf rgba = ToRGBAf(RGBA(c[0], c[1], c[2], 255));
-			rgba.w = (vertex.value - min) / std::max(1E-6f, max - min);
+			const unsigned char* c = vertex.color;
+			RGBAf rgba=RGBAf(c[0]/255.0f, c[1] / 255.0f, c[2] / 255.0f, (vertex.value - min) / std::max(1E-6f, max - min));
 			output.vertexColors[i] = rgba;
+			output.vertexLocations[i] = float3(pt[0],pt[1],pt[2]);
 		}
 		for (int i = 0; i < faceCount; i++)
 		{
@@ -600,13 +610,13 @@ template<class Real, int Degree, class Vertex, BoundaryType BType> bool ExecuteI
 			}
 		}
 		output.updateBoundingBox();
-		output.updateVertexNormals(10);
+		output.updateVertexNormals();
 	}
 	if (monitor)monitor("Done", 1.0f);
 	return true;
 }
 
-bool AlloyPointStream::nextPoint(OrientedPoint3D<float>& p, Point3D<unsigned char>& d)
+bool AlloyPointStream::nextPoint(OrientedPoint3D<float>& p, Point3D<float>& d)
 {
 	if (counter >= mesh.vertexLocations.size())
 		return false;
@@ -615,19 +625,18 @@ bool AlloyPointStream::nextPoint(OrientedPoint3D<float>& p, Point3D<unsigned cha
 	float4 c = mesh.vertexColors[counter];
 	p.p = Point3D<float>(v.x, v.y, v.z);
 	p.n = Point3D<float>(n.x, n.y, n.z);
-	d = Point3D<unsigned char>((unsigned char)clamp(c.x * 255.0f, 0.0f, 255.0f),
-		(unsigned char)clamp(c.y * 255.0f, 0.0f, 255.0f),
-		(unsigned char)clamp(c.z * 255.0f, 0.0f, 255.0f));
+	d = Point3D<float>(255.0f*c.x, 255.0f*c.y, 255.0f*c.z);
 	counter++;
 	return true;
 }
+
 void PoissonReconstruct(const ReconstructionParameters& params, const aly::Mesh& input, aly::Mesh& output, const std::function<bool(const std::string& status, float progress)>& monitor)
 {
 	static const BoundaryType BType = BoundaryType::BOUNDARY_NEUMANN;
 	switch (params.Degree.value)
 	{
 	case 1:
-		ExecuteInternal<float, 1, PlyColorAndValueVertex<float>, BType>(params, input, output, monitor);
+		ExecuteInternal<float, 1,PlyColorAndValueVertex<float>, BType>(params, input, output, monitor);
 		break;
 	case 2:
 		ExecuteInternal<float, 2, PlyColorAndValueVertex<float>, BType>(params, input, output, monitor);

@@ -39,20 +39,20 @@ DAMAGE.
 #include <Windows.h>
 #include <Psapi.h>
 #endif // _WIN32 || _WIN64
-#include "MyTime.h"
-#include "MarchingCubes.h"
-#include "Octree.h"
-#include "SparseMatrix.h"
-#include "CmdLineParser.h"
-#include "PPolynomial.h"
-#include "Ply.h"
-#include "MemoryUsage.h"
+#include "poisson/MyTime.h"
+#include "poisson/MarchingCubes.h"
+#include "poisson/Octree.h"
+#include "poisson/SparseMatrix.h"
+#include "poisson/CmdLineParser.h"
+#include "poisson/PPolynomial.h"
+#include "poisson/Ply.h"
+#include "poisson/MemoryUsage.h"
 #ifdef _OPENMP
 #include "omp.h"
 #endif // _OPENMP
 void DumpOutput( const char* format , ... );
 void DumpOutput2( std::vector< char* >& comments , const char* format , ... );
-#include "MultiGridOctreeData.h"
+#include "poisson/MultiGridOctreeData.h"
 
 #define DEFAULT_FULL_DEPTH 5
 

@@ -35,13 +35,7 @@ DAMAGE.
 #include "PPolynomial.h"
 #include "Array.h"
 
-enum BoundaryType
-{
-	BOUNDARY_FREE ,
-	BOUNDARY_DIRICHLET ,
-	BOUNDARY_NEUMANN ,
-	BOUNDARY_COUNT
-};
+
 const char* BoundaryNames[] = { "free" , "Dirichlet" , "Neumann" };
 template< BoundaryType BType > inline bool HasPartitionOfUnity( void ){ return BType!=BOUNDARY_DIRICHLET; }
 

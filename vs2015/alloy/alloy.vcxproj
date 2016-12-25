@@ -19,11 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\include\core\poisson\CmdLineParser.cpp" />
-    <ClCompile Include="..\..\include\core\poisson\Factor.cpp" />
-    <ClCompile Include="..\..\include\core\poisson\Geometry.cpp" />
-    <ClCompile Include="..\..\include\core\poisson\MarchingCubes.cpp" />
-    <ClCompile Include="..\..\include\core\poisson\PlyFile.cpp" />
     <ClCompile Include="..\..\src\core\AlloyAnimator.cpp" />
     <ClCompile Include="..\..\src\core\AlloyAny.cpp" />
     <ClCompile Include="..\..\src\core\AlloyApplication.cpp" />
@@ -77,6 +72,11 @@
     <ClCompile Include="..\..\src\core\AlloyImageProcessing.cpp" />
     <ClCompile Include="..\..\src\core\AlloyMeshTextureMap.cpp" />
     <ClCompile Include="..\..\src\core\nanovg.cpp" />
+    <ClCompile Include="..\..\src\core\poisson\CmdLineParser.cpp" />
+    <ClCompile Include="..\..\src\core\poisson\Factor.cpp" />
+    <ClCompile Include="..\..\src\core\poisson\Geometry.cpp" />
+    <ClCompile Include="..\..\src\core\poisson\MarchingCubes.cpp" />
+    <ClCompile Include="..\..\src\core\poisson\PlyFile.cpp" />
     <ClCompile Include="..\..\src\core\process_unix.cpp" />
     <ClCompile Include="..\..\src\core\process_win.cpp" />
     <ClCompile Include="..\..\src\core\SanityChecks.cpp" />

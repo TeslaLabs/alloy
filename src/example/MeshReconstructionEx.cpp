@@ -20,6 +20,7 @@
 */
 
 #include "Alloy.h"
+#include "AlloyReconstruction.h"
 #include "../../include/example/MeshReconstructionEx.h"
 using namespace aly;
 MeshReconstructionEx::MeshReconstructionEx() : Application(800, 600, "Mesh Reconstruction Example") {
@@ -51,11 +52,19 @@ void MeshReconstructionEx::initializeMesh() {
 	}
 }
 bool MeshReconstructionEx::init(Composite& rootNode) {
-	mesh.load(getFullPath("models/armadillo.ply"));
+	box3f bbox(float3(0.0f, 0.0f, 0.0f), float3(1.0f, 1.0f, 1.0f));
 	pointCloud.load(getFullPath("models/eagle.ply"));
-	std::cout << "Point Cloud " << pointCloud << std::endl;
-	pointCloud.updateBoundingBox();
 	objectBBox = pointCloud.getBoundingBox();
+	float4x4 M = MakeTransform(objectBBox, bbox);
+	pointCloud.transform(M);
+	ReconstructionParameters params;
+	PoissonReconstruct(params, pointCloud, mesh);
+	float4x4 Minv = inverse(M);
+	mesh.transform(Minv);
+	pointCloud.transform(Minv);
+	WriteMeshToFile(MakeString() << GetDesktopDirectory() << ALY_PATH_SEPARATOR << "mesh.ply",mesh);
+	pointCloud.updateBoundingBox();
+	
 	displayIndex = 0;
 	parametersDirty = true;
 	frameBuffersDirty = true;

@@ -34,7 +34,13 @@ DAMAGE.
 #include <vector>
 #include <stdlib.h>
 #include <unordered_map>
-
+enum BoundaryType
+{
+	BOUNDARY_FREE = 0,
+	BOUNDARY_DIRICHLET = 1,
+	BOUNDARY_NEUMANN = 2,
+	BOUNDARY_COUNT = 3
+};
 template<class Real>
 Real Random(void);
 

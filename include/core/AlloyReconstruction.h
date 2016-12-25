@@ -27,9 +27,8 @@
 #include <poisson/CmdLineParser.h>
 #include <poisson/Geometry.h>
 #include <poisson/PointStream.h>
-#include <poisson/BSplineData.h>
 #include <string>
-class AlloyPointStream : public OrientedPointStreamWithData<float, Point3D< unsigned char> >
+class AlloyPointStream : public OrientedPointStreamWithData<float, Point3D< float> >
 {
 protected:
 	const aly::Mesh& mesh;
@@ -40,7 +39,7 @@ public:
 	void reset(void) {
 		counter = 0;
 	}
-	bool nextPoint(OrientedPoint3D< float >& p, Point3D< unsigned char >& d);
+	virtual bool nextPoint(OrientedPoint3D< float >& p, Point3D< float >& d) override;
 };
 
 struct ReconstructionParameters {

@@ -357,23 +357,23 @@
     <ClCompile Include="..\..\src\example\MeshReconstructionEx.cpp">
       <Filter>src\example</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\include\core\poisson\CmdLineParser.cpp">
-      <Filter>src\core\poisson</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\include\core\poisson\Factor.cpp">
-      <Filter>src\core\poisson</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\include\core\poisson\Geometry.cpp">
-      <Filter>src\core\poisson</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\include\core\poisson\MarchingCubes.cpp">
-      <Filter>src\core\poisson</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\include\core\poisson\PlyFile.cpp">
-      <Filter>src\core\poisson</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\core\AlloyReconstruction.cpp">
       <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\poisson\CmdLineParser.cpp">
+      <Filter>src\core\poisson</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\poisson\Factor.cpp">
+      <Filter>src\core\poisson</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\poisson\Geometry.cpp">
+      <Filter>src\core\poisson</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\poisson\MarchingCubes.cpp">
+      <Filter>src\core\poisson</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\poisson\PlyFile.cpp">
+      <Filter>src\core\poisson</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
