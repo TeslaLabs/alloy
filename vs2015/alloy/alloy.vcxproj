@@ -23,11 +23,7 @@
     <ClCompile Include="..\..\include\core\poisson\Factor.cpp" />
     <ClCompile Include="..\..\include\core\poisson\Geometry.cpp" />
     <ClCompile Include="..\..\include\core\poisson\MarchingCubes.cpp" />
-    <ClCompile Include="..\..\include\core\poisson\MultiGridOctreeData.SortedTreeNodes.hpp" />
     <ClCompile Include="..\..\include\core\poisson\PlyFile.cpp" />
-    <ClCompile Include="..\..\include\core\poisson\PoissonRecon.cpp" />
-    <ClCompile Include="..\..\include\core\poisson\SSDRecon.cpp" />
-    <ClCompile Include="..\..\include\core\poisson\SurfaceTrimmer.cpp" />
     <ClCompile Include="..\..\src\core\AlloyAnimator.cpp" />
     <ClCompile Include="..\..\src\core\AlloyAny.cpp" />
     <ClCompile Include="..\..\src\core\AlloyApplication.cpp" />

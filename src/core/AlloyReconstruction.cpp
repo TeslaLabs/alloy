@@ -150,7 +150,7 @@ void SplitPolygon(const std::vector<int>& polygon,
 			int j1 = (start + int(sz) - 1) % sz, j2 = start;
 			int v1 = polygon[j1], v2 = polygon[j2];
 			int vIdx;
-			hash_map<long long, int>::iterator iter = vertexTable.find(EdgeKey(v1, v2));
+			std::map<uint64_t, int>::iterator iter = vertexTable.find(EdgeKey(v1, v2));
 			if (iter == vertexTable.end())
 			{
 				vertexTable[EdgeKey(v1, v2)] = vIdx = int(vertices.size());
@@ -170,7 +170,7 @@ void SplitPolygon(const std::vector<int>& polygon,
 			else
 			{
 				int vIdx;
-				hash_map<long long, int>::iterator iter = vertexTable.find(EdgeKey(v1, v2));
+				std::map<uint64_t, int>::iterator iter = vertexTable.find(EdgeKey(v1, v2));
 				if (iter == vertexTable.end())
 				{
 					vertexTable[EdgeKey(v1, v2)] = vIdx = int(vertices.size());
@@ -249,7 +249,7 @@ double PolygonArea(const std::vector<Vertex>& vertices, const std::vector<int>& 
 template<class Vertex>
 void RemoveHangingVertices(std::vector<Vertex>& vertices, std::vector<std::vector<int> >& polygons)
 {
-	hash_map<int, int> vMap;
+	std::map<int, int> vMap;
 	std::vector<bool> vertexFlags(vertices.size(), false);
 	for (size_t i = 0; i < polygons.size(); i++)
 		for (size_t j = 0; j < polygons[i].size(); j++)
@@ -333,9 +333,10 @@ double TriangleArea(Point3D<Real> v1, Point3D<Real> v2, Point3D<Real> v3)
 	return sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]) / 2.;
 }
 
-template<class Real, int Degree, class Vertex> bool ExecuteInternal(const ReconstructionParameters& params, const aly::Mesh& input, aly::Mesh& output,
+template<class Real, int Degree, class Vertex, BoundaryType BType> bool ExecuteInternal(const ReconstructionParameters& params, const aly::Mesh& input, aly::Mesh& output,
 	const std::function<bool(const std::string& status, float progress)>& monitor)
 {
+	int solveDepth = params.MaxSolveDepth.value;
 	Reset<Real>();
 	XForm4x4<Real> xForm, iXForm;
 	xForm = XForm4x4<Real>::Identity();
@@ -353,14 +354,21 @@ template<class Real, int Degree, class Vertex> bool ExecuteInternal(const Recons
 	{
 		kernelDepth = params.Depth.value;
 	}
-	double maxMemoryUsage;
 	t = MyTime();
 	typedef ProjectiveData<Point3D<Real>,Real > ProjectiveColor;
+	typedef typename Octree< Real >::template DensityEstimator< WEIGHT_DEGREE > DensityEstimator;
+	typedef typename Octree< Real >::template InterpolationInfo< false > InterpolationInfo;
+	Real targetValue = (Real)0.5;
 	CoredVectorMeshData<Vertex> mesh;
 	{
 		std::vector< typename Octree< Real >::PointSample > samples;
 		std::vector< ProjectiveData< Point3D< Real >, Real > > sampleData;
-		SparseNodeData < ProjectiveData< Point3D< Real >, Real >, DATA_DEGREE > colorData;
+		std::shared_ptr<DensityEstimator> density;
+		std::shared_ptr<InterpolationInfo> iInfo;
+		SparseNodeData<Point3D< Real >, NORMAL_DEGREE > normalInfo;
+		SparseNodeData<ProjectiveData< Point3D< Real >, Real >, DATA_DEGREE > colorData;
+		DenseNodeData< Real, Degree > constraints;
+
 		int pointCount = 0;
 		//DumpOutput("Poisson Reconstruction:: Threads: %d Tree Depth: %d\n", params.Threads.value, params.Depth.value);
 		{
@@ -368,60 +376,44 @@ template<class Real, int Degree, class Vertex> bool ExecuteInternal(const Recons
 			pointCount = tree.template init< Point3D< Real > >(pointStream, params.Depth.value, params.Confidence.set, samples, &sampleData);
 
 		}
-		colorData = tree.template setDataField< DATA_DEGREE, false >(samples, &sampleData, (DensityEstimator*)nullptr);
 
-		if (monitor)monitor("Solving", 0.5f);
-		for (const OctNode<TreeNodeData>* n = tree.tree().nextNode(); n != NULL; n = tree.tree().nextNode(n))
+		Real pointWeightSum;
+		density.reset(tree.template setDensityEstimator< WEIGHT_DEGREE >(samples, kernelDepth, params.SamplesPerNode.value));
+		normalInfo=tree.template setNormalField< NORMAL_DEGREE >(samples, *density, pointWeightSum, BType == BOUNDARY_NEUMANN);
+		colorData=tree.template setDataField< DATA_DEGREE, false >(samples, sampleData, (DensityEstimator*)nullptr);
 		{
-			int idx = colorData.index(n);
-			if (idx >= 0)
-				colorData.data[idx] *= (Real)pow(params.Color.value, n->depth());
-		}
-		{
-			std::vector<int> indexMap;
-			if (NORMAL_DEGREE > Degree)
-				tree.template EnableMultigrid< NORMAL_DEGREE>(&indexMap);
-			else
-				tree.template EnableMultigrid<Degree>(&indexMap);
-			pointInfo.remapIndices(indexMap);
+			std::vector< int > indexMap;
+			constexpr int MAX_DEGREE = NORMAL_DEGREE > Degree ? NORMAL_DEGREE : Degree;
+			tree.template inalizeForBroodedMultigrid< MAX_DEGREE, Degree, BType >(params.FullDepth.value, typename Octree< Real >::template HasNormalDataFunctor< NORMAL_DEGREE >(normalInfo), &indexMap);
 			normalInfo.remapIndices(indexMap);
-			densityWeights.remapIndices(indexMap);
-			nodeWeights.remapIndices(indexMap);
-			colorData.remapIndices(indexMap);
+			if (density.get()) density->remapIndices(indexMap);
 		}
-		DumpOutput("Input Points: %d\n", pointCount);
-		DumpOutput("Leaves/Nodes: %d/%d\n", tree.leaves(), tree.nodes());
-		DumpOutput("Memory Usage: %.3f MB\n", float(MemoryInfo::Usage()) / (1 << 20));
-		maxMemoryUsage = tree.maxMemoryUsage;
-		t = MyTime(), tree.maxMemoryUsage = 0;
-		DenseNodeData<Real, Degree> constraints = tree.template SetLaplacianConstraints<Degree>(normalInfo);
-		maxMemoryUsage = std::max<double>(maxMemoryUsage, tree.maxMemoryUsage);
-		t = MyTime(), tree.maxMemoryUsage = 0;
-		DenseNodeData<Real, Degree> solution = tree.SolveSystem(monitor, pointInfo,
-			constraints,
-			params.ShowResidual.set,
-			params.Iters.value,
-			params.MaxSolveDepth.value,
-			params.CGDepth.value,
-			params.CSSolverAccuracy.value);
-		constraints.resize(0);
-		maxMemoryUsage = std::max<double>(maxMemoryUsage, tree.maxMemoryUsage);
-		tree.maxMemoryUsage = 0;
-		t = MyTime();
-		isoValue = tree.GetIsoValue(solution, nodeWeights);
-		t = MyTime(), tree.maxMemoryUsage = 0;
-		std::cout << "Generating Mesh for Iso-Value=" << isoValue << std::endl;
-		if (monitor)monitor("Generating Mesh", 0.8f);
-		tree.template GetMCIsoSurface<Degree, WEIGHT_DEGREE, DATA_DEGREE>(&densityWeights,
-			&colorData,
-			solution,
-			isoValue,
-			mesh,
-			!params.LinearFit.set,
-			!params.NonManifold.set,
-			params.PolygonMesh.set);
-		solution.resize(0);
-		Reset<Real>();
+		{
+			constraints = tree.template initDenseNodeData< Degree >();
+			tree.template addFEMConstraints< Degree, BType, NORMAL_DEGREE, BType >(FEMVFConstraintFunctor< NORMAL_DEGREE, BType, Degree, BType >(1., 0.), normalInfo, constraints, solveDepth);
+		}
+		if (params.PointWeight.value>0)
+		{
+			iInfo.reset(new InterpolationInfo(tree, samples, targetValue, params.AdaptiveExponent.value, (Real)params.PointWeight.value * pointWeightSum, (Real)0));
+			tree.template addInterpolationConstraints< Degree, BType >(*iInfo, constraints, solveDepth);
+		}
+		
+		typename Octree< Real >::SolverInfo solverInfo;
+		solverInfo.cgDepth = params.CGDepth.value, solverInfo.iters = params.Iters.value, solverInfo.cgAccuracy = params.CGSolverAccuracy.value, solverInfo.verbose =false, solverInfo.showResidual = params.ShowResidual.set, solverInfo.lowResIterMultiplier = std::max< double >(1., params.LowResIterMultiplier.value);
+		DenseNodeData< Real, Degree > solution = tree.template solveSystem< Degree, BType >(FEMSystemFunctor< Degree, BType >(0, 1., 0), iInfo.get(), constraints, solveDepth, solverInfo);
+
+		double valueSum = 0, weightSum = 0;
+		typename Octree< Real >::template MultiThreadedEvaluator< Degree, BType > evaluator(&tree, solution, params.Threads.value);
+#pragma omp parallel for num_threads( params.Threads.value ) reduction( + : valueSum , weightSum )
+		for (int j = 0; j<samples.size(); j++)
+		{
+			ProjectiveData< OrientedPoint3D< Real >, Real >& sample = samples[j].sample;
+			Real w = sample.weight;
+			if (w>0) weightSum += w, valueSum += evaluator.value(sample.data.p / sample.weight, omp_get_thread_num(), samples[j].node) * w;
+		}
+		isoValue = (Real)(valueSum / weightSum);
+		tree.template getMCIsoSurface< Degree, BType, WEIGHT_DEGREE, DATA_DEGREE >(density.get(), &colorData, solution, isoValue, mesh, !params.LinearFit.set, !params.NonManifold.set, params.PolygonMesh.set);
+
 	}
 	if (monitor)monitor("Trimming Mesh", 0.9f);
 	std::cout << "Trimming Mesh..." << std::endl;
@@ -498,7 +490,7 @@ template<class Real, int Degree, class Vertex> bool ExecuteInternal(const Recons
 	}
 	printf("Density Value Range: [%f,%f] Trim Value: %f \n", min, max, trim);
 
-	hash_map<long long, int> vertexTable;
+	std::map<uint64_t, int> vertexTable;
 	std::vector<std::vector<int> > ltPolygons, gtPolygons;
 	std::vector<bool> ltFlags, gtFlags;
 	t = MyTime();
@@ -631,19 +623,20 @@ bool AlloyPointStream::nextPoint(OrientedPoint3D<float>& p, Point3D<unsigned cha
 }
 void PoissonReconstruct(const ReconstructionParameters& params, const aly::Mesh& input, aly::Mesh& output, const std::function<bool(const std::string& status, float progress)>& monitor)
 {
+	static const BoundaryType BType = BoundaryType::BOUNDARY_NEUMANN;
 	switch (params.Degree.value)
 	{
 	case 1:
-		ExecuteInternal<float, 1, PlyColorAndValueVertex<float>>(params, input, output, monitor);
+		ExecuteInternal<float, 1, PlyColorAndValueVertex<float>, BType>(params, input, output, monitor);
 		break;
 	case 2:
-		ExecuteInternal<float, 2, PlyColorAndValueVertex<float>>(params, input, output, monitor);
+		ExecuteInternal<float, 2, PlyColorAndValueVertex<float>, BType>(params, input, output, monitor);
 		break;
 	case 3:
-		ExecuteInternal<float, 3, PlyColorAndValueVertex<float>>(params, input, output, monitor);
+		ExecuteInternal<float, 3, PlyColorAndValueVertex<float>, BType>(params, input, output, monitor);
 		break;
 	case 4:
-		ExecuteInternal<float, 4, PlyColorAndValueVertex<float>>(params, input, output, monitor);
+		ExecuteInternal<float, 4, PlyColorAndValueVertex<float>, BType>(params, input, output, monitor);
 		break;
 	default:
 		throw std::runtime_error("Degree not supported.");

@@ -27,6 +27,7 @@
 #include <poisson/CmdLineParser.h>
 #include <poisson/Geometry.h>
 #include <poisson/PointStream.h>
+#include <poisson/BSplineData.h>
 #include <string>
 class AlloyPointStream : public OrientedPointStreamWithData<float, Point3D< unsigned char> >
 {
@@ -65,12 +66,14 @@ struct ReconstructionParameters {
 		MinDepth,
 		MaxSolveDepth,
 		Threads,
-		Smooth;
+		Smooth,
+		BType;
 	cmdLineFloat
 		Color,
 		SamplesPerNode,
 		Scale,
-		CSSolverAccuracy,
+		CGSolverAccuracy,
+		LowResIterMultiplier,
 		PointWeight,
 		Trim,
 		IslandAreaRatio;
@@ -100,10 +103,12 @@ struct ReconstructionParameters {
 		Color("color", 16.f),
 		SamplesPerNode("samplesPerNode", 1.5f),
 		Scale("scale", 1.1f),
-		CSSolverAccuracy("cgAccuracy", float(1e-3)),
+		CGSolverAccuracy("cgAccuracy", float(1e-3)),
+		LowResIterMultiplier("iterMultiplier", 1.f),
 		PointWeight("pointWeight", 4.f),
 		Trim("trim", 0.05f),
-		IslandAreaRatio("aRatio", 0.001f) {
+		IslandAreaRatio("aRatio", 0.001f),
+		BType("bType", BOUNDARY_NEUMANN + 1){
 
 	}
 };

@@ -372,20 +372,8 @@
     <ClCompile Include="..\..\include\core\poisson\PlyFile.cpp">
       <Filter>src\core\poisson</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\include\core\poisson\PoissonRecon.cpp">
-      <Filter>src\core\poisson</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\include\core\poisson\SSDRecon.cpp">
-      <Filter>src\core\poisson</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\include\core\poisson\SurfaceTrimmer.cpp">
-      <Filter>src\core\poisson</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\core\AlloyReconstruction.cpp">
       <Filter>src\core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\include\core\poisson\MultiGridOctreeData.SortedTreeNodes.hpp">
-      <Filter>include\core\poisson</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

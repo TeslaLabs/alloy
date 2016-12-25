@@ -1760,14 +1760,14 @@ DenseNodeData< Real , FEMDegree > Octree< Real >::solveSystem( const FEMSystemFu
 		for( int i=_sNodesBegin(d) ; i<_sNodesEnd(d) ; i++ ) if( _isValidFEMNode( _sNodes.treeNodes[i] ) ) femNodes++;
 		if( solverInfo.verbose )
 		{
-			if( maxSolveDepth<10 ) printf( "Depth[%d/%d]:\t" , d , maxSolveDepth );
-			else                   printf( "Depth[%2d/%d]:\t" , d , maxSolveDepth );
-			printf( "Evaluated / Got / Solved in: %6.3f / %6.3f / %6.3f\t(%.3f MB)\tNodes: %d\n" , sStats.evaluateTime , sStats.systemTime , sStats.solveTime , _localMemoryUsage , femNodes );
+			if( maxSolveDepth<10 ) std::printf( "Depth[%d/%d]:\t" , d , maxSolveDepth );
+			else                   std::printf( "Depth[%2d/%d]:\t" , d , maxSolveDepth );
+			std::printf( "Evaluated / Got / Solved in: %6.3f / %6.3f / %6.3f\t(%.3f MB)\tNodes: %d\n" , sStats.evaluateTime , sStats.systemTime , sStats.solveTime , _localMemoryUsage , femNodes );
 		}
 		if( solverInfo.showResidual && iters )
 		{
-			for( LocalDepth dd=0 ; dd<d ; dd++ ) printf( "  " );
-			printf( "%s: %.4e -> %.4e -> %.4e (%.2e) [%d]\n" , d<=solverInfo.cgDepth ? "CG" : "GS" , sqrt( sStats.bNorm2 ) , sqrt( sStats.inRNorm2 ) , sqrt( sStats.outRNorm2 ) , sqrt( sStats.outRNorm2  / sStats.bNorm2 ) , iters );
+			for( LocalDepth dd=0 ; dd<d ; dd++ )std::printf("  ");
+			std::printf( "%s: %.4e -> %.4e -> %.4e (%.2e) [%d]\n" , d<=solverInfo.cgDepth ? "CG" : "GS" , sqrt( sStats.bNorm2 ) , sqrt( sStats.inRNorm2 ) , sqrt( sStats.outRNorm2 ) , sqrt( sStats.outRNorm2  / sStats.bNorm2 ) , iters );
 		}
 	}
 	memoryUsage();
