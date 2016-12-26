@@ -28,31 +28,28 @@ class MeshReconstructionEx : public aly::Application {
 protected:
 	aly::Mesh mesh;
 	aly::Mesh pointCloud;
-	std::string name;
 	int displayIndex;
 	int cameraType;
-	int shadingType;
-	aly::ImageRGBA renderImage;
 	aly::ImageGlyphPtr imageGlyph;
 	aly::CompositePtr resizeableRegion;
-	std::unique_ptr<aly::GLTextureRGBAf> texImage;
-
 	aly::CompositePtr renderRegion;
-	bool uiDirty;
-	aly::Application* app;
-	aly::TextLabelPtr objectNameLabel, vertexLabel, triangleLabel, quadLabel, colorLabel, texLabel;
 	aly::Number lineWidth;
 	aly::Number particleSize;
-	aly::Color surfaceColor;
 	aly::Color faceColor;
 	aly::Color lineColor;
 	aly::Color pointColor;
 	std::string matcapImageFile;
 	bool frameBuffersDirty;
 	bool parametersDirty;
-
+	bool showPointCloud;
+	bool showReconstruction;
+	bool colorPointCloud;
+	bool colorReconstruction;
+	aly::CheckBoxPtr showReconstructionField;
+	aly::CheckBoxPtr showPointCloudField;
+	aly::ToggleBoxPtr colorReconstructionField;
+	aly::ToggleBoxPtr colorPointCloudField;
 	aly::SelectionPtr displayIndexField;
-	aly::SelectionPtr shadingStyleField;
 	aly::ModifiableNumberPtr lineWidthField;
 	aly::ModifiableNumberPtr particleSizeField;
 	aly::ColorSelectorPtr surfaceColorField;
@@ -66,7 +63,7 @@ protected:
 	std::unique_ptr<aly::GLFrameBuffer> depthFrameBuffer;
 	std::unique_ptr<aly::GLFrameBuffer> wireframeFrameBuffer;
 
-	std::unique_ptr<aly::GLFrameBuffer> bundleDepthFrameBuffer;
+	std::unique_ptr<aly::GLFrameBuffer> pointCloudDepthBuffer;
 	std::unique_ptr<aly::CompositeShader> compositeShader;
 	std::unique_ptr<aly::DepthAndNormalShader> depthAndNormalShader;
 	std::unique_ptr<aly::ColorVertexShader> colorVertexShader;
@@ -75,12 +72,9 @@ protected:
 	std::unique_ptr<aly::WireframeShader> wireframeShader;
 	std::unique_ptr<aly::MatcapShader> matcapShader;
 	std::unique_ptr<aly::ImageShader> imageShader;
-	std::unique_ptr<aly::TextureMeshShader> textureMeshShader;
-	std::unique_ptr<aly::DepthAndTextureShader> depthAndTextureShader;
 	aly::Camera camera;
 
 	aly::box3f objectBBox;
-	void initializeMesh();
 	void initializeFrameBuffers(aly::AlloyContext* context);
 public:
 	MeshReconstructionEx();

@@ -27,30 +27,6 @@ MeshReconstructionEx::MeshReconstructionEx() : Application(800, 600, "Mesh Recon
 
 
 }
-void MeshReconstructionEx::initializeMesh() {
-	shadingType = 0;
-	displayIndex = 0;
-	lineWidth.setValue(1.0f);
-	particleSize.setValue(0.02f);
-	static int offsetIncrement = 0;
-	if (mesh.triIndexes.size() == 0 && mesh.quadIndexes.size() == 0) {
-		displayIndex = 4;
-	}
-	if (mesh.vertexColors.size() > 0) {
-		shadingType = 1;
-	}
-	if (mesh.textureImage.size() > 0) {
-		shadingType = 2;
-	}
-	lineColor = AlloyApplicationContext()->theme.DARK.toSemiTransparent(0.5f);
-	faceColor = AlloyApplicationContext()->theme.LIGHT;
-	surfaceColor = Color(255, 255, 255, 255);
-	pointColor = Color(255, 255, 255, 255);
-	texImage.reset(new GLTextureRGBAf());
-	if (mesh.textureImage.size() > 0) {
-		texImage->load(mesh.textureImage);
-	}
-}
 bool MeshReconstructionEx::init(Composite& rootNode) {
 	box3f bbox(float3(0.0f, 0.0f, 0.0f), float3(1.0f, 1.0f, 1.0f));
 	pointCloud.load(getFullPath("models/eagle.ply"));
@@ -64,15 +40,12 @@ bool MeshReconstructionEx::init(Composite& rootNode) {
 	pointCloud.transform(Minv);
 	WriteMeshToFile(MakeString() << GetDesktopDirectory() << ALY_PATH_SEPARATOR << "mesh.ply",mesh);
 	pointCloud.updateBoundingBox();
-	
 	displayIndex = 0;
 	parametersDirty = true;
 	frameBuffersDirty = true;
-	uiDirty = true;
-	this->app = app;
 	renderFrameBuffer.reset(new GLFrameBuffer());
 	pointColorFrameBuffer.reset(new GLFrameBuffer());
-	bundleDepthFrameBuffer.reset(new GLFrameBuffer());
+	pointCloudDepthBuffer.reset(new GLFrameBuffer());
 	depthFrameBuffer.reset(new GLFrameBuffer());
 	wireframeFrameBuffer.reset(new GLFrameBuffer());
 	colorFrameBuffer.reset(new GLFrameBuffer());
@@ -84,9 +57,7 @@ bool MeshReconstructionEx::init(Composite& rootNode) {
 	matcapShader.reset(new MatcapShader());
 	imageShader.reset(new ImageShader());
 	colorVertexShader.reset(new ColorVertexShader());
-	textureMeshShader.reset(new TextureMeshShader());
-	depthAndTextureShader.reset(new DepthAndTextureShader());
-	matcapImageFile = app->getFullPath("images/JG_Silver.png");
+	matcapImageFile = getFullPath("images/JG_Silver.png");
 	box3f renderBBox = box3f(float3(-0.5f, -0.5f, -0.5f), float3(1.0f, 1.0f, 1.0f));
 	BorderCompositePtr layout = BorderCompositePtr(new BorderComposite("UI Layout", CoordPX(0.0f, 0.0f), CoordPercent(1.0f, 1.0f), false));
 	ParameterPanePtr controls = ParameterPanePtr(new ParameterPane("Controls", CoordPX(0.0f, 0.0f), CoordPercent(1.0f, 1.0f)));
@@ -101,15 +72,28 @@ bool MeshReconstructionEx::init(Composite& rootNode) {
 
 	lineColor = AlloyApplicationContext()->theme.DARK.toSemiTransparent(0.5f);
 	faceColor = AlloyApplicationContext()->theme.LIGHT;
-	surfaceColor = Color(255, 255, 255, 255);
+
 	pointColor = Color(255, 255, 255, 255);
+
+	displayIndex = 0;
+	lineWidth.setValue(1.0f);
+	particleSize.setValue(0.02f);
+	static int offsetIncrement = 0;
+	if (mesh.triIndexes.size() == 0 && mesh.quadIndexes.size() == 0) {
+		displayIndex = 4;
+	}
+	colorPointCloud = (pointCloud.vertexColors.size() > 0);
+	showPointCloud = (pointCloud.vertexLocations.size() > 0);
+	showReconstruction = (mesh.triIndexes.size() + mesh.triIndexes.size() > 0);
+	colorReconstruction = (mesh.vertexColors.size()>0);
+
 
 	controls->setAlwaysShowVerticalScrollBar(false);
 	controls->setScrollEnabled(false);
-	controls->backgroundColor = MakeColor(app->getContext()->theme.DARKER);
-	controlLayout->backgroundColor = MakeColor(app->getContext()->theme.DARKER);
+	controls->backgroundColor = MakeColor(getContext()->theme.DARKER);
+	controlLayout->backgroundColor = MakeColor(getContext()->theme.DARKER);
 	controlLayout->borderWidth = UnitPX(1.0f);
-	controlLayout->borderColor = MakeColor(app->getContext()->theme.LIGHT);
+	controlLayout->borderColor = MakeColor(getContext()->theme.LIGHT);
 	renderRegion = CompositePtr(new Composite("Render View", CoordPX(0.0f, 0.0f), CoordPercent(1.0f, 1.0f)));
 	layout->setWest(controlLayout, UnitPX(300.0f));
 	controlLayout->setNorth(controls, UnitPX(500.0f));
@@ -122,30 +106,30 @@ bool MeshReconstructionEx::init(Composite& rootNode) {
 	camera.setZoom(0.75f);
 	camera.setCameraType(CameraType::Orthographic);
 	controls->addGroup("Visualization",true);
-	displayIndexField = controls->addSelectionField("Display", displayIndex, std::vector<std::string> { "Solid", "Solid & Wireframe", "Points & Wireframe","Wireframe", "Points" }, aspect);
-	shadingStyleField = controls->addSelectionField("Shading", shadingType, std::vector<std::string> { "Matcap", "Vertex Color", "Texture" }, aspect);
+	
+
+	displayIndexField = controls->addSelectionField("Display", displayIndex, std::vector<std::string> { "Solid", "Solid & Wireframe", "Wireframe"}, aspect);
+	showPointCloudField = controls->addCheckBox("Show Points", showPointCloud);
+	showReconstructionField = controls->addCheckBox("Show Mesh", showReconstruction);
+	colorReconstructionField = controls->addToggleBox("Mesh Color", colorReconstruction);
+	colorPointCloudField = controls->addToggleBox("Point Color",colorPointCloud);
 	controls->addSelectionField("Camera", cameraType, std::vector<std::string> { "Orthographic", "Perspective" }, aspect);
 	lineWidthField = controls->addNumberField("Line Width", lineWidth, Float(0.5f), Float(5.0f), 5.5f);
 	particleSizeField = controls->addNumberField("Particle Size", particleSize, Float(0.0f), Float(1.0f), 5.5f);
-	surfaceColorField = controls->addColorField("Surface", surfaceColor);
 	pointColorField = controls->addColorField("Point", pointColor);
 	faceColorField = controls->addColorField("Face", faceColor);
 	lineColorField = controls->addColorField("Line", lineColor);
 	float4x4 MT = MakeTransform(objectBBox, renderBBox);
 	camera.setPose(MT);
-	//Add listener to respond to mouse manipulations
-	app->addListener(&camera);
-	//Add render component to root node so it is relatively positioned.
+	addListener(&camera);
 	renderRegion->onPack = [this]() {
 		camera.setDirty(true);
 		frameBuffersDirty = true;
-
 	};
 	camera.setActiveRegion(renderRegion.get(), false);
 	wireframeShader->setFaceColor(Color(0.1f, 0.1f, 1.0f, 0.5f));
 	wireframeShader->setEdgeColor(Color(1.0f, 0.8f, 0.1f, 1.0f));
 	wireframeShader->setLineWidth(lineWidth.toFloat() * 8.0f);
-
 	return true;
 }
 void MeshReconstructionEx::initializeFrameBuffers(aly::AlloyContext* context) {
@@ -156,7 +140,7 @@ void MeshReconstructionEx::initializeFrameBuffers(aly::AlloyContext* context) {
 	pointColorFrameBuffer->initialize(w, h);
 	colorFrameBuffer->initialize(w, h);
 	depthFrameBuffer->initialize(w, h);
-	bundleDepthFrameBuffer->initialize(w, h);
+	pointCloudDepthBuffer->initialize(w, h);
 	wireframeFrameBuffer->initialize(w, h);
 }
 void MeshReconstructionEx::draw(AlloyContext* context) {
@@ -180,70 +164,37 @@ void MeshReconstructionEx::draw(AlloyContext* context) {
 	if (camera.isDirty() || parametersDirty) {
 		wireframeShader->setLineWidth(lineWidth.toFloat());
 		switch (displayIndex) {
-		case 0:
-			if (shadingType == 1) {
-				colorVertexShader->draw(drawList, camera, *colorFrameBuffer);
-			}
-			else if (shadingType == 2) {
-				depthAndTextureShader->draw(drawList, camera, *depthFrameBuffer);
-			}
-			else {
+			case 0: //Solid
+				if (colorReconstruction) {
+					colorVertexShader->draw(drawList, camera, *colorFrameBuffer);
+				}
 				depthAndNormalShader->draw(drawList, camera, *depthFrameBuffer);
-			}
-			wireframeShader->setSolid(false);
-			break;
-		case 1:
-			if (shadingType == 1) {
-				colorVertexShader->draw(drawList, camera, *colorFrameBuffer);
-			}
-			else if (shadingType == 2) {
-				depthAndTextureShader->draw(drawList, camera, *depthFrameBuffer);
-			}
-			else {
+				wireframeShader->setSolid(false);
+				break;
+			case 1: //Solid & Wireframe
+				if (colorReconstruction) {
+					colorVertexShader->draw(drawList, camera, *colorFrameBuffer);
+				}
 				depthAndNormalShader->draw(drawList, camera, *depthFrameBuffer);
-			}
-			wireframeShader->setSolid(true);
-			wireframeShader->setFaceColor(Color(0, 0, 0, 0));
-			wireframeShader->setEdgeColor(lineColor);
-			wireframeShader->draw(drawList, camera, *wireframeFrameBuffer);
-			break;
-		case 2:
-			if (shadingType == 1) {
-				colorFrameBuffer->begin();
-				particleMatcapShader->draw(drawList, camera, colorFrameBuffer->getViewport(), colorFrameBuffer->getViewport(), psize);
-				colorFrameBuffer->end();
-			}
-			else {
-				particleDepthShader->draw(drawList, camera, *depthFrameBuffer, psize);
-			}
-			wireframeShader->setSolid(false);
-			wireframeShader->setFaceColor(Color(0, 0, 0, 0));
-			wireframeShader->setEdgeColor(lineColor);
-			wireframeShader->draw(drawList, camera, *wireframeFrameBuffer);
-			break;
-		case 3:
-			depthAndNormalShader->draw(drawList, camera, *depthFrameBuffer);
-			colorVertexShader->draw(drawList, camera, *depthFrameBuffer);
-			wireframeShader->setSolid(false);
-			wireframeShader->setFaceColor(Color(0, 0, 0, 0));
-			wireframeShader->setEdgeColor(lineColor);
-			wireframeShader->draw(drawList, camera, *wireframeFrameBuffer);
-			break;
-		case 4:
-			if (shadingType == 1) {
-				colorFrameBuffer->begin();
-				particleMatcapShader->draw(drawList, camera, colorFrameBuffer->getViewport(), colorFrameBuffer->getViewport(), psize);
-				colorFrameBuffer->end();
-			}
-			else {
-				particleDepthShader->draw(drawList, camera, *depthFrameBuffer, psize);
-			}
-			break;
-		default:
-			break;
+				wireframeShader->setSolid(true);
+				wireframeShader->setFaceColor(Color(0, 0, 0, 0));
+				wireframeShader->setEdgeColor(lineColor);
+				wireframeShader->draw(drawList, camera, *wireframeFrameBuffer);
+				break;
+			case 2: // Wireframe
+				wireframeShader->setSolid(false);
+				wireframeShader->setFaceColor(Color(0, 0, 0, 0));
+				wireframeShader->setEdgeColor(lineColor);
+				wireframeShader->draw(drawList, camera, *wireframeFrameBuffer);
+				break;
 		}
-		if (pointCloud.vertexLocations.size()>0) {
-			particleDepthShader->draw(pointCloud, camera, *bundleDepthFrameBuffer, psize);
+		if (showPointCloud) {
+			if (colorPointCloud) {
+				pointColorFrameBuffer->begin();
+				particleMatcapShader->draw(pointCloud, camera, context->getViewport(), context->getViewport(), psize);
+				pointColorFrameBuffer->end();
+			}
+			particleDepthShader->draw(pointCloud, camera, *pointCloudDepthBuffer, psize);			
 		}
 	}
 	glEnable(GL_BLEND);
@@ -251,79 +202,48 @@ void MeshReconstructionEx::draw(AlloyContext* context) {
 	const RGBAf bgColor = context->theme.DARKEST.toRGBAf();
 	glClearColor(bgColor.x, bgColor.y, bgColor.z, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
-	//int2 dims = renderFrameBuffer->getDimensions();
-	//box2px rbbox(float2(0.0f, 0.0f), float2((float)dims.x, (float)dims.y));
 	box2px rbbox=renderRegion->getBounds();
 	renderFrameBuffer->begin();
 	switch (displayIndex) {
-	case 0:
-		if (shadingType == 1) {
-			imageShader->draw(colorFrameBuffer->getTexture(), context->pixelRatio * rbbox, 1.0f, false);
-		}
-		else if (shadingType == 2) {
-			textureMeshShader->draw(depthFrameBuffer->getTexture(), *texImage, camera, context->getViewport(), context->getViewport());
-		}
-		else {
-			matcapShader->draw(depthFrameBuffer->getTexture(), camera, context->getViewport(), context->getViewport(), surfaceColor.toRGBAf());
-		}
-		break;
-	case 1:
-		if (shadingType == 1) {
-			imageShader->draw(colorFrameBuffer->getTexture(), context->pixelRatio * rbbox, 1.0f, false);
-		}
-		else if (shadingType == 2) {
-			textureMeshShader->draw(depthFrameBuffer->getTexture(), *texImage, camera, context->getViewport(), context->getViewport());
-		}
-		else {
-			matcapShader->draw(depthFrameBuffer->getTexture(), camera, context->getViewport(), context->getViewport(), faceColor.toRGBAf());
-		}
-		imageShader->draw(wireframeFrameBuffer->getTexture(), context->getViewport(), 1.0f, false);
-		break;
-	case 2:
-		imageShader->draw(wireframeFrameBuffer->getTexture(), context->getViewport(), 1.0f, false);
-		if (shadingType == 1) {
-			imageShader->draw(colorFrameBuffer->getTexture(), context->getViewport(), 1.0f, false);
-		}
-		else {
-			matcapShader->draw(depthFrameBuffer->getTexture(), camera, context->getViewport(), context->getViewport(), pointColor.toRGBAf());
-		}
-		break;
-	case 3:
-		imageShader->draw(wireframeFrameBuffer->getTexture(), context->getViewport(), 1.0f, false);
-		break;
-	case 4:
-		if (shadingType == 1) {
-			imageShader->draw(colorFrameBuffer->getTexture(), context->getViewport(), 1.0f, false);
-		}
-		else {
-			matcapShader->draw(depthFrameBuffer->getTexture(), camera, context->getViewport(), context->getViewport(), pointColor.toRGBAf());
-		}
-		break;
-	default:
-		break;
+		case 0: //Solid
+			if (colorReconstruction) {
+				imageShader->draw(colorFrameBuffer->getTexture(), context->getViewport(), 1.0f, false);
+			} else {
+				matcapShader->draw(depthFrameBuffer->getTexture(), camera, context->getViewport(), context->getViewport(), faceColor.toRGBAf());
+			}
+			break;
+		case 1: ///Solid & Wireframe
+			if (colorReconstruction) {
+				imageShader->draw(colorFrameBuffer->getTexture(), context->getViewport(), 1.0f, false);
+			} else {
+				matcapShader->draw(depthFrameBuffer->getTexture(), camera, context->getViewport(), context->getViewport(), faceColor.toRGBAf());
+			}
+			imageShader->draw(wireframeFrameBuffer->getTexture(), context->getViewport(), 1.0f, false);
+			break;
+		case 2: //Wireframe
+			imageShader->draw(wireframeFrameBuffer->getTexture(), context->getViewport(), 1.0f, false);
+			break;
+		default:
+			break;
 	}
 	renderFrameBuffer->end();
-	if (pointCloud.vertexLocations.size()>0 && displayIndex != 2 && displayIndex != 3) {
-
-		
-		pointColorFrameBuffer->begin();
-		if (pointCloud.vertexColors.size() > 0) {
-			glEnable(GL_DEPTH_TEST);
-			particleMatcapShader->draw(pointCloud, camera, context->getViewport(), context->getViewport(), psize);
-			glDisable(GL_DEPTH_TEST);
-		} else {
-			matcapShader->draw(bundleDepthFrameBuffer->getTexture(), camera, context->getViewport(), context->getViewport(), pointColor.toRGBAf());
+	if (showPointCloud) {
+		if (!colorPointCloud) {
+			pointColorFrameBuffer->begin();
+			matcapShader->draw(pointCloudDepthBuffer->getTexture(), camera, context->getViewport(), context->getViewport(), pointColor.toRGBAf());
+			pointColorFrameBuffer->end();
 		}
-		pointColorFrameBuffer->end();
-		
-		compositeShader->draw(
-			pointColorFrameBuffer->getTexture(),
-			bundleDepthFrameBuffer->getTexture(),
-			renderFrameBuffer->getTexture(),
-			depthFrameBuffer->getTexture(),
-			context->pixelRatio * rbbox);
-	}
-	else {
+		if (showReconstruction) {
+			compositeShader->draw(
+				pointColorFrameBuffer->getTexture(),
+				pointCloudDepthBuffer->getTexture(),
+				renderFrameBuffer->getTexture(),
+				depthFrameBuffer->getTexture(),
+				context->pixelRatio * rbbox);
+		} else {
+			imageShader->draw(pointColorFrameBuffer->getTexture(), context->pixelRatio * rbbox, 1.0f, false);
+		}
+	} else if(showReconstruction){
 		imageShader->draw(renderFrameBuffer->getTexture(), context->pixelRatio * rbbox, 1.0f, false);
 	}
 	camera.setDirty(false);
