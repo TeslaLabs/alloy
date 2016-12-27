@@ -45,6 +45,15 @@ protected:
 	bool showReconstruction;
 	bool colorPointCloud;
 	bool colorReconstruction;
+
+	aly::Number treeDepth;
+	aly::Number trimPercent;
+	aly::Number bsplineDegree;
+	aly::Number pointWeight;
+	aly::Number samplesPerNode;
+	aly::Number islandRatio;
+	bool linearFitSurface;
+
 	aly::CheckBoxPtr showReconstructionField;
 	aly::CheckBoxPtr showPointCloudField;
 	aly::ToggleBoxPtr colorReconstructionField;
@@ -73,11 +82,12 @@ protected:
 	std::unique_ptr<aly::MatcapShader> matcapShader;
 	std::unique_ptr<aly::ImageShader> imageShader;
 	aly::Camera camera;
-
+	aly::WorkerTaskPtr worker;
 	aly::box3f objectBBox;
 	void initializeFrameBuffers(aly::AlloyContext* context);
 public:
 	MeshReconstructionEx();
+	void solve();
 	bool init(aly::Composite& rootNode);
 	void draw(aly::AlloyContext* context);
 };

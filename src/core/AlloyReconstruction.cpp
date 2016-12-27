@@ -336,11 +336,11 @@ double TriangleArea(Point3D<Real> v1, Point3D<Real> v2, Point3D<Real> v3)
 template<class Real, int Degree, class Vertex, BoundaryType BType> bool ExecuteInternal(const ReconstructionParameters& params, const aly::Mesh& input, aly::Mesh& output,
 	const std::function<bool(const std::string& status, float progress)>& monitor)
 {
+	const box3f bbox(float3(0.01f, 0.01f, 0.01f), float3(0.99f, 0.99f, 0.99f));
+	float4x4 M = MakeTransform(input.getBoundingBox(), bbox);
+	float4x4 Minv = inverse(M);	
 	int solveDepth = params.MaxSolveDepth.value;
 	Reset<Real>();
-	XForm4x4<Real> xForm, iXForm;
-	xForm = XForm4x4<Real>::Identity();
-	iXForm = xForm.inverse();
 	double t;
 	double tt = MyTime();
 	Real isoValue = 0;
@@ -370,7 +370,7 @@ template<class Real, int Degree, class Vertex, BoundaryType BType> bool ExecuteI
 		int pointCount = 0;
 		//DumpOutput("Poisson Reconstruction:: Threads: %d Tree Depth: %d\n", params.Threads.value, params.Depth.value);
 		{
-			AlloyPointStream pointStream(input);
+			AlloyPointStream pointStream(M,input);
 			pointCount = tree.template init< Point3D< Real > >(pointStream, params.Depth.value, params.Confidence.set, samples, &sampleData);
 
 		}
@@ -569,7 +569,6 @@ template<class Real, int Degree, class Vertex, BoundaryType BType> bool ExecuteI
 	ltPolygons.clear();
 
 	polygons = gtPolygons;
-	
 	{
 		size_t vertCount = vertices.size();
 		size_t faceCount = polygons.size();
@@ -584,7 +583,7 @@ template<class Real, int Degree, class Vertex, BoundaryType BType> bool ExecuteI
 			const unsigned char* c = vertex.color;
 			RGBAf rgba=RGBAf(c[0]/255.0f, c[1] / 255.0f, c[2] / 255.0f, (vertex.value - min) / std::max(1E-6f, max - min));
 			output.vertexColors[i] = rgba;
-			output.vertexLocations[i] = float3(pt[0],pt[1],pt[2]);
+			output.vertexLocations[i] = Transform(Minv,float3(pt[0],pt[1],pt[2]));
 		}
 		for (int i = 0; i < faceCount; i++)
 		{
@@ -613,6 +612,7 @@ template<class Real, int Degree, class Vertex, BoundaryType BType> bool ExecuteI
 		output.updateVertexNormals();
 	}
 	if (monitor)monitor("Done", 1.0f);
+	
 	return true;
 }
 
@@ -623,6 +623,7 @@ bool AlloyPointStream::nextPoint(OrientedPoint3D<float>& p, Point3D<float>& d)
 	float3 v = mesh.vertexLocations[counter];
 	float3 n = mesh.vertexNormals[counter];
 	float4 c = mesh.vertexColors[counter];
+	v = Transform(M, v);
 	p.p = Point3D<float>(v.x, v.y, v.z);
 	p.n = Point3D<float>(n.x, n.y, n.z);
 	d = Point3D<float>(255.0f*c.x, 255.0f*c.y, 255.0f*c.z);
@@ -633,6 +634,7 @@ bool AlloyPointStream::nextPoint(OrientedPoint3D<float>& p, Point3D<float>& d)
 void PoissonReconstruct(const ReconstructionParameters& params, const aly::Mesh& input, aly::Mesh& output, const std::function<bool(const std::string& status, float progress)>& monitor)
 {
 	static const BoundaryType BType = BoundaryType::BOUNDARY_NEUMANN;
+
 	switch (params.Degree.value)
 	{
 	case 1:

@@ -23,23 +23,13 @@
 #include "AlloyReconstruction.h"
 #include "../../include/example/MeshReconstructionEx.h"
 using namespace aly;
-MeshReconstructionEx::MeshReconstructionEx() : Application(800, 600, "Mesh Reconstruction Example") {
+MeshReconstructionEx::MeshReconstructionEx() : Application(1200, 800, "Mesh Reconstruction Example") {
 
 
 }
 bool MeshReconstructionEx::init(Composite& rootNode) {
-	box3f bbox(float3(0.0f, 0.0f, 0.0f), float3(1.0f, 1.0f, 1.0f));
 	pointCloud.load(getFullPath("models/eagle.ply"));
 	objectBBox = pointCloud.getBoundingBox();
-	float4x4 M = MakeTransform(objectBBox, bbox);
-	pointCloud.transform(M);
-	ReconstructionParameters params;
-	PoissonReconstruct(params, pointCloud, mesh);
-	float4x4 Minv = inverse(M);
-	mesh.transform(Minv);
-	pointCloud.transform(Minv);
-	WriteMeshToFile(MakeString() << GetDesktopDirectory() << ALY_PATH_SEPARATOR << "mesh.ply",mesh);
-	pointCloud.updateBoundingBox();
 	displayIndex = 0;
 	parametersDirty = true;
 	frameBuffersDirty = true;
@@ -61,8 +51,20 @@ bool MeshReconstructionEx::init(Composite& rootNode) {
 	box3f renderBBox = box3f(float3(-0.5f, -0.5f, -0.5f), float3(1.0f, 1.0f, 1.0f));
 	BorderCompositePtr layout = BorderCompositePtr(new BorderComposite("UI Layout", CoordPX(0.0f, 0.0f), CoordPercent(1.0f, 1.0f), false));
 	ParameterPanePtr controls = ParameterPanePtr(new ParameterPane("Controls", CoordPX(0.0f, 0.0f), CoordPercent(1.0f, 1.0f)));
+	CompositePtr buttons = CompositePtr(new Composite("Buttons", CoordPX(0.0f, 0.0f), CoordPercent(1.0f, 1.0f)));
+	TextIconButtonPtr executeButton=TextIconButtonPtr(new TextIconButton("Execute",0xf085,CoordPerPX(0.5f,0.5f,-120.0f,-30.0f),CoordPX(240.0f,60.0f)));
 	BorderCompositePtr controlLayout = BorderCompositePtr(new BorderComposite("Control Layout", CoordPX(0.0f, 0.0f), CoordPercent(1.0f, 1.0f), true));
-
+	buttons->add(executeButton);
+	executeButton->setRoundCorners(true);
+	executeButton->onMouseDown = [this](aly::AlloyContext* context, const InputEvent& e) {
+		if (e.button == GLFW_MOUSE_BUTTON_LEFT) {
+			context->addDeferredTask([this]() {
+				solve();
+			});
+			return true;
+		}
+		return false;
+	};
 	controls->onChange = [this](const std::string& label, const AnyInterface& value) {
 		parametersDirty = true;
 	};
@@ -78,15 +80,10 @@ bool MeshReconstructionEx::init(Composite& rootNode) {
 	displayIndex = 0;
 	lineWidth.setValue(1.0f);
 	particleSize.setValue(0.02f);
-	static int offsetIncrement = 0;
-	if (mesh.triIndexes.size() == 0 && mesh.quadIndexes.size() == 0) {
-		displayIndex = 4;
-	}
 	colorPointCloud = (pointCloud.vertexColors.size() > 0);
 	showPointCloud = (pointCloud.vertexLocations.size() > 0);
 	showReconstruction = (mesh.triIndexes.size() + mesh.triIndexes.size() > 0);
 	colorReconstruction = (mesh.vertexColors.size()>0);
-
 
 	controls->setAlwaysShowVerticalScrollBar(false);
 	controls->setScrollEnabled(false);
@@ -95,15 +92,21 @@ bool MeshReconstructionEx::init(Composite& rootNode) {
 	controlLayout->borderWidth = UnitPX(1.0f);
 	controlLayout->borderColor = MakeColor(getContext()->theme.LIGHT);
 	renderRegion = CompositePtr(new Composite("Render View", CoordPX(0.0f, 0.0f), CoordPercent(1.0f, 1.0f)));
-	layout->setWest(controlLayout, UnitPX(300.0f));
-	controlLayout->setNorth(controls, UnitPX(500.0f));
+	layout->setWest(controlLayout, UnitPX(400.0f));
+	controlLayout->setCenter(controls);
+	controlLayout->setSouth(buttons, UnitPX(80.0f));
 	layout->setCenter(renderRegion);
+	buttons->borderWidth = UnitPX(1.0f);
+	buttons->borderColor = MakeColor(getContext()->theme.DARK);
+	buttons->backgroundColor = MakeColor(getContext()->theme.DARKER);
 	rootNode.add(layout);
 
 	matcapShader->setTextureImage(getFullPath("images/JG_Silver.png"));
 	particleMatcapShader->setTextureImage(getFullPath("images/JG_Silver.png"));
 	camera.setNearFarPlanes(-2.0f, 2.0f);
 	camera.setZoom(0.75f);
+	camera.rotateModelX(ALY_PI);
+	camera.rotateModelY(ALY_PI_2);
 	camera.setCameraType(CameraType::Orthographic);
 	controls->addGroup("Visualization",true);
 	
@@ -119,6 +122,24 @@ bool MeshReconstructionEx::init(Composite& rootNode) {
 	pointColorField = controls->addColorField("Point", pointColor);
 	faceColorField = controls->addColorField("Face", faceColor);
 	lineColorField = controls->addColorField("Line", lineColor);
+	ReconstructionParameters params;
+	treeDepth = Integer(params.Depth.value);
+	trimPercent = Float(params.Trim.value);
+	bsplineDegree = Integer(params.Degree.value);
+	pointWeight = Float(params.PointWeight.value);
+	samplesPerNode = Float(params.SamplesPerNode.value);
+	islandRatio = Float(params.IslandAreaRatio.value);
+	linearFitSurface = params.LinearFit.set;
+
+	controls->addGroup("Poisson Solver",true);
+	controls->addNumberField("Tree Depth",treeDepth,Integer(1),Integer(12));
+	controls->addNumberField("Trim Percent", trimPercent,Float(0.0f),Float(1.0f));
+	controls->addNumberField("B-Spline", bsplineDegree,Integer(1),Integer(4));
+	controls->addNumberField("Point Weight", pointWeight,Float(0.0f),Float(8.0f));
+	controls->addNumberField("Node Samples", samplesPerNode);
+	controls->addNumberField("Island Ratio", islandRatio);
+	controls->addCheckBox("Linear Fit", linearFitSurface);
+
 	float4x4 MT = MakeTransform(objectBBox, renderBBox);
 	camera.setPose(MT);
 	addListener(&camera);
@@ -131,6 +152,32 @@ bool MeshReconstructionEx::init(Composite& rootNode) {
 	wireframeShader->setEdgeColor(Color(1.0f, 0.8f, 0.1f, 1.0f));
 	wireframeShader->setLineWidth(lineWidth.toFloat() * 8.0f);
 	return true;
+}
+void MeshReconstructionEx::solve() {
+	worker.reset();
+	worker = WorkerTaskPtr(new WorkerTask([this]() {
+		
+		ReconstructionParameters params;
+		params.Depth.value = treeDepth.toInteger();
+		params.Trim.value = trimPercent.toFloat();
+		params.Degree.value = bsplineDegree.toInteger();
+		params.PointWeight.value = pointWeight.toFloat();
+		params.SamplesPerNode.value = samplesPerNode.toFloat();
+		params.IslandAreaRatio.value = islandRatio.toFloat();
+		params.LinearFit.set = linearFitSurface;
+		PoissonReconstruct(params, pointCloud, mesh);
+	}, [this]() {
+		
+		colorReconstructionField->setValue(mesh.vertexColors.size() > 0);
+		showReconstructionField->setValue(true);
+		showPointCloudField->setValue(false);
+		showReconstruction = showReconstructionField->getValue();
+		showPointCloud = showPointCloudField->getValue();
+		colorReconstruction = colorReconstructionField->getValue();
+		mesh.setDirty(true);
+		parametersDirty = true;
+	}));
+	worker->execute();
 }
 void MeshReconstructionEx::initializeFrameBuffers(aly::AlloyContext* context) {
 	float2 dims = renderRegion->getBounds().dimensions;
