@@ -35,6 +35,7 @@ protected:
 	aly::Camera camera;
 	aly::WorkerTaskPtr smoothTask;
 	aly::WorkerTaskPtr detailTask;
+
 	aly::TextLabelPtr textLabel;
 	aly::CompositePtr buttonPanel;
 	void smooth(aly::Mesh& mesh);

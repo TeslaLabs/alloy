@@ -54,6 +54,10 @@ bool MeshReconstructionEx::init(Composite& rootNode) {
 	CompositePtr buttons = CompositePtr(new Composite("Buttons", CoordPX(0.0f, 0.0f), CoordPercent(1.0f, 1.0f)));
 	TextIconButtonPtr executeButton=TextIconButtonPtr(new TextIconButton("Execute",0xf085,CoordPerPX(0.5f,0.5f,-120.0f,-30.0f),CoordPX(240.0f,60.0f)));
 	BorderCompositePtr controlLayout = BorderCompositePtr(new BorderComposite("Control Layout", CoordPX(0.0f, 0.0f), CoordPercent(1.0f, 1.0f), true));
+	textLabel = TextLabelPtr(new TextLabel("", CoordPX(5, 5), CoordPerPX(1.0f, 0.0f,-10.0f,30.0f)));
+	textLabel->fontSize = UnitPX(24.0f);
+	textLabel->fontType = FontType::Bold;
+	textLabel->fontStyle = FontStyle::Outline;
 	buttons->add(executeButton);
 	executeButton->setRoundCorners(true);
 	executeButton->onMouseDown = [this](aly::AlloyContext* context, const InputEvent& e) {
@@ -69,8 +73,6 @@ bool MeshReconstructionEx::init(Composite& rootNode) {
 		parametersDirty = true;
 	};
 	float aspect = 6.0f;
-	lineWidth = Float(1.0f);
-	particleSize = Float(0.2f);
 
 	lineColor = AlloyApplicationContext()->theme.DARK.toSemiTransparent(0.5f);
 	faceColor = AlloyApplicationContext()->theme.LIGHT;
@@ -78,8 +80,8 @@ bool MeshReconstructionEx::init(Composite& rootNode) {
 	pointColor = Color(255, 255, 255, 255);
 
 	displayIndex = 0;
-	lineWidth.setValue(1.0f);
-	particleSize.setValue(0.02f);
+	lineWidth=Float(1.0f);
+	particleSize=Float(0.04f);
 	colorPointCloud = (pointCloud.vertexColors.size() > 0);
 	showPointCloud = (pointCloud.vertexLocations.size() > 0);
 	showReconstruction = (mesh.triIndexes.size() + mesh.triIndexes.size() > 0);
@@ -92,6 +94,7 @@ bool MeshReconstructionEx::init(Composite& rootNode) {
 	controlLayout->borderWidth = UnitPX(1.0f);
 	controlLayout->borderColor = MakeColor(getContext()->theme.LIGHT);
 	renderRegion = CompositePtr(new Composite("Render View", CoordPX(0.0f, 0.0f), CoordPercent(1.0f, 1.0f)));
+	renderRegion->add(textLabel);
 	layout->setWest(controlLayout, UnitPX(400.0f));
 	controlLayout->setCenter(controls);
 	controlLayout->setSouth(buttons, UnitPX(80.0f));
@@ -159,13 +162,19 @@ void MeshReconstructionEx::solve() {
 		
 		ReconstructionParameters params;
 		params.Depth.value = treeDepth.toInteger();
+		params.FullDepth.value = treeDepth.toInteger();
+		params.MaxSolveDepth.value = treeDepth.toInteger();
 		params.Trim.value = trimPercent.toFloat();
 		params.Degree.value = bsplineDegree.toInteger();
 		params.PointWeight.value = pointWeight.toFloat();
 		params.SamplesPerNode.value = samplesPerNode.toFloat();
 		params.IslandAreaRatio.value = islandRatio.toFloat();
 		params.LinearFit.set = linearFitSurface;
-		PoissonReconstruct(params, pointCloud, mesh);
+		PoissonReconstruct(params, pointCloud, mesh, [this](const std::string& status,float progress) {
+			textLabel->setLabel(MakeString() <<"Solver: "<< status << " ... ");
+			AlloyApplicationContext()->requestPack();
+			return !worker->isCanceled();
+		});
 	}, [this]() {
 		
 		colorReconstructionField->setValue(mesh.vertexColors.size() > 0);
@@ -174,6 +183,7 @@ void MeshReconstructionEx::solve() {
 		showReconstruction = showReconstructionField->getValue();
 		showPointCloud = showPointCloudField->getValue();
 		colorReconstruction = colorReconstructionField->getValue();
+		textLabel->setLabel("");
 		mesh.setDirty(true);
 		parametersDirty = true;
 	}));

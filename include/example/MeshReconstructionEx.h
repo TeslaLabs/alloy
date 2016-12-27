@@ -45,7 +45,6 @@ protected:
 	bool showReconstruction;
 	bool colorPointCloud;
 	bool colorReconstruction;
-
 	aly::Number treeDepth;
 	aly::Number trimPercent;
 	aly::Number bsplineDegree;
@@ -82,6 +81,8 @@ protected:
 	std::unique_ptr<aly::MatcapShader> matcapShader;
 	std::unique_ptr<aly::ImageShader> imageShader;
 	aly::Camera camera;
+
+	aly::TextLabelPtr textLabel;
 	aly::WorkerTaskPtr worker;
 	aly::box3f objectBBox;
 	void initializeFrameBuffers(aly::AlloyContext* context);
