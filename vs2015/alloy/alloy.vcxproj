@@ -72,7 +72,7 @@
     <ClCompile Include="..\..\src\core\AlloyImageProcessing.cpp" />
     <ClCompile Include="..\..\src\core\AlloyMeshTextureMap.cpp" />
     <ClCompile Include="..\..\src\core\nanovg.cpp" />
-    <ClCompile Include="..\..\src\core\poisson\CmdLineParser.cpp" />
+    <ClCompile Include="..\..\src\core\poisson\ArgumentParser.cpp" />
     <ClCompile Include="..\..\src\core\poisson\Factor.cpp" />
     <ClCompile Include="..\..\src\core\poisson\Geometry.cpp" />
     <ClCompile Include="..\..\src\core\poisson\MarchingCubes.cpp" />
@@ -219,8 +219,8 @@
     <ClInclude Include="..\..\include\core\poisson\BinaryNode.h" />
     <ClInclude Include="..\..\include\core\poisson\BSplineData.h" />
     <ClInclude Include="..\..\include\core\poisson\BSplineData.hpp" />
-    <ClInclude Include="..\..\include\core\poisson\CmdLineParser.h" />
-    <ClInclude Include="..\..\include\core\poisson\CmdLineParser.hpp" />
+    <ClInclude Include="..\..\include\core\poisson\ArgumentParser.h" />
+    <ClInclude Include="..\..\include\core\poisson\ArgumentParser.hpp" />
     <ClInclude Include="..\..\include\core\poisson\Factor.h" />
     <ClInclude Include="..\..\include\core\poisson\FunctionData.h" />
     <ClInclude Include="..\..\include\core\poisson\FunctionData.hpp" />
@@ -248,6 +248,7 @@
     <ClInclude Include="..\..\include\core\poisson\PPolynomial.hpp" />
     <ClInclude Include="..\..\include\core\poisson\SparseMatrix.h" />
     <ClInclude Include="..\..\include\core\poisson\SparseMatrix.hpp" />
+    <ClInclude Include="..\..\include\core\poisson\Trimmer.h" />
     <ClInclude Include="..\..\include\core\process_unix.h" />
     <ClInclude Include="..\..\include\core\process_win.h" />
     <ClInclude Include="..\..\include\core\sha1.h" />

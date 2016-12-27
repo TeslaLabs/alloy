@@ -27,20 +27,20 @@ DAMAGE.
 */
 
 /////////////////////
-// cmdLineIntArray //
+// ArgumentIntArray //
 /////////////////////
 template<int Dim>
-cmdLineIntArray<Dim>::cmdLineIntArray(const char* name) : cmdLineReadable(name)
+ArgumentIntArray<Dim>::ArgumentIntArray(const char* name) : ArgumentReadable(name)
 {
 	for(int i=0;i<Dim;i++)	values[i]=0;
 }
 template<int Dim>
-cmdLineIntArray<Dim>::cmdLineIntArray(const char* name,const int v[Dim]) : cmdLineReadable(name)
+ArgumentIntArray<Dim>::ArgumentIntArray(const char* name,const int v[Dim]) : ArgumentReadable(name)
 {
 	for(int i=0;i<Dim;i++)	values[i]=v[i];
 }
 template<int Dim>
-int cmdLineIntArray<Dim>::read(char** argv,int argc)
+int ArgumentIntArray<Dim>::read(char** argv,int argc)
 {
 	if(argc>=Dim)
 	{
@@ -51,7 +51,7 @@ int cmdLineIntArray<Dim>::read(char** argv,int argc)
 	else{return 0;}
 }
 template<int Dim>
-void cmdLineIntArray<Dim>::writeValue(char* str)
+void ArgumentIntArray<Dim>::writeValue(char* str)
 {
 	char* temp=str;
 	for(int i=0;i<Dim;i++)
@@ -62,20 +62,20 @@ void cmdLineIntArray<Dim>::writeValue(char* str)
 }
 
 ///////////////////////
-// cmdLineFloatArray //
+// ArgumentFloatArray //
 ///////////////////////
 template<int Dim>
-cmdLineFloatArray<Dim>::cmdLineFloatArray(const char* name) : cmdLineReadable(name)
+ArgumentFloatArray<Dim>::ArgumentFloatArray(const char* name) : ArgumentReadable(name)
 {
 	for(int i=0;i<Dim;i++)	values[i]=0;
 }
 template<int Dim>
-cmdLineFloatArray<Dim>::cmdLineFloatArray(const char* name,const float f[Dim]) : cmdLineReadable(name)
+ArgumentFloatArray<Dim>::ArgumentFloatArray(const char* name,const float f[Dim]) : ArgumentReadable(name)
 {
 	for(int i=0;i<Dim;i++)	values[i]=f[i];
 }
 template<int Dim>
-int cmdLineFloatArray<Dim>::read(char** argv,int argc)
+int ArgumentFloatArray<Dim>::read(char** argv,int argc)
 {
 	if(argc>=Dim)
 	{
@@ -86,7 +86,7 @@ int cmdLineFloatArray<Dim>::read(char** argv,int argc)
 	else{return 0;}
 }
 template<int Dim>
-void cmdLineFloatArray<Dim>::writeValue(char* str)
+void ArgumentFloatArray<Dim>::writeValue(char* str)
 {
 	char* temp=str;
 	for(int i=0;i<Dim;i++)
@@ -98,15 +98,15 @@ void cmdLineFloatArray<Dim>::writeValue(char* str)
 
 
 ////////////////////////
-// cmdLineStringArray //
+// ArgumentStringArray //
 ////////////////////////
 template<int Dim>
-cmdLineStringArray<Dim>::cmdLineStringArray(const char* name) : cmdLineReadable(name)
+ArgumentStringArray<Dim>::ArgumentStringArray(const char* name) : ArgumentReadable(name)
 {
 	for(int i=0;i<Dim;i++)	values[i]=NULL;
 }
 template<int Dim>
-cmdLineStringArray<Dim>::~cmdLineStringArray(void)
+ArgumentStringArray<Dim>::~ArgumentStringArray(void)
 {
 	for(int i=0;i<Dim;i++)
 	{
@@ -115,7 +115,7 @@ cmdLineStringArray<Dim>::~cmdLineStringArray(void)
 	}
 }
 template<int Dim>
-int cmdLineStringArray<Dim>::read(char** argv,int argc)
+int ArgumentStringArray<Dim>::read(char** argv,int argc)
 {
 	if(argc>=Dim)
 	{
@@ -130,7 +130,7 @@ int cmdLineStringArray<Dim>::read(char** argv,int argc)
 	else{return 0;}
 }
 template<int Dim>
-void cmdLineStringArray<Dim>::writeValue(char* str)
+void ArgumentStringArray<Dim>::writeValue(char* str)
 {
 	char* temp=str;
 	for(int i=0;i<Dim;i++)

@@ -33,332 +33,43 @@
 #include "poisson/Octree.h"
 #include "poisson/MultiGridOctreeData.h"
 #include "poisson/SparseMatrix.h"
-#include "poisson/CmdLineParser.h"
+#include "poisson/ArgumentParser.h"
 #include "poisson/PPolynomial.h"
 #include "poisson/Ply.h"
 #include "poisson/MemoryUsage.h"
+#include "poisson/Trimmer.h"
 #include <map>
 #ifdef _OPENMP
 #include "omp.h"
-#endif // _OPENMP
-void DumpOutput(const char* format, ...);
+#endif
 #include <poisson/MultiGridOctreeData.h>
-
-#define DEFAULT_FULL_DEPTH 5
-
-#define XSTR(x) STR(x)
-#define STR(x) #x
-#if DEFAULT_FULL_DEPTH
-//#pragma message ( "[WARNING] Setting default full depth to " XSTR(DEFAULT_FULL_DEPTH) )
-#endif // DEFAULT_FULL_DEPTH
-
 #include <stdarg.h>
-char* outputFile = NULL;
+#define DEFAULT_FULL_DEPTH 5
 int echoStdout = 0;
-void DumpOutput(const char* format, ...)
-{
-	/*
-	va_list args;
-	va_start(args, format);
-	vprintf(format, args);
-	va_end(args);
-	*/
-}
 using namespace aly;
-long long EdgeKey(int key1, int key2)
-{
-	if (key1 < key2)
-		return (((long long)key1) << 32) | ((long long)key2);
-	else
-		return (((long long)key2) << 32) | ((long long)key1);
-}
-
-template<class Real, class Vertex>
-Vertex InterpolateVertices(const Vertex& v1, const Vertex& v2, Real value)
-{
-	typename Vertex::Wrapper _v1(v1), _v2(v2);
-	if (_v1.value == _v2.value)
-		return Vertex((_v1 + _v2) / Real(2.));
-
-	Real dx = (_v1.value - value) / (_v1.value - _v2.value);
-	return Vertex(_v1 * (1.f - dx) + _v2 * dx);
-}
-template<class Real, class Vertex>
-void SmoothValues(std::vector<Vertex>& vertices, const std::vector<std::vector<int> >& polygons)
-{
-	std::vector<int> count(vertices.size());
-	std::vector<Real> sums(vertices.size(), 0);
-	for (size_t i = 0; i < polygons.size(); i++)
-	{
-		int sz = int(polygons[i].size());
-		for (int j = 0; j < sz; j++)
-		{
-			int j1 = j, j2 = (j + 1) % sz;
-			int v1 = polygons[i][j1], v2 = polygons[i][j2];
-			count[v1]++, count[v2]++;
-			sums[v1] += vertices[v2].value, sums[v2] += vertices[v1].value;
-		}
-	}
-	for (size_t i = 0; i < vertices.size(); i++)
-		vertices[i].value = (sums[i] + vertices[i].value) / (count[i] + 1);
-}
-template<class Real, class Vertex>
-void SplitPolygon(const std::vector<int>& polygon,
-	std::vector<Vertex>& vertices,
-	std::vector<std::vector<int> >* ltPolygons,
-	std::vector<std::vector<int> >* gtPolygons,
-	std::vector<bool>* ltFlags,
-	std::vector<bool>* gtFlags,
-	std::map<uint64_t, int>& vertexTable,
-	Real trimValue)
-{
-	int sz = int(polygon.size());
-	std::vector<bool> gt(sz);
-	int gtCount = 0;
-	for (int j = 0; j < sz; j++)
-	{
-		gt[j] = (vertices[polygon[j]].value > trimValue);
-		if (gt[j])
-			gtCount++;
-	}
-	if (gtCount == sz)
-	{
-		if (gtPolygons)
-			gtPolygons->push_back(polygon);
-		if (gtFlags)
-			gtFlags->push_back(false);
-	}
-	else if (gtCount == 0)
-	{
-		if (ltPolygons)
-			ltPolygons->push_back(polygon);
-		if (ltFlags)
-			ltFlags->push_back(false);
-	}
-	else
-	{
-		int start;
-		for (start = 0; start < sz; start++)
-			if (gt[start] && !gt[(start + sz - 1) % sz])
-				break;
-
-		bool gtFlag = true;
-		std::vector<int> poly;
-
-		// Add the initial vertex
-		{
-			int j1 = (start + int(sz) - 1) % sz, j2 = start;
-			int v1 = polygon[j1], v2 = polygon[j2];
-			int vIdx;
-			std::map<uint64_t, int>::iterator iter = vertexTable.find(EdgeKey(v1, v2));
-			if (iter == vertexTable.end())
-			{
-				vertexTable[EdgeKey(v1, v2)] = vIdx = int(vertices.size());
-				vertices.push_back(InterpolateVertices(vertices[v1], vertices[v2], trimValue));
-			}
-			else
-				vIdx = iter->second;
-			poly.push_back(vIdx);
-		}
-
-		for (int _j = 0; _j <= sz; _j++)
-		{
-			int j1 = (_j + start + sz - 1) % sz, j2 = (_j + start) % sz;
-			int v1 = polygon[j1], v2 = polygon[j2];
-			if (gt[j2] == gtFlag)
-				poly.push_back(v2);
-			else
-			{
-				int vIdx;
-				std::map<uint64_t, int>::iterator iter = vertexTable.find(EdgeKey(v1, v2));
-				if (iter == vertexTable.end())
-				{
-					vertexTable[EdgeKey(v1, v2)] = vIdx = int(vertices.size());
-					vertices.push_back(InterpolateVertices(vertices[v1], vertices[v2], trimValue));
-				}
-				else
-					vIdx = iter->second;
-				poly.push_back(vIdx);
-				if (gtFlag)
-				{
-					if (gtPolygons)
-						gtPolygons->push_back(poly);
-					if (ltFlags)
-						ltFlags->push_back(true);
-				}
-				else
-				{
-					if (ltPolygons)
-						ltPolygons->push_back(poly);
-					if (gtFlags)
-						gtFlags->push_back(true);
-				}
-				poly.clear(), poly.push_back(vIdx), poly.push_back(v2);
-				gtFlag = !gtFlag;
-			}
-		}
-	}
-}
-template<class Real, class Vertex>
-void Triangulate(const std::vector<Vertex>& vertices, const std::vector<std::vector<int> >& polygons, std::vector<std::vector<int> >& triangles)
-{
-	triangles.clear();
-	for (size_t i = 0; i < polygons.size(); i++)
-		if (polygons.size() > 3)
-		{
-			MinimalAreaTriangulation<Real> mat;
-			std::vector<Point3D<Real> > _vertices(polygons[i].size());
-			std::vector<TriangleIndex> _triangles;
-			for (int j = 0; j < int(polygons[i].size()); j++)
-				_vertices[j] = vertices[polygons[i][j]].point;
-			mat.GetTriangulation(_vertices, _triangles);
-
-			// Add the triangles to the mesh
-			size_t idx = triangles.size();
-			triangles.resize(idx + _triangles.size());
-			for (int j = 0; j < int(_triangles.size()); j++)
-			{
-				triangles[idx + j].resize(3);
-				for (int k = 0; k < 3; k++)
-					triangles[idx + j][k] = polygons[i][_triangles[j].idx[k]];
-			}
-		}
-		else if (polygons[i].size() == 3)
-			triangles.push_back(polygons[i]);
-}
-template<class Real, class Vertex>
-double PolygonArea(const std::vector<Vertex>& vertices, const std::vector<int>& polygon)
-{
-	if (polygon.size() < 3)
-		return 0.;
-	else if (polygon.size() == 3)
-		return TriangleArea(vertices[polygon[0]].point, vertices[polygon[1]].point, vertices[polygon[2]].point);
-	else
-	{
-		Point3D<Real> center;
-		for (size_t i = 0; i < polygon.size(); i++)
-			center += vertices[polygon[i]].point;
-		center /= Real(polygon.size());
-		double area = 0;
-		for (size_t i = 0; i < polygon.size(); i++)
-			area += TriangleArea(center, vertices[polygon[i]].point, vertices[polygon[(i + 1) % polygon.size()]].point);
-		return area;
-	}
-}
-
-template<class Vertex>
-void RemoveHangingVertices(std::vector<Vertex>& vertices, std::vector<std::vector<int> >& polygons)
-{
-	std::map<int, int> vMap;
-	std::vector<bool> vertexFlags(vertices.size(), false);
-	for (size_t i = 0; i < polygons.size(); i++)
-		for (size_t j = 0; j < polygons[i].size(); j++)
-			vertexFlags[polygons[i][j]] = true;
-	int vCount = 0;
-	for (int i = 0; i < int(vertices.size()); i++)
-		if (vertexFlags[i])
-			vMap[i] = vCount++;
-	for (size_t i = 0; i < polygons.size(); i++)
-		for (size_t j = 0; j < polygons[i].size(); j++)
-			polygons[i][j] = vMap[polygons[i][j]];
-
-	std::vector<Vertex> _vertices(vCount);
-	for (int i = 0; i < int(vertices.size()); i++)
-		if (vertexFlags[i])
-			_vertices[vMap[i]] = vertices[i];
-	vertices = _vertices;
-}
-void SetConnectedComponents(const std::vector<std::vector<int> >& polygons, std::vector<std::vector<int> >& components)
-{
-	std::vector<int> polygonRoots(polygons.size());
-	for (size_t i = 0; i < polygons.size(); i++)
-		polygonRoots[i] = int(i);
-	std::map<uint64_t, int> edgeTable;
-	for (size_t i = 0; i < polygons.size(); i++)
-	{
-		int sz = int(polygons[i].size());
-		for (int j = 0; j < sz; j++)
-		{
-			int j1 = j, j2 = (j + 1) % sz;
-			int v1 = polygons[i][j1], v2 = polygons[i][j2];
-			long long eKey = EdgeKey(v1, v2);
-			std::map<uint64_t, int>::iterator iter = edgeTable.find(eKey);
-			if (iter == edgeTable.end())
-				edgeTable[eKey] = int(i);
-			else
-			{
-				int p = iter->second;
-				while (polygonRoots[p] != p)
-				{
-					int temp = polygonRoots[p];
-					polygonRoots[p] = int(i);
-					p = temp;
-				}
-				polygonRoots[p] = int(i);
-			}
-		}
-	}
-	for (size_t i = 0; i < polygonRoots.size(); i++)
-	{
-		int p = int(i);
-		while (polygonRoots[p] != p)
-			p = polygonRoots[p];
-		int root = p;
-		p = int(i);
-		while (polygonRoots[p] != p)
-		{
-			int temp = polygonRoots[p];
-			polygonRoots[p] = root;
-			p = temp;
-		}
-	}
-	int cCount = 0;
-	std::map<int, int> vMap;
-	for (int i = 0; i < int(polygonRoots.size()); i++)
-		if (polygonRoots[i] == i)
-			vMap[i] = cCount++;
-	components.resize(cCount);
-	for (int i = 0; i < int(polygonRoots.size()); i++)
-		components[vMap[polygonRoots[i]]].push_back(i);
-}
-template<class Real>
-inline Point3D<Real> CrossProduct(Point3D<Real> p1, Point3D<Real> p2)
-{
-	return Point3D<Real>(p1[1] * p2[2] - p1[2] * p2[1], p1[2] * p2[0] - p1[0] * p2[2], p1[0] * p1[1] - p1[1] * p2[0]);
-}
-template<class Real>
-double TriangleArea(Point3D<Real> v1, Point3D<Real> v2, Point3D<Real> v3)
-{
-	Point3D<Real> n = CrossProduct(v2 - v1, v3 - v1);
-	return sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]) / 2.;
-}
-
 template<class Real, int Degree, class Vertex, BoundaryType BType> bool ExecuteInternal(const ReconstructionParameters& params, const aly::Mesh& input, aly::Mesh& output,
 	const std::function<bool(const std::string& status, float progress)>& monitor)
 {
+	Octree<Real> tree;
+	const Real targetValue = (Real)0.5;
+	Real isoValue = 0;
 	const box3f bbox(float3(0.01f, 0.01f, 0.01f), float3(0.99f, 0.99f, 0.99f));
 	float4x4 M = MakeTransform(input.getBoundingBox(), bbox);
 	float4x4 Minv = inverse(M);	
 	int solveDepth = params.MaxSolveDepth.value;
 	Reset<Real>();
-	double t;
-	double tt = MyTime();
-	Real isoValue = 0;
-	Octree<Real> tree;
 	tree.threads = params.Threads.value;
 	if (monitor)monitor("Initializing", 0.01f);
 	OctNode<TreeNodeData>::SetAllocator(MEMORY_ALLOCATOR_BLOCK_SIZE);
-	t = MyTime();
 	int kernelDepth = params.KernelDepth.set ? params.KernelDepth.value : params.Depth.value - 2;
 	if (kernelDepth > params.Depth.value)
 	{
 		kernelDepth = params.Depth.value;
 	}
-	t = MyTime();
 	typedef ProjectiveData<Point3D<Real>,Real > ProjectiveColor;
 	typedef typename Octree< Real >::template DensityEstimator< WEIGHT_DEGREE > DensityEstimator;
 	typedef typename Octree< Real >::template InterpolationInfo< false > InterpolationInfo;
-	Real targetValue = (Real)0.5;
+
 	CoredVectorMeshData<Vertex> mesh;
 	{
 		std::vector< typename Octree< Real >::PointSample > samples;
@@ -368,7 +79,6 @@ template<class Real, int Degree, class Vertex, BoundaryType BType> bool ExecuteI
 		SparseNodeData<Point3D< Real >, NORMAL_DEGREE > normalInfo;
 		DenseNodeData< Real, Degree > constraints;
 		int pointCount = 0;
-		//DumpOutput("Poisson Reconstruction:: Threads: %d Tree Depth: %d\n", params.Threads.value, params.Depth.value);
 		{
 			AlloyPointStream pointStream(M,input);
 			pointCount = tree.template init< Point3D< Real > >(pointStream, params.Depth.value, params.Confidence.set, samples, &sampleData);
@@ -502,7 +212,6 @@ template<class Real, int Degree, class Vertex, BoundaryType BType> bool ExecuteI
 	std::map<uint64_t, int> vertexTable;
 	std::vector<std::vector<int> > ltPolygons, gtPolygons;
 	std::vector<bool> ltFlags, gtFlags;
-	t = MyTime();
 	for (size_t i = 0; i < polygons.size(); i++)
 	{
 		SplitPolygon(polygons[i], vertices, &ltPolygons, &gtPolygons, &ltFlags, &gtFlags, vertexTable, trim);
@@ -630,46 +339,44 @@ bool AlloyPointStream::nextPoint(OrientedPoint3D<float>& p, Point3D<float>& d)
 	counter++;
 	return true;
 }
-
-void PoissonReconstruct(const ReconstructionParameters& params, const aly::Mesh& input, aly::Mesh& output, const std::function<bool(const std::string& status, float progress)>& monitor)
+template<class Real, int Degree, class Vertex> bool ExecuteInternal(const ReconstructionParameters& params, const aly::Mesh& input, aly::Mesh& output, const BoundaryType& BType, const std::function<bool(const std::string& status, float progress)>& monitor)
 {
-	static const BoundaryType BType = BoundaryType::BOUNDARY_NEUMANN;
-
+	switch (params.BType.value)
+	{
+	case BoundaryType::BOUNDARY_FREE:
+		ExecuteInternal<float, 1, PlyColorAndValueVertex<float>, BoundaryType::BOUNDARY_FREE>(params, input, output, monitor);
+		break;
+	case BoundaryType::BOUNDARY_DIRICHLET:
+		ExecuteInternal<float, 2, PlyColorAndValueVertex<float>, BoundaryType::BOUNDARY_DIRICHLET>(params, input, output, monitor);
+		break;
+	case BoundaryType::BOUNDARY_NEUMANN:
+		ExecuteInternal<float, 3, PlyColorAndValueVertex<float>, BoundaryType::BOUNDARY_NEUMANN>(params, input, output, monitor);
+		break;
+	case BoundaryType::BOUNDARY_COUNT:
+		ExecuteInternal<float, 4, PlyColorAndValueVertex<float>, BoundaryType::BOUNDARY_COUNT>(params, input, output, monitor);
+		break;
+	default:
+		throw std::runtime_error("Boundary type not supported.");
+	}
+}
+void SurfaceReconstruct(const ReconstructionParameters& params, const aly::Mesh& input, aly::Mesh& output, const std::function<bool(const std::string& status, float progress)>& monitor)
+{
+	BoundaryType BType = static_cast<BoundaryType>(params.BType.value);
 	switch (params.Degree.value)
 	{
 	case 1:
-		ExecuteInternal<float, 1,PlyColorAndValueVertex<float>, BType>(params, input, output, monitor);
+		ExecuteInternal<float, 1,PlyColorAndValueVertex<float> >(params, input, output, BType, monitor);
 		break;
 	case 2:
-		ExecuteInternal<float, 2, PlyColorAndValueVertex<float>, BType>(params, input, output, monitor);
+		ExecuteInternal<float, 2, PlyColorAndValueVertex<float> >(params, input, output, BType, monitor);
 		break;
 	case 3:
-		ExecuteInternal<float, 3, PlyColorAndValueVertex<float>, BType>(params, input, output, monitor);
+		ExecuteInternal<float, 3, PlyColorAndValueVertex<float> >(params, input, output, BType, monitor);
 		break;
 	case 4:
-		ExecuteInternal<float, 4, PlyColorAndValueVertex<float>, BType>(params, input, output, monitor);
+		ExecuteInternal<float, 4, PlyColorAndValueVertex<float> >(params, input, output, BType, monitor);
 		break;
 	default:
 		throw std::runtime_error("Degree not supported.");
 	}
 }
-/*
-int main(int argc, char* argv[])
-{
-ReconstructionParameters params;
-params.Threads.value = omp_get_max_threads() - 2;
-params.Depth.value=9;
-if (argc > 2)
-{
-std::string inputFile(argv[1]);
-std::string outputFile(argv[2]);
-aly::Mesh inputMesh;
-aly::Mesh outputMesh;
-std::cout << "Reading " << inputFile << std::endl;
-ReadMeshFromFile(inputFile, inputMesh);
-PoissonReconstruct(params, inputMesh, outputMesh);
-std::cout << "Writing " << outputFile << std::endl;
-WriteMeshToFile(outputFile, outputMesh);
-}
-}
-*/

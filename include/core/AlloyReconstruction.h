@@ -24,7 +24,7 @@
 #include <AlloyMesh.h>
 #include <functional>
 #include <omp.h>
-#include <poisson/CmdLineParser.h>
+#include <poisson/ArgumentParser.h>
 #include <poisson/Geometry.h>
 #include <poisson/PointStream.h>
 #include <string>
@@ -44,17 +44,16 @@ public:
 };
 
 struct ReconstructionParameters {
-	cmdLineReadable
+	ArgumentReadable
 		Complete,
 		ShowResidual,
 		PolygonMesh,
 		Confidence,
 		NormalWeights,
 		NonManifold,
-		Dirichlet,
 		LinearFit,
 		PrimalVoxel;
-	cmdLineInt
+	ArgumentInt
 		Degree,
 		Depth,
 		CGDepth,
@@ -68,7 +67,7 @@ struct ReconstructionParameters {
 		Threads,
 		Smooth,
 		BType;
-	cmdLineFloat
+	ArgumentFloat
 		Color,
 		SamplesPerNode,
 		Scale,
@@ -85,7 +84,6 @@ struct ReconstructionParameters {
 		Confidence("confidence"),
 		NormalWeights("nWeights"),
 		NonManifold("nonManifold"),
-		Dirichlet("dirichlet"),
 		LinearFit("linearFit"),
 		PrimalVoxel("primalVoxel"),
 		Degree("degree", 2),
@@ -108,11 +106,11 @@ struct ReconstructionParameters {
 		PointWeight("pointWeight", 4.f),
 		Trim("trim", 0.05f),
 		IslandAreaRatio("aRatio", 0.001f),
-		BType("bType", BOUNDARY_NEUMANN + 1){
+		BType("bType", BOUNDARY_NEUMANN){
 
 	}
 };
-void PoissonReconstruct(const ReconstructionParameters& params, const aly::Mesh& input, aly::Mesh& output,
+void SurfaceReconstruct(const ReconstructionParameters& params, const aly::Mesh& input, aly::Mesh& output,
 	const std::function<bool(const std::string& status, float progress)>& monitor=nullptr);
 
 #endif /* POISSONRECONAPI_H_ */

@@ -31,39 +31,39 @@ DAMAGE.
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "poisson/CmdLineParser.h"
+#include "poisson/ArgumentParser.h"
 
 
 #ifdef WIN32
 int strcasecmp(char* c1,char* c2){return _stricmp(c1,c2);}
 #endif
 
-cmdLineReadable::cmdLineReadable(const char* name)
+ArgumentReadable::ArgumentReadable(const char* name)
 {
 	set=false;
 	this->name=new char[strlen(name)+1];
 	strcpy(this->name,name);
 }
-cmdLineReadable::~cmdLineReadable(void)
+ArgumentReadable::~ArgumentReadable(void)
 {
 	if(name) delete[] name;
 	name=NULL;
 }
-int cmdLineReadable::read(char**,int){
+int ArgumentReadable::read(char**,int){
 	set=true;
 	return 0;
 }
-void cmdLineReadable::writeValue(char* str)
+void ArgumentReadable::writeValue(char* str)
 {
 	str[0] = 0;
 }
 
 ////////////////
-// cmdLineInt //
+// ArgumentInt //
 ////////////////
-cmdLineInt::cmdLineInt(const char* name) : cmdLineReadable(name) {value=0;}
-cmdLineInt::cmdLineInt(const char* name,const int& v) : cmdLineReadable(name) {value=v;}
-int cmdLineInt::read(char** argv,int argc){
+ArgumentInt::ArgumentInt(const char* name) : ArgumentReadable(name) {value=0;}
+ArgumentInt::ArgumentInt(const char* name,const int& v) : ArgumentReadable(name) {value=v;}
+int ArgumentInt::read(char** argv,int argc){
 	if(argc>0){
 		value=atoi(argv[0]);
 		set=true;
@@ -71,17 +71,17 @@ int cmdLineInt::read(char** argv,int argc){
 	}
 	else{return 0;}
 }
-void cmdLineInt::writeValue(char* str)
+void ArgumentInt::writeValue(char* str)
 {
 	sprintf(str,"%d",value);
 }
 
 //////////////////
-// cmdLineFloat //
+// ArgumentFloat //
 //////////////////
-cmdLineFloat::cmdLineFloat(const char* name) : cmdLineReadable(name) {value=0;}
-cmdLineFloat::cmdLineFloat(const char* name, const float& v) : cmdLineReadable(name) {value=v;}
-int cmdLineFloat::read(char** argv,int argc){
+ArgumentFloat::ArgumentFloat(const char* name) : ArgumentReadable(name) {value=0;}
+ArgumentFloat::ArgumentFloat(const char* name, const float& v) : ArgumentReadable(name) {value=v;}
+int ArgumentFloat::read(char** argv,int argc){
 	if(argc>0){
 		value=(float)atof(argv[0]);
 		set=true;
@@ -89,21 +89,21 @@ int cmdLineFloat::read(char** argv,int argc){
 	}
 	else{return 0;}
 }
-void cmdLineFloat::writeValue(char* str)
+void ArgumentFloat::writeValue(char* str)
 {
 	sprintf(str,"%f",value);
 }
 
 ///////////////////
-// cmdLineString //
+// ArgumentString //
 ///////////////////
-cmdLineString::cmdLineString(const char* name) : cmdLineReadable(name) {value=NULL;}
-cmdLineString::~cmdLineString(void)
+ArgumentString::ArgumentString(const char* name) : ArgumentReadable(name) {value=NULL;}
+ArgumentString::~ArgumentString(void)
 {
 	if(value)	delete[] value;
 	value=NULL;
 }
-int cmdLineString::read(char** argv,int argc){
+int ArgumentString::read(char** argv,int argc){
 	if(argc>0)
 	{
 		value=new char[strlen(argv[0])+1];
@@ -113,21 +113,21 @@ int cmdLineString::read(char** argv,int argc){
 	}
 	else{return 0;}
 }
-void cmdLineString::writeValue(char* str)
+void ArgumentString::writeValue(char* str)
 {
 	sprintf(str,"%s",value);
 }
 
 ////////////////////
-// cmdLineStrings //
+// ArgumentStrings //
 ////////////////////
-cmdLineStrings::cmdLineStrings(const char* name,int Dim) : cmdLineReadable(name)
+ArgumentStrings::ArgumentStrings(const char* name,int Dim) : ArgumentReadable(name)
 {
 	this->Dim=Dim;
 	values=new char*[Dim];
 	for(int i=0;i<Dim;i++)	values[i]=NULL;
 }
-cmdLineStrings::~cmdLineStrings(void)
+ArgumentStrings::~ArgumentStrings(void)
 {
 	for(int i=0;i<Dim;i++)
 	{
@@ -137,7 +137,7 @@ cmdLineStrings::~cmdLineStrings(void)
 	delete[] values;
 	values=NULL;
 }
-int cmdLineStrings::read(char** argv,int argc)
+int ArgumentStrings::read(char** argv,int argc)
 {
 	if(argc>=Dim)
 	{
@@ -151,7 +151,7 @@ int cmdLineStrings::read(char** argv,int argc)
 	}
 	else	return 0;
 }
-void cmdLineStrings::writeValue(char* str)
+void ArgumentStrings::writeValue(char* str)
 {
 	char* temp=str;
 	for(int i=0;i<Dim;i++)
@@ -202,7 +202,7 @@ char* GetLocalFileName(char* fileName){
 	return name;
 }
 
-void cmdLineParse(int argc, char **argv,int num,cmdLineReadable** readable,int dumpError)
+void ArgumentParse(int argc, char **argv,int num,ArgumentReadable** readable,int dumpError)
 {
 	int i,j;
 	while (argc > 0)

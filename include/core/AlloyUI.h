@@ -436,7 +436,7 @@ public:
 class TextLabel: public Region {
 protected:
 	std::string label;
-	bool truncate=true;
+	bool truncate;
 public:
 	virtual pixel2 getTextDimensions(AlloyContext* context);
 	HorizontalAlignment horizontalAlignment = HorizontalAlignment::Left;
@@ -463,7 +463,7 @@ public:
 	TextLabel(
 			const std::string& name = MakeString() << "t" << std::setw(8)
 					<< std::setfill('0') << (REGION_COUNTER++)) :
-			Region(name), label(name) {
+			Region(name), label(name),truncate(true) {
 	}
 	TextLabel(const std::string& name, const AUnit2D& pos, const AUnit2D& dims) :
 			Region(name, pos, dims), label(name) {

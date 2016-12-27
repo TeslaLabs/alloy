@@ -45,13 +45,19 @@ protected:
 	bool showReconstruction;
 	bool colorPointCloud;
 	bool colorReconstruction;
+	int boundaryType;
+	aly::Number solverIterations;
+	aly::Number smoothingIterations;
 	aly::Number treeDepth;
+	aly::Number treeFullDepth;
+	aly::Number treeMaxSolveDepth;
 	aly::Number trimPercent;
 	aly::Number bsplineDegree;
 	aly::Number pointWeight;
 	aly::Number samplesPerNode;
 	aly::Number islandRatio;
 	bool linearFitSurface;
+	bool nonManifoldSurface;
 
 	aly::CheckBoxPtr showReconstructionField;
 	aly::CheckBoxPtr showPointCloudField;

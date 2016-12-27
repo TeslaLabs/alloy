@@ -127,20 +127,31 @@ bool MeshReconstructionEx::init(Composite& rootNode) {
 	lineColorField = controls->addColorField("Line", lineColor);
 	ReconstructionParameters params;
 	treeDepth = Integer(params.Depth.value);
+	treeFullDepth = Integer(params.FullDepth.value);
+	treeMaxSolveDepth = Integer(params.MaxSolveDepth.value);
 	trimPercent = Float(params.Trim.value);
 	bsplineDegree = Integer(params.Degree.value);
 	pointWeight = Float(params.PointWeight.value);
 	samplesPerNode = Float(params.SamplesPerNode.value);
 	islandRatio = Float(params.IslandAreaRatio.value);
+	smoothingIterations = Integer(params.Smooth.value);
+	solverIterations = Integer(params.Iters.value);
 	linearFitSurface = params.LinearFit.set;
-
-	controls->addGroup("Poisson Solver",true);
+	boundaryType = params.BType.value;
+	nonManifoldSurface = params.NonManifold.set;
+	controls->addGroup("Surface Reconstruction",true);
+	controls->addSelectionField("Boundary", boundaryType, std::vector<std::string>{"Free","Dirichlet","Neumann","Count"});
 	controls->addNumberField("Tree Depth",treeDepth,Integer(1),Integer(12));
+	controls->addNumberField("Full Depth", treeFullDepth, Integer(1), Integer(12));
+	controls->addNumberField("Solve Depth", treeMaxSolveDepth, Integer(1), Integer(12));
 	controls->addNumberField("Trim Percent", trimPercent,Float(0.0f),Float(1.0f));
 	controls->addNumberField("B-Spline", bsplineDegree,Integer(1),Integer(4));
 	controls->addNumberField("Point Weight", pointWeight,Float(0.0f),Float(8.0f));
 	controls->addNumberField("Node Samples", samplesPerNode);
+	controls->addNumberField("Solver Iterations", solverIterations);
+	controls->addNumberField("Smooth Iterations", smoothingIterations);
 	controls->addNumberField("Island Ratio", islandRatio);
+	controls->addCheckBox("Non-Manifold", nonManifoldSurface);
 	controls->addCheckBox("Linear Fit", linearFitSurface);
 
 	float4x4 MT = MakeTransform(objectBBox, renderBBox);
@@ -161,16 +172,20 @@ void MeshReconstructionEx::solve() {
 	worker = WorkerTaskPtr(new WorkerTask([this]() {
 		
 		ReconstructionParameters params;
+		params.BType.value = boundaryType;
+		params.Smooth.value = smoothingIterations.toInteger();
 		params.Depth.value = treeDepth.toInteger();
-		params.FullDepth.value = treeDepth.toInteger();
-		params.MaxSolveDepth.value = treeDepth.toInteger();
+		params.FullDepth.value = treeFullDepth.toInteger();
+		params.MaxSolveDepth.value = treeMaxSolveDepth.toInteger();
 		params.Trim.value = trimPercent.toFloat();
 		params.Degree.value = bsplineDegree.toInteger();
 		params.PointWeight.value = pointWeight.toFloat();
 		params.SamplesPerNode.value = samplesPerNode.toFloat();
 		params.IslandAreaRatio.value = islandRatio.toFloat();
+		params.Iters.value = solverIterations.toInteger();
 		params.LinearFit.set = linearFitSurface;
-		PoissonReconstruct(params, pointCloud, mesh, [this](const std::string& status,float progress) {
+		params.NonManifold.set = nonManifoldSurface;
+		SurfaceReconstruct(params, pointCloud, mesh, [this](const std::string& status,float progress) {
 			textLabel->setLabel(MakeString() <<"Solver: "<< status << " ... ");
 			AlloyApplicationContext()->requestPack();
 			return !worker->isCanceled();

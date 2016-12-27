@@ -1970,9 +1970,9 @@ void TextField::draw(AlloyContext* context) {
 	nvgFontFaceId(nvg, context->getFontHandle(FontType::Bold));
 	nvgTextMetrics(nvg, &ascender, &descender, &lineh);
 
-        box2px clipBounds=getCursorBounds();
-        clipBounds.intersect(box2px(pixel2(x + PADDING, y),pixel2(std::max(0.0f, w - 2 * PADDING), h)));
-        pushScissor(nvg,clipBounds.position.x,clipBounds.position.y,clipBounds.dimensions.x,clipBounds.dimensions.y);
+    box2px clipBounds=getCursorBounds();
+    clipBounds.intersect(box2px(pixel2(x + PADDING, y),pixel2(std::max(0.0f, w - 2 * PADDING), h)));
+    pushScissor(nvg,clipBounds.position.x,clipBounds.position.y,clipBounds.dimensions.x,clipBounds.dimensions.y);
 
 	nvgTextAlign(nvg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
 	positions.resize(value.size() + 1);
@@ -2899,7 +2899,9 @@ void NumberField::draw(AlloyContext* context) {
 	nvgFontSize(nvg, th);
 	nvgFontFaceId(nvg, context->getFontHandle(FontType::Bold));
 	nvgTextMetrics(nvg, &ascender, &descender, &lineh);
-	pushScissor(nvg, x + PADDING, y, std::max(0.0f, w - 2 * PADDING), h);
+	box2px clipBounds = getCursorBounds();
+	clipBounds.intersect(box2px(pixel2(x + PADDING, y), pixel2(std::max(0.0f, w - 2 * PADDING), h)));
+	pushScissor(nvg, clipBounds.position.x, clipBounds.position.y, clipBounds.dimensions.x, clipBounds.dimensions.y);
 	nvgTextAlign(nvg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
 	positions.resize(value.size() + 1);
 	nvgTextGlyphPositions(nvg, 0, textY, value.data(),

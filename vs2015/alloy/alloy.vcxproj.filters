@@ -360,9 +360,6 @@
     <ClCompile Include="..\..\src\core\AlloyReconstruction.cpp">
       <Filter>src\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\core\poisson\CmdLineParser.cpp">
-      <Filter>src\core\poisson</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\core\poisson\Factor.cpp">
       <Filter>src\core\poisson</Filter>
     </ClCompile>
@@ -373,6 +370,9 @@
       <Filter>src\core\poisson</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\core\poisson\PlyFile.cpp">
+      <Filter>src\core\poisson</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\poisson\ArgumentParser.cpp">
       <Filter>src\core\poisson</Filter>
     </ClCompile>
   </ItemGroup>
@@ -794,9 +794,6 @@
     <ClInclude Include="..\..\include\core\poisson\BSplineData.h">
       <Filter>include\core\poisson</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\core\poisson\CmdLineParser.h">
-      <Filter>include\core\poisson</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\core\poisson\Factor.h">
       <Filter>include\core\poisson</Filter>
     </ClInclude>
@@ -851,9 +848,6 @@
     <ClInclude Include="..\..\include\core\poisson\BSplineData.hpp">
       <Filter>include\core\poisson</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\core\poisson\CmdLineParser.hpp">
-      <Filter>include\core\poisson</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\core\poisson\FunctionData.hpp">
       <Filter>include\core\poisson</Filter>
     </ClInclude>
@@ -888,6 +882,15 @@
       <Filter>include\core\poisson</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\core\poisson\MultiGridOctreeData.Evaluation.hpp">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\ArgumentParser.h">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\ArgumentParser.hpp">
+      <Filter>include\core\poisson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\core\poisson\Trimmer.h">
       <Filter>include\core\poisson</Filter>
     </ClInclude>
   </ItemGroup>
