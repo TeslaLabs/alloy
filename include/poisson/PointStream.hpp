@@ -115,6 +115,7 @@ bool BinaryOrientedPointStream< Real , RealOnDisk >::nextPoint( OrientedPoint3D<
 ////////////////////////////
 // PLYOrientedPointStream //
 ////////////////////////////
+/*
 template< class Real >
 PLYOrientedPointStream< Real >::PLYOrientedPointStream( const char* fileName )
 {
@@ -204,7 +205,7 @@ bool PLYOrientedPointStream< Real >::nextPoint( OrientedPoint3D< Real >& p )
 	}
 	else return false;
 }
-
+*/
 ///////////////////////////////////////
 // MemoryOrientedPointStreamWithData //
 ///////////////////////////////////////
@@ -296,6 +297,7 @@ bool BinaryOrientedPointStreamWithData< Real , Data , RealOnDisk , DataOnDisk >:
 ////////////////////////////////////
 // PLYOrientedPointStreamWithData //
 ////////////////////////////////////
+/*
 template< class Real , class Data >
 PLYOrientedPointStreamWithData< Real , Data >::PLYOrientedPointStreamWithData( const char* fileName , const PlyProperty* dataProperties , int dataPropertiesCount , bool (*validationFunction)( const bool* ) ) : _dataPropertiesCount( dataPropertiesCount ) , _validationFunction( validationFunction )
 {
@@ -406,3 +408,4 @@ bool PLYOrientedPointStreamWithData< Real , Data >::nextPoint( OrientedPoint3D< 
 	}
 	else return false;
 }
+*/

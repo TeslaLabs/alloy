@@ -28,7 +28,7 @@ DAMAGE.
 
 #ifndef POINT_STREAM_INCLUDED
 #define POINT_STREAM_INCLUDED
-#include "Ply.h"
+
 #include "Geometry.h"
 
 
@@ -198,7 +198,7 @@ public:
 	void reset( void );
 	bool nextPoint( OrientedPoint3D< Real >& p , Data& d );
 };
-
+/*
 template< class Real >
 class PLYOrientedPointStream : public OrientedPointStream< Real >
 {
@@ -236,6 +236,7 @@ public:
 	void reset( void );
 	bool nextPoint( OrientedPoint3D< Real >& p , Data& d );
 };
+*/
 
 #include "PointStream.hpp"
 #endif // POINT_STREAM_INCLUDED

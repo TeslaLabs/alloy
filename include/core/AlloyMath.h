@@ -59,6 +59,15 @@ template<typename T> T round(const T & v) {
 template<typename T> T round(const T & v,int sigs) {
 	return T(std::floor(T(v*pow(10, sigs) + 0.5))*pow(10, -sigs));
 }
+inline float InvSqrt (float x){
+	float xhalf = 0.5f*x;
+	int i = *(int*)&x;
+	i = 0x5f3759df - (i>>1);
+	x = *(float*)&i;
+	x = x*(1.5f - xhalf*x*x);
+	return x;
+}
+
 // The intent of this library is to provide the bulk of the functionality
 // you need to write programs that frequently use small, fixed-size vectors
 // and matrices, in domains such as computational geometry or computer
@@ -714,6 +723,7 @@ template<class T> T crossMag(const vec<T, 2> & l, const vec<T, 2> & r) {
 template<class T> T crossMag(const vec<T, 3> & l, const vec<T, 3> & r) {
 	return length(vec<T, 3>(l.y * r.z - l.z * r.y, l.z * r.x - l.x * r.z, l.x * r.y - l.y * r.x));
 }
+
 // Compute the length/square length of a vector
 template<class T, int N> T lengthSqr(const vec<T, N> & v) {
 	return dot(v, v);
@@ -1394,6 +1404,15 @@ template<class T> matrix<T, 2, 2> inverse(matrix<T, 2, 2> const& M) {
 	}
 
 	return result;
+}
+template<class T> matrix<T, 2, 2> outerProd(const vec<T,2> &a, const vec<T, 2>& b) {
+	return matrix<T, 2, 2>(b.x*a, b.y*a);
+}
+template<class T> matrix<T, 3, 3> outerProd(const vec<T,3> &a, const vec<T,3>& b) {
+	return matrix<T, 3, 3>(b.x*a, b.y*a, b.z*a);
+}
+template<class T> matrix<T, 4, 4> outerProd(const vec<T,4> &a, const vec<T, 4>& b){
+	return matrix<T, 4, 4>(b.x*a, b.y*a, b.z*a, b.w*a);
 }
 template<typename T>
 matrix<T, 3, 3> inverse(matrix<T, 3, 3> const& M) {

@@ -35,7 +35,6 @@
 #include "poisson/SparseMatrix.h"
 #include "poisson/ArgumentParser.h"
 #include "poisson/PPolynomial.h"
-#include "poisson/Ply.h"
 #include "poisson/MemoryUsage.h"
 #include "poisson/Trimmer.h"
 #include <map>
