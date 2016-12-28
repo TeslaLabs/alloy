@@ -195,7 +195,7 @@ void MeshReconstructionEx::solve() {
 			params.LinearFit.set = linearFitSurface;
 			params.NonManifold.set = nonManifoldSurface;
 			SurfaceReconstruct(params, pointCloud, mesh, [this](const std::string& status, float progress) {
-				textLabel->setLabel(MakeString()<<"Solver: "<<status<<" ...");
+				textLabel->setLabel(MakeString()<<status<<" ...");
 				AlloyApplicationContext()->requestPack();
 				return !worker->isCanceled();
 			});

@@ -80,7 +80,7 @@ template<class Real, int Degree, class Vertex, BoundaryType BType> bool ExecuteI
 		DenseNodeData< Real, Degree > constraints;
 		int pointCount = 0;
 		{
-			if (monitor)monitor("Building Oct-tree", 0.1f);
+			if (monitor)monitor("Building Oct-Tree", 0.1f);
 			AlloyPointStream pointStream(M,input);
 			pointCount = tree.template init< Point3D< Real > >(pointStream, params.Depth.value, params.Confidence.set, samples, &sampleData);
 
@@ -98,13 +98,13 @@ template<class Real, int Degree, class Vertex, BoundaryType BType> bool ExecuteI
 		}
 
 		{
-			if (monitor)monitor("Initializing FEM constraints", 0.3f);
+			if (monitor)monitor("Adding FEM constraints", 0.3f);
 			constraints = tree.template initDenseNodeData< Degree >();
 			tree.template addFEMConstraints< Degree, BType, NORMAL_DEGREE, BType >(FEMVFConstraintFunctor< NORMAL_DEGREE, BType, Degree, BType >(1., 0.), normalInfo, constraints, solveDepth);
 		}
 		if (params.PointWeight.value>0)
 		{
-			if (monitor)monitor("Initializing Boundary Conditions", 0.4f);
+			if (monitor)monitor("Adding Boundary Conditions", 0.4f);
 			iInfo.reset(new InterpolationInfo(tree, samples, targetValue, params.AdaptiveExponent.value, (Real)params.PointWeight.value * pointWeightSum, (Real)0));
 			tree.template addInterpolationConstraints< Degree, BType >(*iInfo, constraints, solveDepth);
 		}
@@ -117,7 +117,7 @@ template<class Real, int Degree, class Vertex, BoundaryType BType> bool ExecuteI
 		solverInfo.showResidual = params.ShowResidual.set;
 		solverInfo.lowResIterMultiplier = std::max< double >(1., params.LowResIterMultiplier.value);
 		DenseNodeData< Real, Degree > solution = tree.template solveSystem< Degree, BType >(FEMSystemFunctor< Degree, BType >(0, 1., 0), iInfo.get(), constraints, solveDepth, solverInfo);
-
+		if (monitor)monitor("Applying Color", 0.6f);
 		double valueSum = 0, weightSum = 0;
 		typename Octree< Real >::template MultiThreadedEvaluator< Degree, BType > evaluator(&tree, solution, params.Threads.value);
 #pragma omp parallel for num_threads( params.Threads.value ) reduction( + : valueSum , weightSum )
@@ -135,7 +135,7 @@ template<class Real, int Degree, class Vertex, BoundaryType BType> bool ExecuteI
 			ProjectiveData< Point3D< Real >, Real >* clr = colorData(n);
 			if (clr) (*clr) *= (Real)std::pow(params.Color.value, tree.depth(n));
 		}
-
+		if (monitor)monitor("Generating Mesh", 0.7f);
 		tree.template getMCIsoSurface< Degree, BType, WEIGHT_DEGREE, DATA_DEGREE >(density.get(), &colorData, solution, isoValue, mesh, !params.LinearFit.set, !params.NonManifold.set, params.PolygonMesh.set);
 
 	}
