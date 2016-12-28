@@ -393,9 +393,6 @@
     <ClCompile Include="..\..\src\physics\generation.cpp">
       <Filter>src\physics</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\physics\jacobi.cpp">
-      <Filter>src\physics</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\physics\latticelocation.cpp">
       <Filter>src\physics</Filter>
     </ClCompile>
@@ -936,9 +933,6 @@
       <Filter>include\physics</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\physics\FastLSM.h">
-      <Filter>include\physics</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\physics\jacobi.h">
       <Filter>include\physics</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\physics\LatticeLocation.h">

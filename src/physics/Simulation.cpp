@@ -4,7 +4,6 @@
 #include <limits.h>
 #include <functional>
 #include <float.h>
-#include "physics/jacobi.h"
 #include <assert.h>
 #include <string>
 #include "physics/FastLSM.h"

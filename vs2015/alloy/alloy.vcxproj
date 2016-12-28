@@ -132,7 +132,6 @@
     <ClCompile Include="..\..\src\physics\CellVertex.cpp" />
     <ClCompile Include="..\..\src\physics\Fracturing.cpp" />
     <ClCompile Include="..\..\src\physics\generation.cpp" />
-    <ClCompile Include="..\..\src\physics\jacobi.cpp" />
     <ClCompile Include="..\..\src\physics\latticelocation.cpp" />
     <ClCompile Include="..\..\src\physics\Simulation.cpp" />
     <ClCompile Include="..\..\src\physics\stdafx.cpp" />
@@ -284,7 +283,6 @@
     <ClInclude Include="..\..\include\physics\Cell.h" />
     <ClInclude Include="..\..\include\physics\CellVertex.h" />
     <ClInclude Include="..\..\include\physics\FastLSM.h" />
-    <ClInclude Include="..\..\include\physics\jacobi.h" />
     <ClInclude Include="..\..\include\physics\LatticeLocation.h" />
     <ClInclude Include="..\..\include\physics\LpAndCost.h" />
     <ClInclude Include="..\..\include\physics\Particle.h" />

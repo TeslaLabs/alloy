@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include "physics/FastLSM.h"
 #include <queue>
-#include "physics/jacobi.h"
 #include <assert.h>
 #include <stdlib.h>
 namespace aly{
