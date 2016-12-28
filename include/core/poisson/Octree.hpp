@@ -55,6 +55,14 @@ void OctNode< NodeData >::SetAllocator(int blockSize)
 	}
 	else{UseAlloc=0;}
 }
+template< class NodeData >
+void OctNode< NodeData >::ResetAllocator()
+{
+	if (UseAlloc) {
+		NodeAllocator.reset();
+		UseAlloc = 0;
+	}
+}
 template< class NodeData > int OctNode< NodeData >::UseAllocator( void ){ return UseAlloc; }
 
 template< class NodeData >

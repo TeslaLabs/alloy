@@ -480,8 +480,8 @@ protected:
 	bool _isValidSpaceNode( const TreeOctNode* node ) const { return !GetGhostFlag( node ) && ( node->nodeData.flags & TreeNodeData::SPACE_FLAG ); }
 	bool _isValidFEMNode( const TreeOctNode* node ) const { return !GetGhostFlag( node ) && ( node->nodeData.flags & TreeNodeData::FEM_FLAG ); }
 
-	TreeOctNode* _tree;
-	TreeOctNode* _spaceRoot;
+	TreeOctNode* _tree = nullptr;
+	TreeOctNode* _spaceRoot=nullptr;
 	SortedTreeNodes _sNodes;
 	LocalDepth _fullDepth , _maxDepth;
 

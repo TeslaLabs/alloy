@@ -31,11 +31,11 @@
 class AlloyPointStream : public OrientedPointStreamWithData<float, Point3D< float> >
 {
 protected:
-	const aly::Mesh& mesh;
+	const aly::Mesh* mesh;
 	aly::float4x4 M;
 	size_t counter;
 public:
-	AlloyPointStream(const aly::float4x4& M, const aly::Mesh& mesh) :M(M),mesh(mesh), counter(0) {
+	AlloyPointStream(const aly::float4x4& M, const aly::Mesh& mesh) :M(M),mesh(&mesh), counter(0) {
 	}
 	void reset(void) {
 		counter = 0;

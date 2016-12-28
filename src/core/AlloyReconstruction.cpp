@@ -50,6 +50,7 @@ using namespace aly;
 template<class Real, int Degree, class Vertex, BoundaryType BType> bool ExecuteInternal(const ReconstructionParameters& params, const aly::Mesh& input, aly::Mesh& output,
 	const std::function<bool(const std::string& status, float progress)>& monitor)
 {
+	Reset<Real>();
 	Octree<Real> tree;
 	const Real targetValue = (Real)0.5;
 	Real isoValue = 0;
@@ -57,7 +58,6 @@ template<class Real, int Degree, class Vertex, BoundaryType BType> bool ExecuteI
 	float4x4 M = MakeTransform(input.getBoundingBox(), bbox);
 	float4x4 Minv = inverse(M);	
 	int solveDepth = params.MaxSolveDepth.value;
-	Reset<Real>();
 	tree.threads = params.Threads.value;
 	if (monitor)monitor("Initializing", 0.01f);
 	OctNode<TreeNodeData>::SetAllocator(MEMORY_ALLOCATOR_BLOCK_SIZE);
@@ -80,6 +80,7 @@ template<class Real, int Degree, class Vertex, BoundaryType BType> bool ExecuteI
 		DenseNodeData< Real, Degree > constraints;
 		int pointCount = 0;
 		{
+			if (monitor)monitor("Building Oct-tree", 0.1f);
 			AlloyPointStream pointStream(M,input);
 			pointCount = tree.template init< Point3D< Real > >(pointStream, params.Depth.value, params.Confidence.set, samples, &sampleData);
 
@@ -88,22 +89,26 @@ template<class Real, int Degree, class Vertex, BoundaryType BType> bool ExecuteI
 		density.reset(tree.template setDensityEstimator< WEIGHT_DEGREE >(samples, kernelDepth, params.SamplesPerNode.value));
 		normalInfo=tree.template setNormalField< NORMAL_DEGREE >(samples, *density, pointWeightSum, BType == BOUNDARY_NEUMANN);
 		{
+			if (monitor)monitor("Initializing Multi-grid", 0.2f);
 			std::vector< int > indexMap;
 			constexpr int MAX_DEGREE = NORMAL_DEGREE > Degree ? NORMAL_DEGREE : Degree;
 			tree.template inalizeForBroodedMultigrid< MAX_DEGREE, Degree, BType >(params.FullDepth.value, typename Octree< Real >::template HasNormalDataFunctor< NORMAL_DEGREE >(normalInfo), &indexMap);
 			normalInfo.remapIndices(indexMap);
 			if (density.get()) density->remapIndices(indexMap);
 		}
+
 		{
+			if (monitor)monitor("Initializing FEM constraints", 0.3f);
 			constraints = tree.template initDenseNodeData< Degree >();
 			tree.template addFEMConstraints< Degree, BType, NORMAL_DEGREE, BType >(FEMVFConstraintFunctor< NORMAL_DEGREE, BType, Degree, BType >(1., 0.), normalInfo, constraints, solveDepth);
 		}
 		if (params.PointWeight.value>0)
 		{
+			if (monitor)monitor("Initializing Boundary Conditions", 0.4f);
 			iInfo.reset(new InterpolationInfo(tree, samples, targetValue, params.AdaptiveExponent.value, (Real)params.PointWeight.value * pointWeightSum, (Real)0));
 			tree.template addInterpolationConstraints< Degree, BType >(*iInfo, constraints, solveDepth);
 		}
-		
+		if (monitor)monitor("Solving Linear System", 0.5f);
 		typename Octree< Real >::SolverInfo solverInfo;
 		solverInfo.cgDepth = params.CGDepth.value;
 		solverInfo.iters = params.Iters.value;
@@ -135,7 +140,6 @@ template<class Real, int Degree, class Vertex, BoundaryType BType> bool ExecuteI
 
 	}
 	if (monitor)monitor("Trimming Mesh", 0.9f);
-	std::cout << "Trimming Mesh..." << std::endl;
 	float min, max;
 	std::vector<Vertex> vertices;
 	std::vector<std::vector<int> > polygons;
@@ -321,17 +325,17 @@ template<class Real, int Degree, class Vertex, BoundaryType BType> bool ExecuteI
 		output.updateVertexNormals();
 	}
 	if (monitor)monitor("Done", 1.0f);
-	
+	OctNode<TreeNodeData>::ResetAllocator();
 	return true;
 }
 
 bool AlloyPointStream::nextPoint(OrientedPoint3D<float>& p, Point3D<float>& d)
 {
-	if (counter >= mesh.vertexLocations.size())
+	if (counter >= mesh->vertexLocations.size())
 		return false;
-	float3 v = mesh.vertexLocations[counter];
-	float3 n = mesh.vertexNormals[counter];
-	float4 c = mesh.vertexColors[counter];
+	float3 v = mesh->vertexLocations[counter];
+	float3 n = mesh->vertexNormals[counter];
+	float4 c = mesh->vertexColors[counter];
 	v = Transform(M, v);
 	p.p = Point3D<float>(v.x, v.y, v.z);
 	p.n = Point3D<float>(n.x, n.y, n.z);
@@ -344,20 +348,21 @@ template<class Real, int Degree, class Vertex> bool ExecuteInternal(const Recons
 	switch (params.BType.value)
 	{
 	case BoundaryType::BOUNDARY_FREE:
-		ExecuteInternal<float, 1, PlyColorAndValueVertex<float>, BoundaryType::BOUNDARY_FREE>(params, input, output, monitor);
+		return ExecuteInternal<float, 1, PlyColorAndValueVertex<float>, BoundaryType::BOUNDARY_FREE>(params, input, output, monitor);
 		break;
 	case BoundaryType::BOUNDARY_DIRICHLET:
-		ExecuteInternal<float, 2, PlyColorAndValueVertex<float>, BoundaryType::BOUNDARY_DIRICHLET>(params, input, output, monitor);
+		return ExecuteInternal<float, 2, PlyColorAndValueVertex<float>, BoundaryType::BOUNDARY_DIRICHLET>(params, input, output, monitor);
 		break;
 	case BoundaryType::BOUNDARY_NEUMANN:
-		ExecuteInternal<float, 3, PlyColorAndValueVertex<float>, BoundaryType::BOUNDARY_NEUMANN>(params, input, output, monitor);
+		return ExecuteInternal<float, 3, PlyColorAndValueVertex<float>, BoundaryType::BOUNDARY_NEUMANN>(params, input, output, monitor);
 		break;
 	case BoundaryType::BOUNDARY_COUNT:
-		ExecuteInternal<float, 4, PlyColorAndValueVertex<float>, BoundaryType::BOUNDARY_COUNT>(params, input, output, monitor);
+		return ExecuteInternal<float, 4, PlyColorAndValueVertex<float>, BoundaryType::BOUNDARY_COUNT>(params, input, output, monitor);
 		break;
 	default:
 		throw std::runtime_error("Boundary type not supported.");
 	}
+	return false;
 }
 void SurfaceReconstruct(const ReconstructionParameters& params, const aly::Mesh& input, aly::Mesh& output, const std::function<bool(const std::string& status, float progress)>& monitor)
 {

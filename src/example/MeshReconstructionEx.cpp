@@ -168,40 +168,50 @@ bool MeshReconstructionEx::init(Composite& rootNode) {
 	return true;
 }
 void MeshReconstructionEx::solve() {
-	worker.reset();
-	worker = WorkerTaskPtr(new WorkerTask([this]() {
-		
-		ReconstructionParameters params;
-		params.BType.value = boundaryType;
-		params.Smooth.value = smoothingIterations.toInteger();
-		params.Depth.value = treeDepth.toInteger();
-		params.FullDepth.value = treeFullDepth.toInteger();
-		params.MaxSolveDepth.value = treeMaxSolveDepth.toInteger();
-		params.Trim.value = trimPercent.toFloat();
-		params.Degree.value = bsplineDegree.toInteger();
-		params.PointWeight.value = pointWeight.toFloat();
-		params.SamplesPerNode.value = samplesPerNode.toFloat();
-		params.IslandAreaRatio.value = islandRatio.toFloat();
-		params.Iters.value = solverIterations.toInteger();
-		params.LinearFit.set = linearFitSurface;
-		params.NonManifold.set = nonManifoldSurface;
-		SurfaceReconstruct(params, pointCloud, mesh, [this](const std::string& status,float progress) {
-			textLabel->setLabel(MakeString() <<"Solver: "<< status << " ... ");
+	
+	showReconstructionField->setValue(false);
+	showPointCloudField->setValue(true);
+	showReconstruction = showReconstructionField->getValue();
+	showPointCloud = showPointCloudField->getValue();
+	mesh.clear();
+	parametersDirty = true;
+	if (worker.get() != nullptr) {
+		worker->cancel();
+	}
+	else {
+		worker.reset(new WorkerTask([this]() {
+			ReconstructionParameters params;
+			params.BType.value = boundaryType;
+			params.Smooth.value = smoothingIterations.toInteger();
+			params.Depth.value = treeDepth.toInteger();
+			params.FullDepth.value = treeFullDepth.toInteger();
+			params.MaxSolveDepth.value = treeMaxSolveDepth.toInteger();
+			params.Trim.value = trimPercent.toFloat();
+			params.Degree.value = bsplineDegree.toInteger();
+			params.PointWeight.value = pointWeight.toFloat();
+			params.SamplesPerNode.value = samplesPerNode.toFloat();
+			params.IslandAreaRatio.value = islandRatio.toFloat();
+			params.Iters.value = solverIterations.toInteger();
+			params.LinearFit.set = linearFitSurface;
+			params.NonManifold.set = nonManifoldSurface;
+			SurfaceReconstruct(params, pointCloud, mesh, [this](const std::string& status, float progress) {
+				textLabel->setLabel(MakeString()<<"Solver: "<<status<<" ...");
+				AlloyApplicationContext()->requestPack();
+				return !worker->isCanceled();
+			});
+		}, [this]() {
+			colorReconstructionField->setValue(mesh.vertexColors.size() > 0);
+			showReconstructionField->setValue(true);
+			showPointCloudField->setValue(false);
+			showReconstruction = showReconstructionField->getValue();
+			showPointCloud = showPointCloudField->getValue();
+			colorReconstruction = colorReconstructionField->getValue();
+			textLabel->setLabel("");
+			mesh.setDirty(true);
+			parametersDirty = true;
 			AlloyApplicationContext()->requestPack();
-			return !worker->isCanceled();
-		});
-	}, [this]() {
-		
-		colorReconstructionField->setValue(mesh.vertexColors.size() > 0);
-		showReconstructionField->setValue(true);
-		showPointCloudField->setValue(false);
-		showReconstruction = showReconstructionField->getValue();
-		showPointCloud = showPointCloudField->getValue();
-		colorReconstruction = colorReconstructionField->getValue();
-		textLabel->setLabel("");
-		mesh.setDirty(true);
-		parametersDirty = true;
-	}));
+		}));
+	}
 	worker->execute();
 }
 void MeshReconstructionEx::initializeFrameBuffers(aly::AlloyContext* context) {

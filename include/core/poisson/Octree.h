@@ -56,9 +56,9 @@ public:
 	static Allocator< OctNode > NodeAllocator;
 	static int UseAllocator( void );
 	static void SetAllocator( int blockSize );
-
-	OctNode* parent;
-	OctNode* children;
+	static void ResetAllocator();
+	OctNode* parent=nullptr;
+	OctNode* children = nullptr;
 	NodeData nodeData;
 
 	OctNode( void (*Initializer)( OctNode& )=NULL );
