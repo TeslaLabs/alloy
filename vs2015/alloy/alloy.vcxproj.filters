@@ -396,6 +396,9 @@
     <ClCompile Include="..\..\src\physics\LatticeLocation.cpp">
       <Filter>src\physics</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\example\BodyPhysicsEx.cpp">
+      <Filter>src\example</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\core\nanovg.h">
@@ -946,6 +949,9 @@
     </ClInclude>
     <ClInclude Include="..\..\include\physics\stdafx.h">
       <Filter>include\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\example\BodyPhysicsEx.h">
+      <Filter>include\example</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -132,6 +132,18 @@
     <ClInclude Include="..\..\include\example\MeshOptimizationEx.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\example\BodyPhysicsEx.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\example\ImageFeaturesEx.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\example\MeshReconstructionEx.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\example\MeshTextureMapEx.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="include">

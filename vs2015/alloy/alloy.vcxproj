@@ -83,6 +83,7 @@
     <ClCompile Include="..\..\src\core\tinysplinecpp.cpp" />
     <ClCompile Include="..\..\src\core\tiny_obj_loader.cpp" />
     <ClCompile Include="..\..\src\example\AnyFunctionEx.cpp" />
+    <ClCompile Include="..\..\src\example\BodyPhysicsEx.cpp" />
     <ClCompile Include="..\..\src\example\ColorSpaceEx.cpp" />
     <ClCompile Include="..\..\src\example\CompositeEx.cpp" />
     <ClCompile Include="..\..\src\example\ControlsEx.cpp" />
@@ -231,6 +232,7 @@
     <ClInclude Include="..\..\include\core\tinyspline.h" />
     <ClInclude Include="..\..\include\core\tinysplinecpp.h" />
     <ClInclude Include="..\..\include\core\tiny_obj_loader.h" />
+    <ClInclude Include="..\..\include\example\BodyPhysicsEx.h" />
     <ClInclude Include="..\..\include\example\ColorSpaceEx.h" />
     <ClInclude Include="..\..\include\example\CompositeEx.h" />
     <ClInclude Include="..\..\include\example\ControlsEx.h" />

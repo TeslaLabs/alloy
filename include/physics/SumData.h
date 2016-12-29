@@ -13,14 +13,11 @@ namespace aly {
 	{
 	public:
 		struct {
-			// Floats
-			struct {
-				float3 v;
-				float3x3 M;
-			};
-			struct {
-				__m128 m1, m2, m3;
-			};
+			float3 v;
+			float3x3 M;
+		};
+		struct {
+			__m128 m1, m2, m3;
 		};
 	};
 }

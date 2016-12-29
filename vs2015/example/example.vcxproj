@@ -22,6 +22,7 @@
     <ClCompile Include="..\..\src\example\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\include\example\BodyPhysicsEx.h" />
     <ClInclude Include="..\..\include\example\ColorSpaceEx.h" />
     <ClInclude Include="..\..\include\example\CompositeEx.h" />
     <ClInclude Include="..\..\include\example\ControlsEx.h" />
@@ -34,6 +35,7 @@
     <ClInclude Include="..\..\include\example\ForceDirectedGraphEx.h" />
     <ClInclude Include="..\..\include\example\GraphPaneEx.h" />
     <ClInclude Include="..\..\include\example\ImageEx.h" />
+    <ClInclude Include="..\..\include\example\ImageFeaturesEx.h" />
     <ClInclude Include="..\..\include\example\ImageProcessingEx.h" />
     <ClInclude Include="..\..\include\example\IntersectorEx.h" />
     <ClInclude Include="..\..\include\example\LaplaceFillEx.h" />
@@ -45,9 +47,11 @@
     <ClInclude Include="..\..\include\example\MeshPhongEx.h" />
     <ClInclude Include="..\..\include\example\MeshPickerEx.h" />
     <ClInclude Include="..\..\include\example\MeshPrimitivesEx.h" />
+    <ClInclude Include="..\..\include\example\MeshReconstructionEx.h" />
     <ClInclude Include="..\..\include\example\MeshSmoothEx.h" />
     <ClInclude Include="..\..\include\example\MeshSubdivideEx.h" />
     <ClInclude Include="..\..\include\example\MeshTextureEx.h" />
+    <ClInclude Include="..\..\include\example\MeshTextureMapEx.h" />
     <ClInclude Include="..\..\include\example\MeshVertexColorEx.h" />
     <ClInclude Include="..\..\include\example\MeshWireframeEx.h" />
     <ClInclude Include="..\..\include\example\OneEuroFilterEx.h" />
