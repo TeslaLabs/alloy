@@ -20,5 +20,6 @@ namespace aly {
 		// Collision stuff
 		Particle *nextParticleInCollisionCell;	// Used in maintaining a linked list of particles in the collision cell
 	};
+	typedef std::shared_ptr<Particle> ParticlePtr;
 }
 #endif

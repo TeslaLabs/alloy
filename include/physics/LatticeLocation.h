@@ -22,7 +22,7 @@ public:
 
 								// The IMMEDIATE immediateNeighbors
 	std::vector<LatticeLocation*> immediateNeighbors;
-	LatticeLocation *immediateNeighborsGrid[3][3][3];	// Same as the pointers in the array, just indexed differently
+	LatticeLocation* immediateNeighborsGrid[3][3][3];	// Same as the pointers in the array, just indexed differently
 
 														// Generated
 	std::vector<LatticeLocation*> neighborhood;			// All particles up to w links away
@@ -38,5 +38,6 @@ public:
 
 	void CalculateNeighborhood();			// Will use a BFS to fill in neighborhood. Also sets regionExists
 };
+typedef std::shared_ptr<LatticeLocation> LatticeLocationPtr;
 }
 #endif

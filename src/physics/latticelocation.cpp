@@ -35,7 +35,8 @@ namespace aly {
 			while (next.empty() == false)
 			{
 				// Get "u" from the queue, add it to neighbors
-				LatticeLocation *u = next.front(); next.pop();
+				LatticeLocation* u = next.front(); 
+				next.pop();
 				neighborhood.push_back(u);
 
 				if (currentDepth < body->w)
@@ -78,7 +79,7 @@ namespace aly {
 		{
 			regionExists = true;
 			// Check if we are a duplicate
-			for each(LatticeLocation *check in body->latticeLocationsWithExistentRegions)
+			for(LatticeLocation* check : body->latticeLocationsWithExistentRegions)
 			{
 				if (check->neighborhood.size() == neighborhood.size() && equal(neighborhood.begin(), neighborhood.end(), check->neighborhood.begin()))
 				{

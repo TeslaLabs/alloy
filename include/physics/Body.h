@@ -6,6 +6,7 @@
 #include "BrokenConnection.h"
 #include "Particle.h"
 #include <map>
+#include <memory>
 namespace aly{
 class Body;
 class Particle;
@@ -21,8 +22,8 @@ public:
 	int w;
 	float3 spacing;				// The spacing of the particles in the lattice
 	float defaultParticleMass;
-	std::map<int3, LatticeLocation*> lattice;
-	std::vector<LatticeLocation*> latticeLocations;
+	std::map<int3, std::shared_ptr<LatticeLocation>> lattice;
+	std::vector<std::shared_ptr<LatticeLocation>> latticeLocations;
 	std::vector<LatticeLocation*> latticeLocationsWithExistentRegions;
 
 	// Fracture
@@ -35,13 +36,13 @@ public:
 	float kRegionDamping;
 
 	// Elements
-	std::vector<Particle*> particles;
-	std::vector<Region*> regions;
+	std::vector<std::shared_ptr<Particle>> particles;
+	std::vector<std::shared_ptr<Region>> regions;
 	// Intermediate summations
-	std::vector<Summation*> sums[2];	// sums[0] = bars; sums[1] = plates
+	std::vector<std::shared_ptr<Summation>> sums[2];	// sums[0] = bars; sums[1] = plates
 
 										// Misc.
-	std::vector<Cell*> cells;	// Useful for rendering - these are cubes centered at each particle with corners that deform appropriately
+	std::vector<std::shared_ptr<Cell>> cells;	// Useful for rendering - these are cubes centered at each particle with corners that deform appropriately
 	bool invariantsDirty;		// Whether the invariants need to be recalculated -- simply set this to true after changing an invariant (e.g. particle mass) and the appropriate values will be recomputed automatically next time step
 
 								// Generation
@@ -66,7 +67,7 @@ public:
 	void CalculateInvariants();
 	void InitializeCells();
 	void RebuildRegions(std::vector<LatticeLocation*> &regen);		// Used in fracturing
-	LatticeLocation *GetLatticeLocation(int3 index);
+	std::shared_ptr<LatticeLocation> GetLatticeLocation(int3 index);
 };
 }
 #endif

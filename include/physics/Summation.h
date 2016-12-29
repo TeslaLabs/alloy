@@ -16,8 +16,9 @@ public:
 							//  Sums during generation
 
 	std::vector<Particle*> particles;
-	std::vector<Summation*> children, parents;
-	std::vector<Summation*> *connections[2];		// Pointers to above (children, parents)
+	std::vector<Summation*> children;
+	std::vector<Summation*> parents;
+	std::vector<Summation*>* connections[2];		// Pointers to above (children, parents)
 	int minDim, maxDim;			// The range along the split dimension
 
 	//__declspec(align(16)) 
@@ -25,7 +26,7 @@ public:
 
 	Summation();
 	void FindParticleRange(int dimension, int *minDim, int *maxDim);
-	std::vector<Summation*> GenerateChildSums(int childLevel);		// Returns the child summations that were generated
+	std::vector<std::shared_ptr<Summation>> GenerateChildSums(int childLevel);		// Returns the child summations that were generated
 
 	void SumFromChildren();
 	void SumFromParents();
@@ -33,5 +34,6 @@ public:
 };
 
 Summation *FindIdenticalSummation(std::vector<Particle*> &particles, int myLevel);		// myLevel is 0 for XSums, 1 for XYSums
+typedef std::shared_ptr<Summation> SummationPtr;
 }
 #endif

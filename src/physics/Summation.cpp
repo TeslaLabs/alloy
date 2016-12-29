@@ -9,7 +9,7 @@ namespace aly {
 		connections[1] = &parents;
 	}
 
-	std::vector<Summation*> Summation::GenerateChildSums(int childLevel)
+	std::vector<SummationPtr> Summation::GenerateChildSums(int childLevel)
 	{
 		int i;
 		unsigned int m;
@@ -18,13 +18,13 @@ namespace aly {
 		int splitDimension = childLevel;
 		FindParticleRange(splitDimension, &minDim, &maxDim);
 
-		std::vector<Summation*> newSums;
+		std::vector<SummationPtr> newSums;
 
 		// Generate the array of children, one per value of the sorting dimension
-		Summation **childArray = new Summation*[maxDim - minDim + 1];
+		std::vector<SummationPtr> childArray(maxDim - minDim + 1);
 		for (i = 0; i < maxDim - minDim + 1; i++)
 		{
-			childArray[i] = new Summation();
+			childArray[i].reset(new Summation());
 		}
 
 		// Sort the particles into their correct children
@@ -38,14 +38,9 @@ namespace aly {
 		// Now process each child
 		for (i = minDim; i <= maxDim; i++)
 		{
-			Summation *child = childArray[i - minDim];
+			SummationPtr child = childArray[i - minDim];
 
-			if (child->particles.empty())
-			{
-				delete child;
-			}
-			else
-			{
+			if (!child->particles.empty()){
 				sort(child->particles.begin(), child->particles.end());
 				// Set the lp to the first particle's lp - it doesn't matter which particle, really, as long as it's
 				//  the lp of one of the particles so it can be found when others are searching for identical sums
@@ -56,7 +51,6 @@ namespace aly {
 
 				if (identical != NULL)
 				{
-					delete child;
 					// Use the guy we found instead
 					children.push_back(identical);
 					identical->parents.push_back(this);
@@ -65,9 +59,9 @@ namespace aly {
 				{
 					newSums.push_back(child);
 					// Finally, register it with me and with the lattice point
-					children.push_back(child);
+					children.push_back(child.get());
 					child->parents.push_back(this);
-					child->lp->sums[childLevel].push_back(child);
+					child->lp->sums[childLevel].push_back(child.get());
 					lp->body->sums[childLevel].push_back(child);
 
 					// Have the child generate ITS child sums
@@ -80,14 +74,12 @@ namespace aly {
 						{
 							p = child->particles[m];
 							child->children.push_back(p);
-							p->parents.push_back(child);
+							p->parents.push_back(child.get());
 						}
 					}
 				}
 			}
 		}
-
-		delete[] childArray;
 
 		return newSums;
 	}

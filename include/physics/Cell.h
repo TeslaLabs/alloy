@@ -27,5 +27,6 @@ namespace aly {
 		void HandleVertexSharerFracture(); // Update in response to a fracture occuring in one of the cells that share this vertex
 		void UpdateVertexPositions();
 	};
+	typedef std::shared_ptr<Cell> CellPtr;
 }
 #endif

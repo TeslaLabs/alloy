@@ -18,5 +18,6 @@ namespace aly{
 		float3 t;
 		float3x3 R;
 	};
+	typedef std::shared_ptr<Region> RegionPtr;
 }
 #endif

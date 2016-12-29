@@ -127,13 +127,10 @@
     <ClCompile Include="..\..\src\example\TweenEx.cpp" />
     <ClCompile Include="..\..\src\example\UnitsEx.cpp" />
     <ClCompile Include="..\..\src\example\WindowPaneEx.cpp" />
-    <ClCompile Include="..\..\src\physics\BodyHelperFuncs.cpp" />
+    <ClCompile Include="..\..\src\physics\Body.cpp" />
     <ClCompile Include="..\..\src\physics\Cell.cpp" />
     <ClCompile Include="..\..\src\physics\CellVertex.cpp" />
-    <ClCompile Include="..\..\src\physics\Fracturing.cpp" />
-    <ClCompile Include="..\..\src\physics\generation.cpp" />
-    <ClCompile Include="..\..\src\physics\latticelocation.cpp" />
-    <ClCompile Include="..\..\src\physics\Simulation.cpp" />
+    <ClCompile Include="..\..\src\physics\LatticeLocation.cpp" />
     <ClCompile Include="..\..\src\physics\stdafx.cpp" />
     <ClCompile Include="..\..\src\physics\Summation.cpp" />
     <ClCompile Include="..\..\src\poisson\ArgumentParser.cpp" />
