@@ -23,11 +23,14 @@
 #define BODYPHYSICS_EX_H_
 
 #include "AlloyApplication.h"
+#include "AlloyMesh.h"
 #include "CommonShaders.h"
+#include "GLFrameBuffer.h"
 class BodyPhysicsEx : public aly::Application {
 protected:
 	bool frameBuffersDirty;
 	aly::Mesh mesh;
+	std::unique_ptr<aly::Mesh> grid;
 	aly::ImageGlyphPtr imageGlyph;
 	aly::CompositePtr resizeableRegion;
 	aly::CompositePtr renderRegion;
@@ -39,12 +42,15 @@ protected:
 	aly::Number damping;
 	bool fracturing;
 
-	std::unique_ptr<aly::GLFrameBuffer> renderFrameBuffer;
-	std::unique_ptr<aly::GLFrameBuffer> colorFrameBuffer;
-	std::unique_ptr<aly::GLFrameBuffer> depthFrameBuffer;
-	std::unique_ptr<aly::GLFrameBuffer> wireframeFrameBuffer;
+	aly::GLFrameBuffer renderFrameBuffer;
+	aly::GLFrameBuffer colorFrameBuffer;
+	aly::GLFrameBuffer depthFrameBuffer;
+	aly::GLFrameBuffer wireframeFrameBuffer;
 	
-	std::unique_ptr<aly::WireframeShader> wireframeShader;
+	aly::WireframeShader wireframeShader;
+	aly::DepthAndNormalShader depthAndNormalShader;
+	aly::ImageShader imageShader;
+	aly::PhongShader phongShader;
 	aly::Camera camera;
 
 	aly::TextLabelPtr textLabel;

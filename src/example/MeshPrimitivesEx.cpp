@@ -28,7 +28,7 @@ MeshPrimitivesEx::MeshPrimitivesEx() :
 				ImageShader::Filter::FXAA),mesh(nullptr) {
 }
 bool MeshPrimitivesEx::init(Composite& rootNode) {
-
+	
 	phongShader[0] = SimpleLight(Color(0.3f, 0.3f, 0.3f, 0.25f),
 		Color(0.0f, 0.0f, 0.0f, 0.0f), Color(0.0f, 0.0f, 0.8f, 0.5f),
 		Color(0.0f, 0.0f, 0.0f, 0.0f), 16.0f, float3(0, 0.0, 2.0),

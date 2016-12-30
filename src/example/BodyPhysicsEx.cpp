@@ -21,29 +21,42 @@
 
 #include "Alloy.h"
 #include "AlloyReconstruction.h"
+#include "AlloyMeshPrimitives.h"
 #include "../../include/example/BodyPhysicsEx.h"
 using namespace aly;
-BodyPhysicsEx::BodyPhysicsEx() : Application(1200, 800, "Body Physics Example") {
+BodyPhysicsEx::BodyPhysicsEx() : Application(1200, 800, "Body Physics Example"),phongShader(1) {
 
 
 }
 bool BodyPhysicsEx::init(Composite& rootNode) {
-	renderFrameBuffer.reset(new GLFrameBuffer());
-	depthFrameBuffer.reset(new GLFrameBuffer());
-	wireframeFrameBuffer.reset(new GLFrameBuffer());
-	colorFrameBuffer.reset(new GLFrameBuffer());
+	grid.reset(new Grid(1.0f,1.0f, 5, 5,getContext()));
 	box3f renderBBox = box3f(float3(-0.5f, -0.5f, -0.5f), float3(1.0f, 1.0f, 1.0f));
 	BorderCompositePtr layout = BorderCompositePtr(new BorderComposite("UI Layout", CoordPX(0.0f, 0.0f), CoordPercent(1.0f, 1.0f), false));
 	ParameterPanePtr controls = ParameterPanePtr(new ParameterPane("Controls", CoordPX(0.0f, 0.0f), CoordPercent(1.0f, 1.0f)));
 	CompositePtr buttons = CompositePtr(new Composite("Buttons", CoordPX(0.0f, 0.0f), CoordPercent(1.0f, 1.0f)));
-	TextIconButtonPtr executeButton=TextIconButtonPtr(new TextIconButton("Execute",0xf085,CoordPerPX(0.5f,0.5f,-120.0f,-30.0f),CoordPX(240.0f,60.0f)));
+	IconButtonPtr addButton = IconButtonPtr(new IconButton(0xF067, CoordPerPX(0.25f, 0.5f, -30.0f, -30.0f), CoordPX(60.0f, 60.0f),IconType::CIRCLE));
+	IconButtonPtr resetButton = IconButtonPtr(new IconButton(0xF01E, CoordPerPX(0.75f, 0.5f, -30.0f, -30.0f), CoordPX(60.0f, 60.0f), IconType::CIRCLE));
+	addButton->backgroundColor = MakeColor(COLOR_NONE);
+	resetButton->backgroundColor = MakeColor(COLOR_NONE);
 	BorderCompositePtr controlLayout = BorderCompositePtr(new BorderComposite("Control Layout", CoordPX(0.0f, 0.0f), CoordPercent(1.0f, 1.0f), true));
 	textLabel = TextLabelPtr(new TextLabel("", CoordPX(5, 5), CoordPerPX(1.0f, 0.0f,-10.0f,30.0f)));
 	textLabel->fontSize = UnitPX(24.0f);
 	textLabel->fontType = FontType::Bold;
 	textLabel->fontStyle = FontStyle::Outline;
-	buttons->add(executeButton);
-	executeButton->setRoundCorners(true);
+	addButton->borderWidth = UnitPX(0.0f);
+	resetButton->borderWidth = UnitPX(0.0f);
+	
+	addButton->foregroundColor = MakeColor(getContext()->theme.LIGHTER);
+	resetButton->foregroundColor = MakeColor(getContext()->theme.LIGHTER);
+	
+	addButton->iconColor = MakeColor(getContext()->theme.DARK);
+	resetButton->iconColor = MakeColor(getContext()->theme.DARK);
+
+	addButton->setNudgePosition(pixel2(0.0f, 2.0f));
+	resetButton->setNudgePosition(pixel2(0.0f, 2.0f));
+	resetButton->setNudgeSize(-2.0f);
+	buttons->add(addButton);
+	buttons->add(resetButton);
 	float aspect = 6.0f;
 
 	controls->setAlwaysShowVerticalScrollBar(false);
@@ -64,8 +77,7 @@ bool BodyPhysicsEx::init(Composite& rootNode) {
 	rootNode.add(layout);
 	camera.setNearFarPlanes(-2.0f, 2.0f);
 	camera.setZoom(0.75f);
-	camera.rotateModelX(ALY_PI);
-	camera.rotateModelY(ALY_PI_2);
+	std::cout << "Size " << grid->getBoundingBox() << std::endl;
 	camera.setCameraType(CameraType::Orthographic);
 
 	alpha=Float(1.0f);
@@ -78,40 +90,62 @@ bool BodyPhysicsEx::init(Composite& rootNode) {
 	controls->addNumberField("Alpha",alpha,Float(0.0f),Float(1.0f));
 	controls->addNumberField("Neighborhood", neighborSize, Integer(1), Integer(4));
 	controls->addNumberField("Fracture Distance Tol.", fractureDistanceTolerance);
-	controls->addNumberField("Fracture Rotation Tol.", fractureDistanceTolerance,Float(0.0f),Float(ALY_PI));
+	controls->addNumberField("Fracture Rotation Tol.", fractureRotationTolerance);
 	controls->addNumberField("Damping", damping);
 	controls->addCheckBox("Fracturing", fracturing);
-	float4x4 MT = MakeTransform(objectBBox, renderBBox);
-	camera.setPose(MT);
+
 	addListener(&camera);
-	frameBuffersDirty = true;
+
 	renderRegion->onPack = [this]() {
 		camera.setDirty(true);
 		frameBuffersDirty = true;
 	};
+	camera.setDirty(true);
 	camera.setActiveRegion(renderRegion.get(), false);
-	wireframeShader.reset(new WireframeShader());
-	wireframeShader->setFaceColor(Color(0.1f, 0.1f, 1.0f, 0.5f));
-	wireframeShader->setEdgeColor(Color(1.0f, 0.8f, 0.1f, 1.0f));
-	wireframeShader->setLineWidth(1.0f);
+
+	phongShader[0] = SimpleLight(Color(0.3f, 0.3f, 0.3f, 0.25f),
+		Color(0.0f, 0.0f, 0.0f, 0.0f), Color(0.0f, 0.0f, 0.8f, 0.5f),
+		Color(0.0f, 0.0f, 0.0f, 0.0f), 16.0f, float3(0, 0.0, 2.0),
+		float3(0, 1, 0));
+	phongShader[0].moveWithCamera = false;
+
+	wireframeShader.setFaceColor(Color(0.1f, 0.1f, 1.0f, 0.0f));
+	wireframeShader.setEdgeColor(Color(1.0f, 0.8f, 0.1f, 1.0f));
+	wireframeShader.setLineWidth(2.0f);
+	getContext()->addDeferredTask([this]() {
+		frameBuffersDirty = true;;
+	});
 	return true;
 }
 void BodyPhysicsEx::initializeFrameBuffers(aly::AlloyContext* context) {
 	float2 dims = renderRegion->getBounds().dimensions;
 	int w = (int)dims.x;
 	int h = (int)dims.y;
-	renderFrameBuffer->initialize(w, h);
-	colorFrameBuffer->initialize(w, h);
-	depthFrameBuffer->initialize(w, h);
-	wireframeFrameBuffer->initialize(w, h);
+	renderFrameBuffer.initialize(w, h);
+	colorFrameBuffer.initialize(w, h);
+	depthFrameBuffer.initialize(w, h);
+	wireframeFrameBuffer.initialize(w, h);
 }
 void BodyPhysicsEx::draw(AlloyContext* context) {
 	const double MIN_ELAPSED_TIME = 0.25f;
+	box2px rbbox = renderRegion->getBounds();
 	if (frameBuffersDirty) {
 		initializeFrameBuffers(context);
 		frameBuffersDirty = false;
 	}
-	
+	if (camera.isDirty()) {
+		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		glEnable(GL_DEPTH_TEST);
+		glDisable(GL_BLEND);
+		depthAndNormalShader.draw(*grid, camera, depthFrameBuffer, true);	
+		wireframeFrameBuffer.begin();
+		glEnable(GL_BLEND);
+		glDisable(GL_DEPTH_TEST);
+		phongShader.draw(depthFrameBuffer.getTexture(), camera,wireframeFrameBuffer.getViewport(), wireframeFrameBuffer.getViewport());
+		wireframeShader.draw(*grid, camera, wireframeFrameBuffer.getViewport());
+		wireframeFrameBuffer.end();
+	}
+	imageShader.draw(wireframeFrameBuffer.getTexture(), rbbox*context->pixelRatio, 1.0f, false);
 	camera.setDirty(false);
 }
 

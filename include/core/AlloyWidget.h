@@ -74,9 +74,17 @@ private:
 	IconType iconType;
 	bool truncate;
 	bool rescale;
+	pixel2 nudge;
+	pixel nudgeSize;
 public:
 	AColor foregroundColor;
 	AColor iconColor;
+	void setNudgeSize(pixel nz) {
+		nudgeSize = nz;
+	}
+	void setNudgePosition(pixel2 n) {
+		nudge = n;
+	}
 	void setTruncate(bool t) {
 		truncate = t;
 	}

@@ -459,7 +459,7 @@ void TextIconButton::draw(AlloyContext* context) {
 	}
 }
 IconButton::IconButton(int iconCode, const AUnit2D& position, const AUnit2D& dimensions, IconType iconType, bool truncate) :
-		Composite("Icon", position, dimensions), iconCodeString(CodePointToUTF8(iconCode)), iconType(iconType), truncate(truncate), rescale(true) {
+		Composite("Icon", position, dimensions), iconCodeString(CodePointToUTF8(iconCode)), iconType(iconType), truncate(truncate), rescale(true),nudge(0.0f,0.0f) ,nudgeSize(0.0f){
 	this->position = position;
 	this->dimensions = dimensions;
 	backgroundColor = MakeColor(AlloyApplicationContext()->theme.DARK);
@@ -515,7 +515,7 @@ void IconButton::draw(AlloyContext* context) {
 	pixel lineWidth = borderWidth.toPixels(bounds.dimensions.y, context->dpmm.y, context->pixelRatio);
 	box2px ibounds = bounds;
 	ibounds.position += offset;
-	float th = ibounds.dimensions.y - 2 * lineWidth;
+	float th = ibounds.dimensions.y - 2 * lineWidth+nudgeSize;
 	if (rescale) {
 		th -= ((hover) ? 2 : 4);
 	}
@@ -525,7 +525,7 @@ void IconButton::draw(AlloyContext* context) {
 		pushScissor(nvg, getCursorBounds());
 	}
 	nvgTextAlign(nvg, NVG_ALIGN_MIDDLE | NVG_ALIGN_CENTER);
-	drawText(nvg, ibounds.position + HALF_PIX(ibounds.dimensions), iconCodeString, FontStyle::Normal, (hover && borderColor->a > 0) ? *borderColor : *iconColor,
+	drawText(nvg, ibounds.position + HALF_PIX(ibounds.dimensions)+nudge, iconCodeString, FontStyle::Normal, (hover && borderColor->a > 0) ? *borderColor : *iconColor,
 			*backgroundColor, nullptr);
 	if (truncate) {
 		popScissor(nvg);
