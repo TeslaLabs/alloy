@@ -26,66 +26,25 @@
 #include "CommonShaders.h"
 class BodyPhysicsEx : public aly::Application {
 protected:
+	bool frameBuffersDirty;
 	aly::Mesh mesh;
-	aly::Mesh pointCloud;
-	int displayIndex;
-	int cameraType;
 	aly::ImageGlyphPtr imageGlyph;
 	aly::CompositePtr resizeableRegion;
 	aly::CompositePtr renderRegion;
-	aly::Number lineWidth;
-	aly::Number particleSize;
-	aly::Color faceColor;
-	aly::Color lineColor;
-	aly::Color pointColor;
-	std::string matcapImageFile;
-	bool frameBuffersDirty;
-	bool parametersDirty;
-	bool showPointCloud;
-	bool showReconstruction;
-	bool colorPointCloud;
-	bool colorReconstruction;
-	int boundaryType;
-	aly::Number solverIterations;
-	aly::Number smoothingIterations;
-	aly::Number treeDepth;
-	aly::Number treeFullDepth;
-	aly::Number treeMaxSolveDepth;
-	aly::Number trimPercent;
-	aly::Number bsplineDegree;
-	aly::Number pointWeight;
-	aly::Number samplesPerNode;
-	aly::Number islandRatio;
-	bool linearFitSurface;
-	bool nonManifoldSurface;
 
-	aly::CheckBoxPtr showReconstructionField;
-	aly::CheckBoxPtr showPointCloudField;
-	aly::ToggleBoxPtr colorReconstructionField;
-	aly::ToggleBoxPtr colorPointCloudField;
-	aly::SelectionPtr displayIndexField;
-	aly::ModifiableNumberPtr lineWidthField;
-	aly::ModifiableNumberPtr particleSizeField;
-	aly::ColorSelectorPtr surfaceColorField;
-	aly::ColorSelectorPtr pointColorField;
-	aly::ColorSelectorPtr faceColorField;
-	aly::ColorSelectorPtr lineColorField;
-	aly::IconButtonPtr captureScreenshotButton;
-	std::unique_ptr<aly::GLFrameBuffer> pointColorFrameBuffer;
+	aly::Number alpha;
+	aly::Number neighborSize;
+	aly::Number fractureDistanceTolerance;
+	aly::Number fractureRotationTolerance;
+	aly::Number damping;
+	bool fracturing;
+
 	std::unique_ptr<aly::GLFrameBuffer> renderFrameBuffer;
 	std::unique_ptr<aly::GLFrameBuffer> colorFrameBuffer;
 	std::unique_ptr<aly::GLFrameBuffer> depthFrameBuffer;
 	std::unique_ptr<aly::GLFrameBuffer> wireframeFrameBuffer;
-
-	std::unique_ptr<aly::GLFrameBuffer> pointCloudDepthBuffer;
-	std::unique_ptr<aly::CompositeShader> compositeShader;
-	std::unique_ptr<aly::DepthAndNormalShader> depthAndNormalShader;
-	std::unique_ptr<aly::ColorVertexShader> colorVertexShader;
-	std::unique_ptr<aly::ParticleDepthShader> particleDepthShader;
-	std::unique_ptr<aly::ParticleMatcapShader> particleMatcapShader;
+	
 	std::unique_ptr<aly::WireframeShader> wireframeShader;
-	std::unique_ptr<aly::MatcapShader> matcapShader;
-	std::unique_ptr<aly::ImageShader> imageShader;
 	aly::Camera camera;
 
 	aly::TextLabelPtr textLabel;
@@ -94,7 +53,6 @@ protected:
 	void initializeFrameBuffers(aly::AlloyContext* context);
 public:
 	BodyPhysicsEx();
-	void solve();
 	bool init(aly::Composite& rootNode);
 	void draw(aly::AlloyContext* context);
 };
