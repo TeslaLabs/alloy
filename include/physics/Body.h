@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 namespace aly{
+
 class Body;
 class Particle;
 class Region;
@@ -17,7 +18,6 @@ public:
 	// Properties
 	std::string name;				// Used for universal reference
 	float alpha;
-
 	// Generation
 	int w;
 	float3 spacing;				// The spacing of the particles in the lattice
@@ -67,7 +67,8 @@ public:
 	void CalculateInvariants();
 	void InitializeCells();
 	void RebuildRegions(std::vector<LatticeLocation*> &regen);		// Used in fracturing
-	std::shared_ptr<LatticeLocation> GetLatticeLocation(int3 index);
+	LatticeLocation* GetLatticeLocation(int3 index);
 };
+typedef std::shared_ptr<Body> BodyPtr;
 }
 #endif

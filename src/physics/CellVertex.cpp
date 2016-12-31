@@ -7,26 +7,26 @@
 namespace aly {
 	CellVertex::CellVertex()
 	{
-		positionArbiter = NULL;
+		positionArbiter = nullptr;
 
 		for (unsigned int i = 0; i < 8; i++)
 		{
-			shareVertexCells[i] = NULL;
-			partnerVertices[i] = NULL;
+			shareVertexCells[i] = nullptr;
+			partnerVertices[i] = nullptr;
 		}
 	}
 
 	void CellVertex::DeterminePositionArbiter()
 	{
 		Cell *positionArbiterCell;
-		positionArbiter = NULL;
+		positionArbiter = nullptr;
 		// We point to the first of our partners that we are connected to for guidance
 		std::vector<LatticeLocation*> &immediateNeighbors = owner->center->immediateNeighbors;
 		for (unsigned int i = 0; i < 8; i++)
 		{
-			if (shareVertexCells[i] != NULL)
+			if (shareVertexCells[i] != nullptr)
 			{
-				if (positionArbiter == NULL || shareVertexCells[i]->center->particle < positionArbiter)
+				if (positionArbiter == nullptr || shareVertexCells[i]->center->particle < positionArbiter)
 				{
 					if (shareVertexCells[i] == owner || find(immediateNeighbors.begin(), immediateNeighbors.end(), shareVertexCells[i]->center) != immediateNeighbors.end())
 					{

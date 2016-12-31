@@ -32,7 +32,7 @@ namespace aly {
 			// Rather than doing an expensive search to see if we've already added a given lattice location, we just mark it when we add it
 			touch = newTouch;
 
-			while (next.empty() == false)
+			while (!next.empty())
 			{
 				// Get "u" from the queue, add it to neighbors
 				LatticeLocation* u = next.front(); 

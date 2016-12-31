@@ -3,7 +3,7 @@
 #include "physics/Body.h"
 #include "physics/Particle.h"
 namespace aly {
-	Summation::Summation() : lp(NULL)
+	Summation::Summation() : lp(nullptr)
 	{
 		connections[0] = &children;
 		connections[1] = &parents;
@@ -49,7 +49,7 @@ namespace aly {
 				// Now figure out if this sum is identical to any other
 				Summation *identical = FindIdenticalSummation(child->particles, childLevel);
 
-				if (identical != NULL)
+				if (identical != nullptr)
 				{
 					// Use the guy we found instead
 					children.push_back(identical);
@@ -123,7 +123,7 @@ namespace aly {
 			}
 		}
 
-		return NULL;
+		return nullptr;
 	}
 
 	void Summation::SumFromChildren()

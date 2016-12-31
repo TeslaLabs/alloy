@@ -26,15 +26,23 @@
 #include "AlloyMesh.h"
 #include "CommonShaders.h"
 #include "GLFrameBuffer.h"
+#include "physics/Body.h"
+struct DrawBody {
+	aly::Body body;
+	aly::Mesh mesh;
+	DrawBody(aly::float3 spacing = aly::float3(1.0f, 1.0f, 1.0f)) :body(spacing),mesh() {
+
+	}
+};
+typedef std::shared_ptr<DrawBody> DrawBodyPtr;
 class BodyPhysicsEx : public aly::Application {
 protected:
 	bool frameBuffersDirty;
-	aly::Mesh mesh;
 	std::unique_ptr<aly::Mesh> grid;
 	aly::ImageGlyphPtr imageGlyph;
 	aly::CompositePtr resizeableRegion;
 	aly::CompositePtr renderRegion;
-
+	std::vector<DrawBodyPtr> bodies;
 	aly::Number alpha;
 	aly::Number neighborSize;
 	aly::Number fractureDistanceTolerance;
@@ -58,6 +66,9 @@ protected:
 	aly::box3f objectBBox;
 	void initializeFrameBuffers(aly::AlloyContext* context);
 public:
+	void addBody();
+	void resetBodies();
+	void updatePhysics();
 	BodyPhysicsEx();
 	bool init(aly::Composite& rootNode);
 	void draw(aly::AlloyContext* context);

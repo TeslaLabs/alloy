@@ -11,9 +11,8 @@
 #include <stdlib.h>
 namespace aly {
 
-	Body::Body(float3 spacing)
+	Body::Body(float3 spacing):spacing(spacing)
 	{
-		this->spacing = spacing;
 		alpha = 1.0f;
 		fractureGoalWeight = 1.0f;
 		fractureDistanceTolerance = 999.0f;
@@ -24,8 +23,7 @@ namespace aly {
 		invariantsDirty = true;
 	}
 
-	void Body::AddParticle(int3 index)
-	{
+	void Body::AddParticle(int3 index){
 		// Initialize lattice location
 		LatticeLocationPtr l(new LatticeLocation());
 		latticeLocations.push_back(l);
@@ -33,40 +31,35 @@ namespace aly {
 		l->index = index;
 		l->body = this;
 		l->region = nullptr;
-
 		// Set up the immediate neighborhood
-		for (int xo = -1; xo <= 1; xo++)
-		{
-			for (int yo = -1; yo <= 1; yo++)
-			{
-				for (int zo = -1; zo <= 1; zo++)
-				{
+		for (int xo = -1; xo <= 1; xo++){
+			for (int yo = -1; yo <= 1; yo++){
+				for (int zo = -1; zo <= 1; zo++){
 					int3 check = int3(index.x + xo, index.y + yo, index.z + zo);
-					if (!(xo == 0 && yo == 0 && zo == 0) && GetLatticeLocation(check) != nullptr)
-					{
-						l->immediateNeighbors.push_back(GetLatticeLocation(check).get());
-						l->immediateNeighborsGrid[xo + 1][yo + 1][zo + 1] = GetLatticeLocation(check).get();
-						GetLatticeLocation(check)->immediateNeighbors.push_back(l.get());
-						GetLatticeLocation(check)->immediateNeighborsGrid[-xo + 1][-yo + 1][-zo + 1] = l.get();
-					}
-					else
-					{
+					LatticeLocation* latPt = GetLatticeLocation(check);
+					if (!(xo == 0 && yo == 0 && zo == 0) && latPt != nullptr){
+						l->immediateNeighbors.push_back(latPt);
+						l->immediateNeighborsGrid[xo + 1][yo + 1][zo + 1] = latPt;
+						latPt->immediateNeighbors.push_back(l.get());
+						latPt->immediateNeighborsGrid[-xo + 1][-yo + 1][-zo + 1] = l.get();
+					} else {
 						l->immediateNeighborsGrid[xo + 1][yo + 1][zo + 1] = nullptr;
 					}
 				}
 			}
 		}
-
 		// Initialize particle
 		ParticlePtr particle(new Particle());
 		l->particle = particle.get();
 		particles.push_back(particle);
 		l->particle->lp = l.get();
-		l->particle->x0 = spacing * float3((float)index.x, (float)index.y, (float)index.z);
+		float3 pos = spacing * float3((float)index.x, (float)index.y, (float)index.z);;
+		l->particle->x0 = pos;
 		l->particle->mass = defaultParticleMass;
-		l->particle->x = l->particle->x0;
+		l->particle->x = pos;
 		l->particle->v = float3(0.0f);
 		l->particle->f = float3(0.0f);
+		l->particle->R = float3x3::identity();
 	}
 
 	void Body::Finalize()
@@ -76,14 +69,11 @@ namespace aly {
 		{
 			// Set whether it is an edge - i.e., doesn't have a full set of immediateNeighbors
 			l->edge = (l->immediateNeighbors.size() != 26);
-
 			// Build the neighborhood by breadth-first search
 			l->CalculateNeighborhood();
 		}
-
 		// Generate the regions
 		GenerateSMRegions();
-
 		// Set the parent regions
 		for(RegionPtr r : regions){
 			for(Particle* p : r->particles){
@@ -93,6 +83,7 @@ namespace aly {
 
 		CalculateInvariants();
 		InitializeCells();		// Cells help with rendering
+		UpdateCellPositions();
 	}
 
 	void Body::GenerateSMRegions()
@@ -105,9 +96,7 @@ namespace aly {
 			l->region = region.get();
 			regions.push_back(region);
 			l->region->lp = l;
-
-			for(LatticeLocation *l2 : l->neighborhood)
-			{
+			for(LatticeLocation *l2 : l->neighborhood){
 				l->region->particles.push_back(l2->particle);
 			}
 			sort(l->region->particles.begin(), l->region->particles.end());
@@ -132,7 +121,7 @@ namespace aly {
 			CellPtr cell(new Cell());
 			l->cell = cell.get();
 			cells.push_back(cell);
-			l->cell->center = l.get();
+			cell->center = l.get();
 		}
 
 		// Have to call these after all cells have been created
@@ -152,6 +141,7 @@ namespace aly {
 		// Calculate perRegionMass
 		for(ParticlePtr particle : particles){
 			particle->perRegionMass = particle->mass / particle->parentRegions.size();
+			std::cout << "Particle Mass " << particle->perRegionMass << std::endl;
 		}
 
 		// Calculate region properties
@@ -169,11 +159,11 @@ namespace aly {
 		printf(" done.\n");
 	}
 
-	LatticeLocationPtr Body::GetLatticeLocation(int3 index)
+	LatticeLocation* Body::GetLatticeLocation(int3 index)
 	{
 		std::map<int3, LatticeLocationPtr>::iterator found = lattice.find(index);
 		if (found == lattice.end()) return nullptr;
-		else return found->second;
+		else return found->second.get();
 	}
 
 	void Body::DoFracturing()
@@ -304,8 +294,8 @@ namespace aly {
 						else direction.z = 0;
 
 						// Now check that it's a valid link
-						LatticeLocationPtr currentLp = GetLatticeLocation(current);
-						if (currentLp.get() == nullptr || currentLp->immediateNeighborsGrid[direction.x + 1][direction.y + 1][direction.z + 1] == nullptr)
+						LatticeLocation* currentLp = GetLatticeLocation(current);
+						if (currentLp == nullptr || currentLp->immediateNeighborsGrid[direction.x + 1][direction.y + 1][direction.z + 1] == nullptr)
 						{
 							// We found a break in the chain
 							pI = lp->neighborhood.erase(pI);
@@ -619,8 +609,7 @@ namespace aly {
 			for (int j = 0; j < 3; j++)
 			{
 				eigenValues[j] = D(j, j);
-				if (eigenValues[j] <= 0)
-				{
+				if (eigenValues[j] <= 0){
 					eigenValues[j] = 0.05f;
 				}
 				eigenValues[j] = InvSqrt(eigenValues[j]);
@@ -710,31 +699,29 @@ namespace aly {
 		{
 			float3 v = float3(0.0f);
 			float3 L = float3(0.0f);
-			float3x3 I = float3x3::zero();
+			float3x3 I;
 
 			// Rebuild the original symmetric matrix from the reduced data
-			float3x3 &M = region->sumData.M;
+			const float3x3 &M = region->sumData.M;
 			float3x3 FmixixiT;
-			M(0, 0) = M(2, 1);
-			M(0, 1) = M(0, 1);
-			M(0, 2) = M(0, 2);
+			FmixixiT(0, 0) = M(2, 1);
+			FmixixiT(0, 1) = M(0, 1);
+			FmixixiT(0, 2) = M(0, 2);
+			FmixixiT(1, 0) = M(0, 1);
+			FmixixiT(1, 1) = M(1, 1);
+			FmixixiT(1, 2) = M(1, 2);
+			FmixixiT(2, 0) = M(0, 2);
+			FmixixiT(2, 1) = M(1, 2);
+			FmixixiT(2, 2) = M(2, 2);
 
-			M(1, 0) = M(0, 1);
-			M(1, 1) = M(1, 1);
-			M(1, 2) = M(1, 2);
-
-			M(2, 0) = M(0, 2);
-			M(2, 1) = M(1, 2);
-			M(2, 2) = M(2, 2);
 
 
 			// Calculate v, L, I, w
 			v = (1.0f / region->M) * region->sumData.v;							// Eqn. 14
 			L = M.x - cross(region->c, region->sumData.v);
 			I = FmixixiT - region->M * MrMatrix(region->c);
-
-			float3 w;
-			w = inverse(I) * L;
+			std::cout << "I=" << I<< std::endl;
+			float3 w = inverse(I) * L;
 
 			// Set the data needed to apply this to the particles
 			region->sumData.v = v;
