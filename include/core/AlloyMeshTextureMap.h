@@ -30,9 +30,9 @@ namespace aly{
 		typedef T value_type;
 		int index;
 		bvec<T>& operator=(const bvec<T>& r) {
-			x = r.x;
-			y = r.y;
-			index = r.index;
+			this->x = r.x;
+			this->y = r.y;
+			this->index = r.index;
 			return *this;
 		}
 		bvec() :vec<T, 2>(), index(-1) {
@@ -43,24 +43,25 @@ namespace aly{
 		bvec(T x, T y, int index) :
 			vec<T, 2>(x,y), index(index) {
 		}
-		template<class U> explicit bvec(const bvec<U> & r) :
-			x(T(r.x)), y(T(r.y)),index(r.index) {
+		template<class U> explicit bvec(const bvec<U> & r) : index(r.index) {
+				this->x=T(r.x);
+				this->y=T(r.y);
 		}
 		double distance(const bvec<T> &node) const {
 			vec<T, 2> diff = (*this) - node;
 			return aly::max(diff);
 		}
 		bool operator <(const bvec<T> & r) const {
-			return (std::make_tuple(x, y, float(index)) < std::make_tuple(r.x, r.y, float(index)));
+			return (std::make_tuple(this->x, this->y, float(index)) < std::make_tuple(r.x, r.y, float(index)));
 		}
 		bool operator >(const bvec<T> & r) const {
-			return (std::make_tuple(x, y, float(index)) > std::make_tuple(r.x, r.y, float(index)));
+			return (std::make_tuple(this->x, this->y, float(index)) > std::make_tuple(r.x, r.y, float(index)));
 		}
 		bool operator ==(const bvec<T> & r) const {
-			return (x==r.x&&y==r.y&&index == r.index);
+			return (this->x==r.x&&this->y==r.y&&index == r.index);
 		}
 		bool operator !=(const bvec<T> & r) const {
-			return (x != r.x||y != r.y||index != r.index);
+			return (this->x != r.x||this->y != r.y||index != r.index);
 		}
 	};
 
@@ -101,9 +102,9 @@ namespace aly{
 	protected:
 		float angleTolerance;
 		float packingRatio;
-		float smoothness;
 		int minVertexPatchSize;
 		int smoothIterations;
+		float smoothness;
 		int conformalIterations;
 		float4x4 fitPlane(const aly::Mesh& mesh, std::list<int2>& indexes,aly::float3* deviations);
 		std::vector<Mosaic> mosaics;
@@ -123,7 +124,7 @@ namespace aly{
 		void smooth(aly::Mesh& mesh, int iterations, float errorTolerance);
 		void unfold(aly::Mesh& mesh, std::vector<int>& rectId, std::vector<bvec2f>& rects);
 	public:
-		MeshTextureMap():angleTolerance(30.0f*(float)ALY_PI / 180.0f),packingRatio(0.8f),minVertexPatchSize(64), smoothIterations(20), conformalIterations(128), smoothness(20.0f) {
+		MeshTextureMap():angleTolerance(30.0f*(float)ALY_PI / 180.0f),packingRatio(0.8f),minVertexPatchSize(64), smoothIterations(20),  smoothness(20.0f) , conformalIterations(128){
 		}
 		void setMinVertexPatchSize(int sz) {
 			minVertexPatchSize = sz;
