@@ -44,7 +44,7 @@ namespace aly {
 		int pivot = 0;
 		int cc = 0;
 		std::list<int> queue;
-		bool found = false;
+
 		cclist.clear();
 		int masked = 0;
 		int ccCount = 0;
@@ -89,7 +89,7 @@ namespace aly {
 		int vertexCount = (int)mesh.vertexLocations.size();
 		int faceCount = (int)mesh.triIndexes.size();
 		std::vector<std::list<int>> vertNbrs(vertexCount);
-		int indexCount = faceCount * 3;
+
 		for (int i = 0; i < faceCount; i++) {
 			uint3 face = mesh.triIndexes[i];
 			int v1 = face.x;
@@ -106,7 +106,7 @@ namespace aly {
 		int pivot = 0;
 		int cc = 0;
 		std::list<int> queue;
-		bool found = false;
+
 		cclist.clear();
 		int masked = 0;
 		int ccCount = 0;
@@ -234,12 +234,12 @@ namespace aly {
 		}
 	}
 	void MeshTextureMap::unfold(aly::Mesh& mesh, std::vector<int>& rectId,std::vector<bvec2f>& rects) {
-		int M = static_cast<int>(mosaics.size());
+		//Flatten individual surface patches onto 2D plane using Least Squares Conformal Mapping.
 		int N = 0;
 		for (Mosaic& mIndexes : mosaics) {
 			N += static_cast<int>(mIndexes.indexes.size());
 		}
-		int v = 0;
+
 		int index = 0;
 		float3 deviations;
 		float totalArea = 0.0f;
@@ -250,8 +250,6 @@ namespace aly {
 		std::list<int> lockedList;
 		for (Mosaic& mosaic : mosaics) {
 			float4x4 P = fitPlane(mesh, mosaic.indexes, &deviations);
-			int lockCount = 0;
-			int fid = 0;
 			std::map<int,size_t> uniqueSet;
 			for (int2 fid : mosaic.indexes) {
 				int vid = fid.x;
@@ -344,7 +342,7 @@ namespace aly {
 				MosaicVertex& v3 = mosaic.getVertex(fid.y);
 				iter++;
 				projectTriangle(v1.pt, v2.pt, v3.pt, p1, p2, p3);
-				float a2 = (crossMag(p3 - p1, p2 - p1));
+
 				Mt(0, 0) = p2.y - p3.y;
 				Mt(0, 1) = p3.y - p1.y;
 				Mt(0, 2) = p1.y - p2.y;
@@ -406,7 +404,7 @@ namespace aly {
 				idx++;
 			}
 			//Lock off only u-dimension extremes
-			float maxDim = std::max(1E-4f, std::max(maxuv.y - minuv.y, maxuv.x - minuv.x)); //Max dim should already be close to 1.0f
+			//float maxDim = std::max(1E-4f, std::max(maxuv.y - minuv.y, maxuv.x - minuv.x)); //Max dim should already be close to 1.0f
 			bvec2f rect = bvec2f((maxuv.x - minuv.x), (maxuv.y - minuv.y), index);
 			rects.push_back(rect);
 			rectId.push_back(index);
@@ -434,11 +432,11 @@ namespace aly {
 		unfold(mesh, rectId, rects);
 		float totalArea = pack(rects, boxes);
 		float  sc = 1.0f / totalArea;
-		int index = 0;
+		int index=0;
 		mesh.textureMap.resize(mesh.triIndexes.size() * 3, float2(0, 0));
 		for (int id = 0; id < rectId.size(); id++){
 			Mosaic& mosaic = mosaics[id];
-			int idx = rectId[id];
+
 			bvec2f& rect = rects[id];
 			std::multimap<bvec2f, float2, TextureBoxCompare>::iterator boxPair = boxes.find(rect);
 			index = 0;
@@ -465,7 +463,7 @@ namespace aly {
 			int textureHeight = mesh.textureImage.height;
 			int textureWidth = mesh.textureImage.width;
 			for (int id = 0; id < rectId.size(); id++) {
-				int idx = rectId[id];
+
 				bvec2f& rect = rects[id];
 				std::multimap<bvec2f, float2, TextureBoxCompare>::iterator boxPair = boxes.find(rect);
 				if (boxPair == boxes.end())continue;
@@ -490,8 +488,6 @@ namespace aly {
 	}
 	float2 MeshTextureMap::packNaive(const std::vector<bvec2f> &rects, std::multimap<bvec2f, float2, TextureBoxCompare>& boxes, float area){
 		float edgeLength = std::sqrt(area);
-		int N = static_cast<int>(rects.size());
-		int counter = 0;
 		float xOff=0, yOff=0;
 		float2 maxPt(0,0);
 		for (bvec2f rect : rects){
@@ -671,14 +667,14 @@ namespace aly {
 			float2 a1 = float2(insertedBox.x, insertedBox.y);
 			float2 a2 = float2(insertedBox.x + insertedBox.z, insertedBox.y);
 			float2 a3 = float2(insertedBox.x + insertedBox.z, insertedBox.y + insertedBox.w);
-			float2 a4 = float2(insertedBox.x, insertedBox.y + insertedBox.w);
+			//float2 a4 = float2(insertedBox.x, insertedBox.y + insertedBox.w);
 
 			for (auto iterFreeBoxes = freeBoxes.begin(); iterFreeBoxes != freeBoxes.end();){
 				assert(iterFreeBoxes != freeBoxes.end());
 				float2 b1 = float2(iterFreeBoxes->x, iterFreeBoxes->y);
-				float2 b2 = float2(iterFreeBoxes->x + iterFreeBoxes->z, iterFreeBoxes->y);
+				//float2 b2 = float2(iterFreeBoxes->x + iterFreeBoxes->z, iterFreeBoxes->y);
 				float2 b3 = float2(iterFreeBoxes->x + iterFreeBoxes->z, iterFreeBoxes->y + iterFreeBoxes->w);
-				float2 b4 = float2(iterFreeBoxes->x, iterFreeBoxes->y + iterFreeBoxes->w);
+				//float2 b4 = float2(iterFreeBoxes->x, iterFreeBoxes->y + iterFreeBoxes->w);
 
 				if ((a1.x >= b3.x) || (a1.y >= b3.y) ||
 					(a3.x <= b1.x) || (a3.y <= b1.y))
@@ -743,14 +739,14 @@ namespace aly {
 					//assert(!((*iterFreeBoxes).pos == (*iterFreeBoxes2).pos));
 
 					float2 b1 = float2(iterFreeBoxes->x, iterFreeBoxes->y);
-					float2 b2 = float2(iterFreeBoxes->x + iterFreeBoxes->z, iterFreeBoxes->y);
+					//float2 b2 = float2(iterFreeBoxes->x + iterFreeBoxes->z, iterFreeBoxes->y);
 					float2 b3 = float2(iterFreeBoxes->x + iterFreeBoxes->z, iterFreeBoxes->y + iterFreeBoxes->w);
-					float2 b4 = float2(iterFreeBoxes->x, iterFreeBoxes->y + iterFreeBoxes->w);
+					//float2 b4 = float2(iterFreeBoxes->x, iterFreeBoxes->y + iterFreeBoxes->w);
 
 					float2 c1 = float2(iterFreeBoxes2->x, iterFreeBoxes2->y);
 					float2 c2 = float2(iterFreeBoxes2->x + iterFreeBoxes2->z, iterFreeBoxes2->y);
 					float2 c3 = float2(iterFreeBoxes2->x + iterFreeBoxes2->z, iterFreeBoxes2->y + iterFreeBoxes2->w);
-					float2 c4 = float2(iterFreeBoxes2->x, iterFreeBoxes2->y + iterFreeBoxes2->w);
+					//float2 c4 = float2(iterFreeBoxes2->x, iterFreeBoxes2->y + iterFreeBoxes2->w);
 
 					if (c1.x >= b1.x && c1.y >= b1.y &&
 						c3.x <= b3.x && c3.y <= b3.y)
@@ -826,13 +822,12 @@ namespace aly {
 			if(iter%4==0) Shuffle(order);
 		}
 
-		int cc = 0;
 		std::vector<int> relabel;
 		int scc = makeLabelsUnique(vertexLabels, relabel, minVertexPatchSize);
 		
 		const int SECOND_PASS_MAX_ITERATIONS =vertexCount/16;
 		for (int iter = 0; iter < SECOND_PASS_MAX_ITERATIONS; iter++){
-			int sz = static_cast<int>(relabel.size());
+
 			int changeCount = 0;
 			for (int v:relabel){
 				int l = vertexLabels[v];
@@ -928,11 +923,9 @@ namespace aly {
 		int pivot = 0;
 		int cc = 0;
 		std::list<int> queue;
-		bool found = false;
 		cclist.clear();
 		int masked = 0;
 		int ccCount = 0;
-		int itrStep = vertexCount / 100;
 
 		std::vector<int> labels(vertexCount,-1);
 		std::vector<int> nbrs;
@@ -986,7 +979,6 @@ namespace aly {
 		float3 v;
 		float3 centerPoint(0.0f);
 
-		int count=0;
 		for (int2 idx : indexes){
 			centerPoint += mesh.vertexLocations[idx.x];
 		}
