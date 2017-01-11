@@ -113,7 +113,7 @@ template<class T> struct ExampleT: public Example {
 	}
 	virtual ~ExampleT() {
 		if (app)
-			delete app;
+			 app;
 	}
 };
 typedef std::unique_ptr<Example> ExamplePtr;

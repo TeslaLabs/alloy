@@ -5,55 +5,58 @@
 #include <vector>
 #include <algorithm>
 namespace aly {
-	CellVertex::CellVertex()
-	{
-		positionArbiter = nullptr;
+	namespace softbody {
 
-		for (unsigned int i = 0; i < 8; i++)
+		CellVertex::CellVertex()
 		{
-			shareVertexCells[i] = nullptr;
-			partnerVertices[i] = nullptr;
-		}
-	}
+			positionArbiter = nullptr;
 
-	void CellVertex::DeterminePositionArbiter()
-	{
-		Cell *positionArbiterCell;
-		positionArbiter = nullptr;
-		// We point to the first of our partners that we are connected to for guidance
-		std::vector<LatticeLocation*> &immediateNeighbors = owner->center->immediateNeighbors;
-		for (unsigned int i = 0; i < 8; i++)
-		{
-			if (shareVertexCells[i] != nullptr)
+			for (unsigned int i = 0; i < 8; i++)
 			{
-				if (positionArbiter == nullptr || shareVertexCells[i]->center->particle < positionArbiter)
+				shareVertexCells[i] = nullptr;
+				partnerVertices[i] = nullptr;
+			}
+		}
+
+		void CellVertex::DeterminePositionArbiter()
+		{
+			Cell *positionArbiterCell;
+			positionArbiter = nullptr;
+			// We point to the first of our partners that we are connected to for guidance
+			std::vector<LatticeLocation*> &immediateNeighbors = owner->center->immediateNeighbors;
+			for (unsigned int i = 0; i < 8; i++)
+			{
+				if (shareVertexCells[i] != nullptr)
 				{
-					if (shareVertexCells[i] == owner || find(immediateNeighbors.begin(), immediateNeighbors.end(), shareVertexCells[i]->center) != immediateNeighbors.end())
+					if (positionArbiter == nullptr || shareVertexCells[i]->center->particle < positionArbiter)
 					{
-						positionArbiterVertex = partnerVertices[i];
-						positionArbiterCell = shareVertexCells[i];
-						positionArbiter = shareVertexCells[i]->center->particle;
-						//positionArbiterParticleIndex = positionArbiter->particleIndex;
-						materialPositionOffset = positionArbiterVertex->materialPosition - positionArbiter->x0;
-						materialPosition = positionArbiterVertex->materialPosition;
-						//return;
+						if (shareVertexCells[i] == owner || find(immediateNeighbors.begin(), immediateNeighbors.end(), shareVertexCells[i]->center) != immediateNeighbors.end())
+						{
+							positionArbiterVertex = partnerVertices[i];
+							positionArbiterCell = shareVertexCells[i];
+							positionArbiter = shareVertexCells[i]->center->particle;
+							//positionArbiterParticleIndex = positionArbiter->particleIndex;
+							materialPositionOffset = positionArbiterVertex->materialPosition - positionArbiter->x0;
+							materialPosition = positionArbiterVertex->materialPosition;
+							//return;
+						}
 					}
 				}
 			}
 		}
-	}
 
-	// Update in response to a fracture occuring in one of the cells that share this vertex
-	void CellVertex::HandleVertexSharerFracture()
-	{
-		DeterminePositionArbiter();
-	}
+		// Update in response to a fracture occuring in one of the cells that share this vertex
+		void CellVertex::HandleVertexSharerFracture()
+		{
+			DeterminePositionArbiter();
+		}
 
-	void CellVertex::UpdatePosition()
-	{
-		if (positionArbiter->parentRegions.size() <= 1)
-			position = positionArbiter->g + materialPositionOffset;	// Position arbiter does not have a rotation defined
-		else
-			position = positionArbiter->g + positionArbiter->R * materialPositionOffset;
+		void CellVertex::UpdatePosition()
+		{
+			if (positionArbiter->parentRegions.size() <= 1)
+				position = positionArbiter->g + materialPositionOffset;	// Position arbiter does not have a rotation defined
+			else
+				position = positionArbiter->g + positionArbiter->R * materialPositionOffset;
+		}
 	}
 }

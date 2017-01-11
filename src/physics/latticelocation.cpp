@@ -5,94 +5,97 @@
 #include "physics/Particle.h"
 #include <queue>
 namespace aly {
-	void LatticeLocation::CalculateNeighborhood()
-	{
-		// Generate the set of lattice locations up to w steps from each lattice location
+	namespace softbody {
 
-		neighborhood.clear();
-
-		if (body->w == 1)
+		void LatticeLocation::CalculateNeighborhood()
 		{
-			// We can just use the neighbor list
-			neighborhood = immediateNeighbors;
-			sort(neighborhood.begin(), neighborhood.end());
-		}
-		else
-		{
-			// Find the set of particles up to w steps away
+			// Generate the set of lattice locations up to w steps from each lattice location
 
-			unsigned int newTouch = rand() % INT_MAX;
-			std::queue<LatticeLocation*> next;
-			int currentDepth = 0;
-			int remainingAtThisDepth = 1;
-			int elementsAtNextDepth = 0;
+			neighborhood.clear();
 
-			next.push(this);
-
-			// Rather than doing an expensive search to see if we've already added a given lattice location, we just mark it when we add it
-			touch = newTouch;
-
-			while (!next.empty())
+			if (body->w == 1)
 			{
-				// Get "u" from the queue, add it to neighbors
-				LatticeLocation* u = next.front(); 
-				next.pop();
-				neighborhood.push_back(u);
+				// We can just use the neighbor list
+				neighborhood = immediateNeighbors;
+				sort(neighborhood.begin(), neighborhood.end());
+			}
+			else
+			{
+				// Find the set of particles up to w steps away
 
-				if (currentDepth < body->w)
+				unsigned int newTouch = rand() % INT_MAX;
+				std::queue<LatticeLocation*> next;
+				int currentDepth = 0;
+				int remainingAtThisDepth = 1;
+				int elementsAtNextDepth = 0;
+
+				next.push(this);
+
+				// Rather than doing an expensive search to see if we've already added a given lattice location, we just mark it when we add it
+				touch = newTouch;
+
+				while (!next.empty())
 				{
-					std::vector<LatticeLocation*>::const_iterator neighborI;
-					// Add all u's neighbors to next
-					for (neighborI = u->immediateNeighbors.begin(); neighborI != u->immediateNeighbors.end(); neighborI++)
+					// Get "u" from the queue, add it to neighbors
+					LatticeLocation* u = next.front();
+					next.pop();
+					neighborhood.push_back(u);
+
+					if (currentDepth < body->w)
 					{
-						LatticeLocation *neighbor = *neighborI;
-						if (neighbor->touch != newTouch)
+						std::vector<LatticeLocation*>::const_iterator neighborI;
+						// Add all u's neighbors to next
+						for (neighborI = u->immediateNeighbors.begin(); neighborI != u->immediateNeighbors.end(); neighborI++)
 						{
-							neighbor->touch = newTouch;
-							next.push(neighbor);
-							elementsAtNextDepth++;
+							LatticeLocation *neighbor = *neighborI;
+							if (neighbor->touch != newTouch)
+							{
+								neighbor->touch = newTouch;
+								next.push(neighbor);
+								elementsAtNextDepth++;
+							}
 						}
+					}
+
+					remainingAtThisDepth--;
+					if (remainingAtThisDepth == 0)
+					{
+						currentDepth++;
+						remainingAtThisDepth = elementsAtNextDepth;
+						elementsAtNextDepth = 0;
 					}
 				}
 
-				remainingAtThisDepth--;
-				if (remainingAtThisDepth == 0)
-				{
-					currentDepth++;
-					remainingAtThisDepth = elementsAtNextDepth;
-					elementsAtNextDepth = 0;
-				}
+				sort(neighborhood.begin(), neighborhood.end());
 			}
 
-			sort(neighborhood.begin(), neighborhood.end());
-		}
-
-		// Set whether the region should be generated or not
-		if (body->fracturing)
-		{
-			// We always generate the region if there is fracturing, because one region that starts out as identical to another may
-			//  become different as a result of fracturing, and it's faster to just generate them all at the start rather than doing
-			//  expensive tests for identicalness every time there is a fracture
-			regionExists = true;
-		}
-		else
-		{
-			regionExists = true;
-			// Check if we are a duplicate
-			for(LatticeLocation* check : body->latticeLocationsWithExistentRegions)
+			// Set whether the region should be generated or not
+			if (body->fracturing)
 			{
-				if (check->neighborhood.size() == neighborhood.size() && equal(neighborhood.begin(), neighborhood.end(), check->neighborhood.begin()))
+				// We always generate the region if there is fracturing, because one region that starts out as identical to another may
+				//  become different as a result of fracturing, and it's faster to just generate them all at the start rather than doing
+				//  expensive tests for identicalness every time there is a fracture
+				regionExists = true;
+			}
+			else
+			{
+				regionExists = true;
+				// Check if we are a duplicate
+				for (LatticeLocation* check : body->latticeLocationsWithExistentRegions)
 				{
-					// We ARE a duplicate
-					regionExists = false;
-					break;
+					if (check->neighborhood.size() == neighborhood.size() && equal(neighborhood.begin(), neighborhood.end(), check->neighborhood.begin()))
+					{
+						// We ARE a duplicate
+						regionExists = false;
+						break;
+					}
 				}
 			}
-		}
 
-		if (regionExists)
-		{
-			body->latticeLocationsWithExistentRegions.push_back(this);
+			if (regionExists)
+			{
+				body->latticeLocationsWithExistentRegions.push_back(this);
+			}
 		}
 	}
 }

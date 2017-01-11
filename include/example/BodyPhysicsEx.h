@@ -28,7 +28,7 @@
 #include "GLFrameBuffer.h"
 #include "physics/Body.h"
 struct DrawBody {
-	aly::Body body;
+	aly::softbody::Body body;
 	aly::Mesh mesh;
 	DrawBody(aly::float3 spacing = aly::float3(1.0f, 1.0f, 1.0f)) :body(spacing),mesh() {
 
@@ -68,7 +68,7 @@ protected:
 public:
 	void addBody();
 	void resetBodies();
-	void updatePhysics();
+	bool updatePhysics();
 	BodyPhysicsEx();
 	bool init(aly::Composite& rootNode);
 	void draw(aly::AlloyContext* context);

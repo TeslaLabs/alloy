@@ -59,14 +59,7 @@ template<typename T> T round(const T & v) {
 template<typename T> T round(const T & v,int sigs) {
 	return T(std::floor(T(v*pow(10, sigs) + 0.5))*pow(10, -sigs));
 }
-inline float InvSqrt (float x){
-	float xhalf = 0.5f*x;
-	int i = *(int*)&x;
-	i = 0x5f3759df - (i>>1);
-	x = *(float*)&i;
-	x = x*(1.5f - xhalf*x*x);
-	return x;
-}
+float InvSqrt(float x);
 
 // The intent of this library is to provide the bulk of the functionality
 // you need to write programs that frequently use small, fixed-size vectors
@@ -1277,7 +1270,7 @@ template<class T> vec<T, 3> GetDiagonal(const matrix<T, 3, 3> &m) {
 template<class T> vec<T, 4> GetDiagonal(const matrix<T, 4, 4> &m) {
 	return {m.x.x, m.y.y, m.z.z,m.w.w};
 }
-template<class T> vec<T, 4> Diagonalizer(const matrix<T, 3, 3> &A) {
+template<class T> vec<T, 4> Diagonalizer(const matrix<T, 3, 3> &A,bool sort=true) {
 	// A must be a symmetric matrix.
 	// returns orientation of the principle axes.
 	// returns quaternion q such that its corresponding column major matrix Q
@@ -1314,19 +1307,21 @@ template<class T> vec<T, 4> Diagonalizer(const matrix<T, 3, 3> &A) {
 		q = qmul(q, jr);
 		q = normalize(q);
 	}
-	float h = 1.0f / sqrtf(2.0f);  // M_SQRT2
-	auto e = [&q, &A]() {return GetDiagonal(transpose(q2matrix(q))* A* q2matrix(q));}; // current ordering of eigenvals of q
-	q = (e().x < e().z) ? qmul(q, vec<T, 4>(0, h, 0, h)) : q;
-	q = (e().y < e().z) ? qmul(q, vec<T, 4>(h, 0, 0, h)) : q;
-	q = (e().x < e().y) ? qmul(q, vec<T, 4>(0, 0, h, h)) : q; // size order z,y,x so xy spans a planeish spread
-	q = (qrotate_z(q).z < 0) ? qmul(q, vec<T, 4>(1, 0, 0, 0)) : q;
-	q = (qrotate_y(q).y < 0) ? qmul(q, vec<T, 4>(0, 0, 1, 0)) : q;
-	q = (q.w < 0) ? -q : q;
+	if (sort) {
+		float h = 1.0f / sqrtf(2.0f);  // M_SQRT2
+		auto e = [&q, &A]() {return GetDiagonal(transpose(q2matrix(q))* A* q2matrix(q)); }; // current ordering of eigenvals of q
+		q = (e().x < e().z) ? qmul(q, vec<T, 4>(0, h, 0, h)) : q;
+		q = (e().y < e().z) ? qmul(q, vec<T, 4>(h, 0, 0, h)) : q;
+		q = (e().x < e().y) ? qmul(q, vec<T, 4>(0, 0, h, h)) : q; // size order z,y,x so xy spans a planeish spread
+		q = (qrotate_z(q).z < 0) ? qmul(q, vec<T, 4>(1, 0, 0, 0)) : q;
+		q = (qrotate_y(q).y < 0) ? qmul(q, vec<T, 4>(0, 0, 1, 0)) : q;
+		q = (q.w < 0) ? -q : q;
+	}
 	//matrix<T,3,3> M = transpose(q2matrix(q)) * A * q2matrix(q);  // to test result
 	return q;
 }
-template<class T> void Eigen(const matrix<T, 3, 3> &A, matrix<T, 3, 3>& Q, matrix<T, 3, 3>& D) {
-	vec<T, 4> q = Diagonalizer(A);
+template<class T> void Eigen(const matrix<T, 3, 3> &A, matrix<T, 3, 3>& Q, matrix<T, 3, 3>& D,bool sort=true) {
+	vec<T, 4> q = Diagonalizer(A,sort);
 	Q = q2matrix(q);
 	D = transpose(Q) * A * Q;
 }

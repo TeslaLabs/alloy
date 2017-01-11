@@ -41,7 +41,7 @@ namespace aly {
 		for (int j = 0; j <= cols; j++) {
 			for (int i = 0; i <= rows; i++) {
 				vertexLocations.push_back(float3(offX + cellX*i, offY + cellY*j, 0.0f));
-				vertexNormals.push_back(float3(0, 0, 1));
+				vertexNormals.push_back(float3(0, 0, -1));
 			}
 		}
 		for (int j = 0; j < cols; j++) {
@@ -50,7 +50,7 @@ namespace aly {
 				uint32_t v1 = j*(rows + 1) + i + 1;
 				uint32_t v2 = (j + 1)*(rows + 1) + i + 1;
 				uint32_t v3 = (j + 1)*(rows + 1) + i;
-				quadIndexes.push_back(uint4(v3, v2, v1, v0));
+				quadIndexes.push_back(uint4( v0,v1,v2,v3));
 			}
 		}
 		boundingBox = box3f(float3(-0.5f*w, -0.5f*h, 0.0f), float3(w, h, 0));
