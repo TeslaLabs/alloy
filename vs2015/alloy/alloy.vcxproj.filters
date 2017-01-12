@@ -396,7 +396,7 @@
     <ClCompile Include="..\..\src\physics\LatticeLocation.cpp">
       <Filter>src\physics</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\example\BodyPhysicsEx.cpp">
+    <ClCompile Include="..\..\src\example\SoftBodyEx.cpp">
       <Filter>src\example</Filter>
     </ClCompile>
   </ItemGroup>
@@ -950,7 +950,7 @@
     <ClInclude Include="..\..\include\physics\stdafx.h">
       <Filter>include\physics</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\example\BodyPhysicsEx.h">
+    <ClInclude Include="..\..\include\example\SoftBodyEx.h">
       <Filter>include\example</Filter>
     </ClInclude>
   </ItemGroup>

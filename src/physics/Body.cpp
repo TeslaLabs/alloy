@@ -91,7 +91,6 @@ namespace aly {
 		void Body::GenerateSMRegions()
 		{
 			// Generate the regions from the lattice locations' neighborhoods
-			printf("Generating regions and intermediate summations...");
 			for (LatticeLocation* l : latticeLocationsWithExistentRegions)
 			{
 				std::shared_ptr<Region> region(new Region());
@@ -109,8 +108,6 @@ namespace aly {
 			{
 				region->GenerateChildSums(1);
 			}
-
-			printf(" done.\n");
 		}
 
 		void Body::InitializeCells()

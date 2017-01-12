@@ -22,81 +22,79 @@
 #include "Alloy.h"
 #include "AlloyReconstruction.h"
 #include "AlloyMeshPrimitives.h"
-#include "../../include/example/BodyPhysicsEx.h"
+#include "../../include/example/SoftBodyEx.h"
 using namespace aly;
 using namespace aly::softbody;
-BodyPhysicsEx::BodyPhysicsEx() : Application(1200, 800, "Body Physics Example"),phongShader(1) {
+SoftBodyEx::SoftBodyEx() : Application(1200, 800, "Soft Body Physics Example"),phongShader(1) {
 
 
 }
-void BodyPhysicsEx::resetBodies() {
+void SoftBodyEx::resetBodies() {
 	bodies.clear();
 }
-void BodyPhysicsEx::addBody() {
+void SoftBodyEx::addBody() {
 	DrawBodyPtr dbody = DrawBodyPtr(new DrawBody(float3(1.0f,1.0f,1.0f)));
 	Body& body = dbody->body;
-	body.w =  std::rand() % 2 + 1;
-	body.alpha = 0.75f;
-	body.fracturing = true;
-	body.fractureDistanceTolerance = 999.0f;
-	body.fractureRotationTolerance = 0.6f;
-	body.kRegionDamping = 0.25f;
+	body.w = neighborSize.toInteger();
+	body.alpha = alpha.toFloat();
+	body.fracturing = fracturing;
+	body.fractureDistanceTolerance = fractureDistanceTolerance.toFloat();
+	body.fractureRotationTolerance = fractureRotationTolerance.toFloat();
+	body.kRegionDamping = damping.toFloat();
 	
-	int width =  std::rand() % 3 + 2;
-	int height = std::rand() % 10 + 2;
-	int depth =   std::rand() % 3 + 2;
-	std::cout << "Dimensions " << width << " " << height << " " << depth << std::endl;
-	for (int x = 0; x < width; x++){
-		for (int y = 0; y < height; y++){
-			for (int z = 0; z < depth; z++){
+	int Z = RandomUniform(3, 10);
+	for (int z = 0; z < Z; z++) {
+		int stx = 3 - RandomUniform(1, 3);
+		int edx = 3 + RandomUniform(1, 3);
+
+		int sty = 3 - RandomUniform(1, 3);
+		int edy = 3 + RandomUniform(1, 3);
+		
+		for (int x = stx; x <= edx; x++){
+			for (int y = sty; y <= edy; y++){
 				body.AddParticle(int3(x, y, z));
 			}
 		}
 	}
 	body.Finalize();
 	aly::Mesh& mesh = dbody->mesh;
-	std::cout << "Particles " << body.particles.size() << std::endl;
-	std::cout << "Lattice Locations " << body.latticeLocations.size() << std::endl;
-	std::cout << "Lattice " << body.lattice.size() << std::endl;
-	std::cout << "Cells " << body.cells.size()<<std::endl;
 	uint4 offset(0,0,0,0);
 	for (CellPtr cell:body.cells) {
 		for (int i = 0; i < 8; i++) {
-			float3 pos = cell->vertices[i].position;
+			float3 pos = cell->vertices[i].position+float3(0.0f,0.0f,0.5f);
+			pos.z = std::max(pos.z, 0.0f);
 			mesh.vertexLocations.push_back(pos);
 		}
-		mesh.quadIndexes.push_back(offset + uint4(6, 2, 3, 7));// 7, 3, 2, 6
-		mesh.quadIndexes.push_back(offset + uint4(1, 0, 4, 5));// 5, 4, 0, 1
-		mesh.quadIndexes.push_back(offset + uint4(3, 1, 5, 7));// 7, 5, 1, 3
-		mesh.quadIndexes.push_back(offset + uint4(2, 0, 1, 3));// 3, 1, 0, 2
-		mesh.quadIndexes.push_back(offset + uint4(4, 0, 2, 6));// 6, 2, 0, 4
-		mesh.quadIndexes.push_back(offset + uint4(5, 4, 6, 7));// 7,6,4,5
+		mesh.quadIndexes.push_back(offset + uint4(6, 2, 3, 7));
+		mesh.quadIndexes.push_back(offset + uint4(1, 0, 4, 5));
+		mesh.quadIndexes.push_back(offset + uint4(3, 1, 5, 7));
+		mesh.quadIndexes.push_back(offset + uint4(2, 0, 1, 3));
+		mesh.quadIndexes.push_back(offset + uint4(4, 0, 2, 6));
+		mesh.quadIndexes.push_back(offset + uint4(5, 4, 6, 7));
 		offset += uint4(8,8,8,8);
 	}
 	mesh.updateVertexNormals();
 	mesh.updateBoundingBox();
-	//std::cout << "Body " << mesh.getBoundingBox() << std::endl;
-	//WriteMeshToFile(MakeString() << GetDesktopDirectory() << ALY_PATH_SEPARATOR << "body.ply", mesh);
-	
-	// Add a position offset and a random velocity
-	const float velocityMax = 25;
-	const float velocityHalf = velocityMax / 2;
-	float3 randomVelocity = float3(
-		(rand() % 1000 / 1000.0f) * velocityMax - velocityHalf, 
-		(rand() % 1000 / 1000.0f) * velocityMax - velocityHalf, 
-		(rand() % 1000 / 1000.0f) * velocityMax - velocityHalf);
+	float theta = RandomUniform(0.0f, 2*ALY_PI);
+	float3 randomVelocity = float3(std::cos(theta),std::sin(theta), 1.0f);
+	randomVelocity = randomVelocity*maxVelocity.toFloat()*RandomUniform(0.0f, 1.0f);
 	for(ParticlePtr particle : body.particles){
-		particle->x.z += 5;
+		particle->x.z += dropHeight.toFloat();
 		particle->v += randomVelocity;
 	}
 	bodies.push_back(dbody);
 }
-bool BodyPhysicsEx::updatePhysics(){
+bool SoftBodyEx::updatePhysics(){
 	const int MAX_BODIES = 50;
 	const int SPAWN_RATE = 30;
 	const int TARGET_FPS = 30;
 	const float h = 1.0f / TARGET_FPS;
-	bool updated;
+	const float lowX = -50.0f;
+	const float hiX = 50.0f;
+	const float lowY = -50.0f;
+	const float hiY = 50.0f;
+	const float lowZ = 0.0f;
+	bool updated=false;
 	const float3 gravity = float3(0.0f, 0.0f, -9.8f);
 	for(DrawBodyPtr dbody : bodies)
 	{
@@ -108,13 +106,38 @@ bool BodyPhysicsEx::updatePhysics(){
 		body->ApplyParticleVelocities(h);
 		body->DoFracturing();
 		// Apply gravity and check floor
+
 		for(ParticlePtr particle : body->particles){
 			particle->f += gravity;
-			if (particle->x.z < 0){
+			if (particle->x.z < lowZ){
 				// This particle has hit the floor
-				particle->f.z -= particle->x.z;
+				particle->f.z -= particle->x.z- lowZ;
 				particle->v = float3(0.0f);
-				particle->x.z = 0;
+				particle->x.z = lowZ;
+			}
+			if (particle->x.x < lowX) {
+				// This particle has hit wall
+				particle->f.x -= (particle->x.x - lowX);
+				particle->v = float3(0.0f);
+				particle->x.x = lowX;
+			}
+			if (particle->x.x > hiX) {
+				// This particle has hit wall
+				particle->f.x -= (particle->x.x - hiX);
+				particle->v = float3(0.0f);
+				particle->x.x = hiX;
+			}
+			if (particle->x.y < lowY) {
+				// This particle has hit wall
+				particle->f.y -= (particle->x.y - lowY);
+				particle->v = float3(0.0f);
+				particle->x.y = lowY;
+			}
+			if (particle->x.y > hiY) {
+				// This particle has hit wall
+				particle->f.y -= (particle->x.y - hiY);
+				particle->v = float3(0.0f);
+				particle->x.y = hiY;
 			}
 		}
 		body->UpdateCellPositions();
@@ -122,7 +145,8 @@ bool BodyPhysicsEx::updatePhysics(){
 		aly::Mesh& mesh = dbody->mesh;
 		for (CellPtr cell : body->cells) {
 			for (int i = 0; i < 8; i++) {
-				float3 pos = cell->vertices[i].position;
+				float3 pos = cell->vertices[i].position + float3(0.0f, 0.0f, 0.5f);
+				pos.z = std::max(pos.z, 0.0f);
 				mesh.vertexLocations[index++]=pos;
 			}
 		}
@@ -131,10 +155,9 @@ bool BodyPhysicsEx::updatePhysics(){
 	}
 	return updated;
 }
-bool BodyPhysicsEx::init(Composite& rootNode) {
+bool SoftBodyEx::init(Composite& rootNode) {
 	grid.reset(new Grid(100.0f, 100.0f, 10, 10, getContext()));
-	box3f renderBBox = box3f(float3(-0.5f, -0.5f, 0.0f), float3(1.0f, 1.0f, 0.4f));
-	box3f objectBBox = box3f(float3(-50.0f,-50.0f,0.0f), float3(50.0f,50.0f, 20.0f));
+	box3f objectBBox = box3f(float3(-50.0f,-50.0f,0.0f), float3(50.0f,50.0f, 50.0f));
 	BorderCompositePtr layout = BorderCompositePtr(new BorderComposite("UI Layout", CoordPX(0.0f, 0.0f), CoordPercent(1.0f, 1.0f), false));
 	ParameterPanePtr controls = ParameterPanePtr(new ParameterPane("Controls", CoordPX(0.0f, 0.0f), CoordPercent(1.0f, 1.0f)));
 	CompositePtr buttons = CompositePtr(new Composite("Buttons", CoordPX(0.0f, 0.0f), CoordPercent(1.0f, 1.0f)));
@@ -142,6 +165,7 @@ bool BodyPhysicsEx::init(Composite& rootNode) {
 	IconButtonPtr resetButton = IconButtonPtr(new IconButton(0xF01E, CoordPerPX(0.75f, 0.5f, -30.0f, -30.0f), CoordPX(60.0f, 60.0f), IconType::CIRCLE));
 	addButton->backgroundColor = MakeColor(COLOR_NONE);
 	resetButton->backgroundColor = MakeColor(COLOR_NONE);
+	
 	addButton->onMouseDown = [this](AlloyContext* context, const InputEvent& e) {
 		if (e.button == GLFW_MOUSE_BUTTON_LEFT) {
 			context->addDeferredTask([this]() {
@@ -170,7 +194,9 @@ bool BodyPhysicsEx::init(Composite& rootNode) {
 	
 	addButton->foregroundColor = MakeColor(getContext()->theme.LIGHTER);
 	resetButton->foregroundColor = MakeColor(getContext()->theme.LIGHTER);
-	
+	addButton->borderColor = MakeColor(getContext()->theme.DARKER);
+	resetButton->borderColor = MakeColor(getContext()->theme.DARKER);
+
 	addButton->iconColor = MakeColor(getContext()->theme.DARK);
 	resetButton->iconColor = MakeColor(getContext()->theme.DARK);
 
@@ -197,26 +223,28 @@ bool BodyPhysicsEx::init(Composite& rootNode) {
 	buttons->borderColor = MakeColor(getContext()->theme.DARK);
 	buttons->backgroundColor = MakeColor(getContext()->theme.DARKER);
 	rootNode.add(layout);
-	camera.setNearFarPlanes(-2.0f, 2.0f);
-	camera.setZoom(0.75f);
-	camera.setCameraType(CameraType::Orthographic);
-	camera.setPose(MakeTransform(objectBBox, renderBBox));
+	camera.setNearFarPlanes(0.001f, 4.0f);
+	camera.setZoom(1.75f);
+	camera.setCameraType(CameraType::Perspective);
+	camera.setPose(MakeScale(1.0f/200.0f));
+	camera.rotateModelX(-ALY_PI * 60 / 180.0f);
 	alpha=Float(1.0f);
 	neighborSize=Integer(1);
 	fractureDistanceTolerance=Float(999.0f);
 	fractureRotationTolerance=Float(0.6f);
-	aly::Number damping=Float(0.5f);
+	damping=Float(0.5f);
+	maxVelocity = Integer(20);
+	dropHeight = Integer(10);
 	fracturing = true;
-
 	controls->addNumberField("Alpha",alpha,Float(0.0f),Float(1.0f));
-	controls->addNumberField("Neighborhood", neighborSize, Integer(1), Integer(4));
-	controls->addNumberField("Fracture Distance Tol.", fractureDistanceTolerance);
-	controls->addNumberField("Fracture Rotation Tol.", fractureRotationTolerance);
+	controls->addNumberField("Neighborhood", neighborSize, Integer(1), Integer(2));
+	controls->addNumberField("Max Velocity", maxVelocity,Integer(0), Integer(40));
+	controls->addNumberField("Drop Height", dropHeight, Integer(10), Integer(40));
 	controls->addNumberField("Damping", damping);
+	controls->addNumberField("Fracture Distance Tolerlance", fractureDistanceTolerance);
+	controls->addNumberField("Fracture Rotation Tolerlance", fractureRotationTolerance);
 	controls->addCheckBox("Fracturing", fracturing);
-
 	addListener(&camera);
-
 	renderRegion->onPack = [this]() {
 		camera.setDirty(true);
 		frameBuffersDirty = true;
@@ -228,17 +256,16 @@ bool BodyPhysicsEx::init(Composite& rootNode) {
 		Color(0.0f, 0.0f, 0.0f, 0.0f), 16.0f, float3(0, 0.0, 2.0),
 		float3(0, 1, 0));
 	phongShader[0].moveWithCamera = false;
-
-	wireframeShader.setFaceColor(Color(0.1f, 0.1f, 1.0f, 0.1f));
+	wireframeShader.setFaceColor(Color(0.1f, 0.1f, 0.1f, 0.0f));
 	wireframeShader.setEdgeColor(Color(1.0f, 0.8f, 0.1f, 1.0f));
-	wireframeShader.setLineWidth(2.0f);
+	wireframeShader.setLineWidth(1.25f);
 	getContext()->addDeferredTask([this]() {
-		frameBuffersDirty = true;;
+		frameBuffersDirty = true;
 	});
 	addBody();
 	return true;
 }
-void BodyPhysicsEx::initializeFrameBuffers(aly::AlloyContext* context) {
+void SoftBodyEx::initializeFrameBuffers(aly::AlloyContext* context) {
 	float2 dims = renderRegion->getBounds().dimensions;
 	int w = (int)dims.x;
 	int h = (int)dims.y;
@@ -247,7 +274,7 @@ void BodyPhysicsEx::initializeFrameBuffers(aly::AlloyContext* context) {
 	depthFrameBuffer.initialize(w, h);
 	wireframeFrameBuffer.initialize(w, h);
 }
-void BodyPhysicsEx::draw(AlloyContext* context) {
+void SoftBodyEx::draw(AlloyContext* context) {
 	box2px rbbox = renderRegion->getBounds();
 	if (frameBuffersDirty) {
 		initializeFrameBuffers(context);
@@ -272,18 +299,21 @@ void BodyPhysicsEx::draw(AlloyContext* context) {
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 		glEnable(GL_DEPTH_TEST);
 		glDisable(GL_BLEND);
-		depthAndNormalShader.draw(drawList, camera, depthFrameBuffer, true);	
-		wireframeFrameBuffer.begin();
+		depthAndNormalShader.draw(drawList, camera, depthFrameBuffer, true);
 		glEnable(GL_BLEND);
-		glDisable(GL_DEPTH_TEST);
+		wireframeShader.draw(drawList, camera, wireframeFrameBuffer);
+		colorFrameBuffer.begin();
+		glEnable(GL_BLEND);
+		phongShader.draw(depthFrameBuffer.getTexture(), camera, wireframeFrameBuffer.getViewport(), depthFrameBuffer.getViewport());		
+		colorFrameBuffer.end();
 
-		phongShader.draw(depthFrameBuffer.getTexture(), camera,wireframeFrameBuffer.getViewport(), wireframeFrameBuffer.getViewport());
-		//glEnable(GL_DEPTH_TEST);
-		//wireframeShader.draw(drawList, camera, wireframeFrameBuffer.getViewport());
-		
-		wireframeFrameBuffer.end();
 	}
+	glDisable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+
+	imageShader.draw(colorFrameBuffer.getTexture(), rbbox*context->pixelRatio, 1.0f, false);
 	imageShader.draw(wireframeFrameBuffer.getTexture(), rbbox*context->pixelRatio, 1.0f, false);
+
 	camera.setDirty(false);
 }
 

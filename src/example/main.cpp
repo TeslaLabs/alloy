@@ -63,7 +63,7 @@
 #include "../../include/example/ImageFeaturesEx.h"
 #include "../../include/example/MeshTextureMapEx.h"
 #include "../../include/example/MeshReconstructionEx.h"
-#include "../../include/example/BodyPhysicsEx.h"
+#include "../../include/example/SoftBodyEx.h"
 #include <cstring>
 
 /*
@@ -156,7 +156,7 @@ int main(int argc, char *argv[]) {
 		MAKE_EXAMPLE(DataFlowEx),MAKE_EXAMPLE(ForceDirectedGraphEx),MAKE_EXAMPLE(OneEuroFilterEx),
 		MAKE_EXAMPLE(TabPaneEx),MAKE_EXAMPLE(ParameterPaneEx),MAKE_EXAMPLE(TablePaneEx),
 		MAKE_EXAMPLE(TimelineEx),MAKE_EXAMPLE(MeshOptimizationEx),MAKE_EXAMPLE(ImageFeaturesEx),
-		MAKE_EXAMPLE(MeshTextureMapEx),MAKE_EXAMPLE(MeshReconstructionEx),MAKE_EXAMPLE(BodyPhysicsEx)
+		MAKE_EXAMPLE(MeshTextureMapEx),MAKE_EXAMPLE(MeshReconstructionEx),MAKE_EXAMPLE(SoftBodyEx)
 	};
 	std::sort(apps.begin(),apps.end(),[=](const ExamplePtr& a,const ExamplePtr& b){
 		return std::lexicographical_compare(a->name.begin(), a->name.end(), b->name.begin(), b->name.end());

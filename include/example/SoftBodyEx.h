@@ -35,7 +35,7 @@ struct DrawBody {
 	}
 };
 typedef std::shared_ptr<DrawBody> DrawBodyPtr;
-class BodyPhysicsEx : public aly::Application {
+class SoftBodyEx : public aly::Application {
 protected:
 	bool frameBuffersDirty;
 	std::unique_ptr<aly::Mesh> grid;
@@ -45,6 +45,8 @@ protected:
 	std::vector<DrawBodyPtr> bodies;
 	aly::Number alpha;
 	aly::Number neighborSize;
+	aly::Number maxVelocity;
+	aly::Number dropHeight;
 	aly::Number fractureDistanceTolerance;
 	aly::Number fractureRotationTolerance;
 	aly::Number damping;
@@ -69,7 +71,7 @@ public:
 	void addBody();
 	void resetBodies();
 	bool updatePhysics();
-	BodyPhysicsEx();
+	SoftBodyEx();
 	bool init(aly::Composite& rootNode);
 	void draw(aly::AlloyContext* context);
 };
