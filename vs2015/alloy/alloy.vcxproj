@@ -59,6 +59,7 @@
     <ClCompile Include="..\..\src\core\AlloyUI.cpp" />
     <ClCompile Include="..\..\src\core\AlloyUndoRedo.cpp" />
     <ClCompile Include="..\..\src\core\AlloyUnits.cpp" />
+    <ClCompile Include="..\..\src\core\AlloyVector.cpp" />
     <ClCompile Include="..\..\src\core\AlloyVolume.cpp" />
     <ClCompile Include="..\..\src\core\AlloyWidget.cpp" />
     <ClCompile Include="..\..\src\core\AlloyWorker.cpp" />
