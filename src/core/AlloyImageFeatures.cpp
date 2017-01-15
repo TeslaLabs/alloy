@@ -16,19 +16,6 @@ namespace aly {
 		{
 			return (x<lx || y>ux || y<ly || y>uy);
 		}
-		/// returns the theta component of a point array in the range -PI to PI.
-		template<class T> inline
-			float* angle(T* x, T* y, int lsz)
-		{
-			float* ang = allocate<float>(lsz);
-
-			for (int k = 0; k < lsz; k++)
-			{
-				ang[k] = angle<T>(x[k], y[k]);
-			}
-
-			return ang;
-		}
 
 		/// returns the radial component of a point.
 		template<class T> inline

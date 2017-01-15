@@ -23,7 +23,7 @@ namespace aly {
 			{
 				// Find the set of particles up to w steps away
 
-				unsigned int newTouch = rand() % INT_MAX;
+				unsigned int newTouch = rand() % std::numeric_limits<int>::max();
 				std::queue<LatticeLocation*> next;
 				int currentDepth = 0;
 				int remainingAtThisDepth = 1;

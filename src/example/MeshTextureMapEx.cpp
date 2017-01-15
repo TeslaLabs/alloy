@@ -35,15 +35,15 @@ void MeshTextureMapEx::labelRegions() {
 	LabelTextureRegions(mesh, indexes, cc, labels);
 	std::vector<Color> colorMap(cc.size());
 	std::vector<RGBAf> colorMap2(cc.size());
-	for (int i = 0; i < cc.size(); i++) {
+	for (int i = 0; i < (int)cc.size(); i++) {
 		colorMap[i] = HSVAtoColor(HSVA(RandomUniform(0.0f, 1.0f), RandomUniform(0.3f, 1.0f), RandomUniform(0.5f, 1.0f), 0.5f));
 		colorMap2[i] = colorMap[i].toDarker(0.5f).toRGBAf();
 	}
 	colors.resize(indexes.size());
 	mesh.vertexColors.resize(colors.size());
-	for (int i = 0; i < colors.size(); i++) {
+	for (int i = 0; i < (int)colors.size(); i++) {
 		int l = labels[indexes[i]];
-		if (l >= 0 && l < colorMap.size()) {
+		if (l >= 0 && l < (int)colorMap.size()) {
 			colors[i] = colorMap[l];
 			mesh.vertexColors[i] = colorMap2[l];
 		}

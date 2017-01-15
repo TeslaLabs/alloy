@@ -3,7 +3,6 @@
 #include <sstream>
 
 #include <math.h>
-#include <fvec.h>		// SSE
 #include <vector>
 #include <set>
 #include <string>

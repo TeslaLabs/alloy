@@ -35,7 +35,7 @@ protected:
 	aly::float4x4 M;
 	size_t counter;
 public:
-	AlloyPointStream(const aly::float4x4& M, const aly::Mesh& mesh) :M(M),mesh(&mesh), counter(0) {
+	AlloyPointStream(const aly::float4x4& M, const aly::Mesh& mesh) :mesh(&mesh),M(M), counter(0) {
 	}
 	void reset(void) {
 		counter = 0;
@@ -98,6 +98,7 @@ struct ReconstructionParameters {
 		MaxSolveDepth("maxSolveDepth", 8),
 		Threads("threads", omp_get_num_procs()),
 		Smooth("smooth", 5),
+		BType("bType", BOUNDARY_NEUMANN),
 		Color("color", 16.f),
 		SamplesPerNode("samplesPerNode", 1.5f),
 		Scale("scale", 1.1f),
@@ -105,8 +106,8 @@ struct ReconstructionParameters {
 		LowResIterMultiplier("iterMultiplier", 1.f),
 		PointWeight("pointWeight", 4.f),
 		Trim("trim", 0.05f),
-		IslandAreaRatio("aRatio", 0.001f),
-		BType("bType", BOUNDARY_NEUMANN){
+		IslandAreaRatio("aRatio", 0.001f)
+		{
 
 	}
 };

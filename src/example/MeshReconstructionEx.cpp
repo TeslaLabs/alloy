@@ -227,7 +227,7 @@ void MeshReconstructionEx::initializeFrameBuffers(aly::AlloyContext* context) {
 	wireframeFrameBuffer->initialize(w, h);
 }
 void MeshReconstructionEx::draw(AlloyContext* context) {
-	const double MIN_ELAPSED_TIME = 0.25f;
+	const float MIN_ELAPSED_TIME = 0.25f;
 	if (frameBuffersDirty) {
 		initializeFrameBuffers(context);
 		frameBuffersDirty = false;

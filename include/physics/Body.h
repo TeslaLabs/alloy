@@ -7,6 +7,7 @@
 #include "Particle.h"
 #include <map>
 #include <memory>
+#include <list>
 namespace aly {
 	namespace softbody {
 		class Body;
@@ -71,7 +72,7 @@ namespace aly {
 		};
 		template <class T> void Remove(std::vector<T> &vec, const T t)
 		{
-			std::vector<T>::iterator new_end = remove(vec.begin(), vec.end(), t);
+			auto new_end = std::remove(vec.begin(), vec.end(), t);
 			vec.erase(new_end, vec.end());
 		}
 

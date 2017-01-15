@@ -1,6 +1,5 @@
 #ifndef PHYS_FASTLSM_H
 #define PHYS_FASTLSM_H
-#include <fvec.h>
 #include <vector>
 #include <set>
 #include <string>

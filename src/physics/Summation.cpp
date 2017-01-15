@@ -92,8 +92,8 @@ namespace aly {
 			unsigned int m;
 			Particle *p;
 
-			*minDim = INT_MAX;
-			*maxDim = INT_MIN;
+			*minDim = std::numeric_limits<int>::max();
+			*maxDim = std::numeric_limits<int>::min();
 
 			for (m = 0; m < particles.size(); m++)
 			{

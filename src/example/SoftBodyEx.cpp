@@ -85,8 +85,6 @@ void SoftBodyEx::addBody() {
 	bodies.push_back(dbody);
 }
 bool SoftBodyEx::updatePhysics(){
-	const int MAX_BODIES = 50;
-	const int SPAWN_RATE = 30;
 	const int TARGET_FPS = 30;
 	const float h = 1.0f / TARGET_FPS;
 	const float lowX = -50.0f;

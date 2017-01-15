@@ -51,7 +51,7 @@ TreeNodeData::~TreeNodeData( void ) { }
 template< class Real >
 double Octree< Real >::memoryUsage( void )
 {
-	double mem = double( MemoryInfo::Usage() ) / (1<<20);
+	double mem = 0;//double( MemoryInfo::Usage() ) / (1<<20);
 	_maxMemoryUsage = std::max< double >( mem , _maxMemoryUsage );
 	_localMemoryUsage = std::max< double >( mem , _localMemoryUsage );
 	return mem;

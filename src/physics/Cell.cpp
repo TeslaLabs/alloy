@@ -39,8 +39,7 @@ namespace aly {
 			}
 
 			// Set up the connected cells
-			for each(LatticeLocation *lp in center->immediateNeighbors)
-			{
+			for(LatticeLocation *lp : center->immediateNeighbors){
 				connectedCells.push_back(lp->cell);
 			}
 			connectedCells.push_back(this);		// I'm always connected to myself
