@@ -24,7 +24,7 @@ namespace aly {
 			invariantsDirty = true;
 		}
 
-		void Body::AddParticle(int3 index) {
+		void Body::addParticle(int3 index) {
 			// Initialize lattice location
 			LatticeLocationPtr l(new LatticeLocation());
 			latticeLocations.push_back(l);
@@ -37,7 +37,7 @@ namespace aly {
 				for (int yo = -1; yo <= 1; yo++) {
 					for (int zo = -1; zo <= 1; zo++) {
 						int3 check = int3(index.x + xo, index.y + yo, index.z + zo);
-						LatticeLocation* latPt = GetLatticeLocation(check);
+						LatticeLocation* latPt = getLatticeLocation(check);
 						if (!(xo == 0 && yo == 0 && zo == 0) && latPt != nullptr) {
 							l->immediateNeighbors.push_back(latPt);
 							l->immediateNeighborsGrid[xo + 1][yo + 1][zo + 1] = latPt;
@@ -64,7 +64,7 @@ namespace aly {
 			l->particle->R = float3x3::identity();
 		}
 
-		void Body::Finalize()
+		void Body::finalize()
 		{
 			// Set the lattice points' immediateNeighbors, and decide based on this whether or not it is an edge
 			for (LatticeLocationPtr l : latticeLocations)
@@ -72,10 +72,10 @@ namespace aly {
 				// Set whether it is an edge - i.e., doesn't have a full set of immediateNeighbors
 				l->edge = (l->immediateNeighbors.size() != 26);
 				// Build the neighborhood by breadth-first search
-				l->CalculateNeighborhood();
+				l->calculateNeighborhood();
 			}
 			// Generate the regions
-			GenerateSMRegions();
+			generateSMRegions();
 			// Set the parent regions
 			for (RegionPtr r : regions) {
 				for (Particle* p : r->particles) {
@@ -83,12 +83,12 @@ namespace aly {
 				}
 			}
 
-			CalculateInvariants();
-			InitializeCells();		// Cells help with rendering
-			UpdateCellPositions();
+			calculateInvariants();
+			initializeCells();		// Cells help with rendering
+			updateCellPositions();
 		}
 
-		void Body::GenerateSMRegions()
+		void Body::generateSMRegions()
 		{
 			// Generate the regions from the lattice locations' neighborhoods
 			for (LatticeLocation* l : latticeLocationsWithExistentRegions)
@@ -110,7 +110,7 @@ namespace aly {
 			}
 		}
 
-		void Body::InitializeCells()
+		void Body::initializeCells()
 		{
 			for (LatticeLocationPtr l : latticeLocations)
 			{
@@ -123,14 +123,14 @@ namespace aly {
 			// Have to call these after all cells have been created
 			for (CellPtr cell : cells)
 			{
-				cell->Initialize();
+				cell->initialize();
 			}
 			for (CellPtr cell : cells)
 			{
-				cell->Initialize2();
+				cell->initialize2();
 			}
 		}
-		void Body::CalculateInvariants()
+		void Body::calculateInvariants()
 		{
 
 			// Calculate perRegionMass
@@ -145,7 +145,7 @@ namespace aly {
 				p->sumData.v = p->perRegionMass * p->x0;
 				//std::cout << "Particle Invariant " << p->sumData.v << " " << p->sumData.M(0, 0)<<std::endl;
 			}
-			SumParticlesToRegions();
+			sumParticlesToRegions();
 			for (RegionPtr r : regions) {
 				r->M = r->sumData.M(0, 0);
 				r->Ex0 = r->sumData.v;
@@ -155,14 +155,14 @@ namespace aly {
 			}
 		}
 
-		LatticeLocation* Body::GetLatticeLocation(int3 index)
+		LatticeLocation* Body::getLatticeLocation(int3 index)
 		{
 			std::map<int3, LatticeLocationPtr>::iterator found = lattice.find(index);
 			if (found == lattice.end()) return nullptr;
 			else return found->second.get();
 		}
 
-		void Body::DoFracturing()
+		void Body::doFracturing()
 		{
 			if (fracturing == false || (fractureDistanceTolerance >= 99 && fractureRotationTolerance >= 99))
 				return;
@@ -290,7 +290,7 @@ namespace aly {
 							else direction.z = 0;
 
 							// Now check that it's a valid link
-							LatticeLocation* currentLp = GetLatticeLocation(current);
+							LatticeLocation* currentLp = getLatticeLocation(current);
 							if (currentLp == nullptr || currentLp->immediateNeighborsGrid[direction.x + 1][direction.y + 1][direction.z + 1] == nullptr)
 							{
 								// We found a break in the chain
@@ -327,14 +327,14 @@ namespace aly {
 				}
 
 				
-				RebuildRegions(changed);
+				rebuildRegions(changed);
 
 				// Recalculate invariants, as they may have changed
-				CalculateInvariants();
+				calculateInvariants();
 
 				for (CellPtr cell : cells)
 				{
-					cell->HandleVertexSharerFracture();
+					cell->handleVertexSharerFracture();
 				}
 			}
 		}
@@ -366,7 +366,7 @@ namespace aly {
 			std::vector<Summation*>::iterator new_end = remove(vec.begin(), vec.end(), t);
 			vec.erase(new_end, vec.end());
 		}
-		void Body::RebuildRegions(std::vector<LatticeLocation*> &regen)
+		void Body::rebuildRegions(std::vector<LatticeLocation*> &regen)
 		{
 			for (LatticeLocation *l : regen)
 			{
@@ -536,12 +536,12 @@ namespace aly {
 				}
 			}
 		}
-		void Body::ShapeMatch()
+		void Body::shapeMatch()
 		{
 			// Recalculate the various invaraints (mainly region properties dependent on the particles) if necessary
 			if (invariantsDirty)
 			{
-				CalculateInvariants();
+				calculateInvariants();
 				invariantsDirty = false;
 			}
 
@@ -553,7 +553,7 @@ namespace aly {
 			}
 
 			// Calculate F(mixi) and F(mixi0T)
-			SumParticlesToRegions();
+			sumParticlesToRegions();
 
 			int count = 0;
 			// Shape match
@@ -580,7 +580,7 @@ namespace aly {
 			}
 
 			// Calculate F(Tr)
-			SumRegionsToParticles();
+			sumRegionsToParticles();
 
 			// Calculate goal positions for the particles
 			for (ParticlePtr particle : particles)
@@ -611,7 +611,7 @@ namespace aly {
 		}
 
 		// Damp velocity per region according to the method of Mueller et al. 2006 (Position Based Dynamics), optimized for LSM as described in the paper
-		void Body::PerformRegionDamping()
+		void Body::doRegionDamping()
 		{
 			if (kRegionDamping == 0.0)
 				return;
@@ -636,7 +636,7 @@ namespace aly {
 				particle->sumData.M(2, 2) = particle->perRegionMass * (x.y*x.y + x.x*x.x);
 			}
 
-			SumParticlesToRegions();
+			sumParticlesToRegions();
 			for (RegionPtr region : regions)
 			{
 				float3 v = float3(0.0f);
@@ -669,7 +669,7 @@ namespace aly {
 				region->sumData.M.y = cross(w, region->c);
 			}
 
-			SumRegionsToParticles();
+			sumRegionsToParticles();
 
 			// Apply calculated damping
 			for (ParticlePtr particle : particles)
@@ -686,7 +686,7 @@ namespace aly {
 			}
 		}
 
-		void Body::CalculateParticleVelocities(float h)
+		void Body::calculateParticleVelocities(float h)
 		{
 			for (ParticlePtr particle : particles)
 			{
@@ -707,7 +707,7 @@ namespace aly {
 			}
 		}
 
-		void Body::ApplyParticleVelocities(float h)
+		void Body::applyParticleVelocities(float h)
 		{
 			for (ParticlePtr particle : particles)
 			{
@@ -715,15 +715,15 @@ namespace aly {
 			}
 		}
 
-		void Body::UpdateCellPositions()
+		void Body::updateCellPositions()
 		{
 			for (CellPtr cell : cells)
 			{
-				cell->UpdateVertexPositions();
+				cell->updateVertexPositions();
 			}
 		}
 
-		void Body::SumParticlesToRegions()
+		void Body::sumParticlesToRegions()
 		{
 			for (SummationPtr bar : sums[0])
 			{
@@ -739,7 +739,7 @@ namespace aly {
 			}
 		}
 
-		void Body::SumRegionsToParticles()
+		void Body::sumRegionsToParticles()
 		{
 			for (SummationPtr plate : sums[1])
 			{

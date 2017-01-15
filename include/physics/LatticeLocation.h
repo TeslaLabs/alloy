@@ -43,7 +43,7 @@ namespace aly {
 													// Used in some algorithms
 
 
-			void CalculateNeighborhood();			// Will use a BFS to fill in neighborhood. Also sets regionExists
+			void calculateNeighborhood();			// Will use a BFS to fill in neighborhood. Also sets regionExists
 		};
 		typedef std::shared_ptr<LatticeLocation> LatticeLocationPtr;
 	}

@@ -15,7 +15,6 @@ namespace aly {
 		{
 			float3 v;
 			float3x3 M;
-			__m128 m1, m2, m3;
 			SumData() :v(0.0f), M(float3x3::zero()) {
 
 			}

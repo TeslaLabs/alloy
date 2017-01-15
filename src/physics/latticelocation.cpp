@@ -7,7 +7,7 @@
 namespace aly {
 	namespace softbody {
 
-		void LatticeLocation::CalculateNeighborhood()
+		void LatticeLocation::calculateNeighborhood()
 		{
 			// Generate the set of lattice locations up to w steps from each lattice location
 

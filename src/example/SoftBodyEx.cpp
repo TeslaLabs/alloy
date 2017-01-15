@@ -52,11 +52,11 @@ void SoftBodyEx::addBody() {
 		
 		for (int x = stx; x <= edx; x++){
 			for (int y = sty; y <= edy; y++){
-				body.AddParticle(int3(x, y, z));
+				body.addParticle(int3(x, y, z));
 			}
 		}
 	}
-	body.Finalize();
+	body.finalize();
 	aly::Mesh& mesh = dbody->mesh;
 	uint4 offset(0,0,0,0);
 	for (CellPtr cell:body.cells) {
@@ -98,11 +98,11 @@ bool SoftBodyEx::updatePhysics(){
 	{
 		Body* body = &dbody->body;
 		// Do FastLSM simulation
-		body->ShapeMatch();
-		body->CalculateParticleVelocities(h);
-		body->PerformRegionDamping();
-		body->ApplyParticleVelocities(h);
-		body->DoFracturing();
+		body->shapeMatch();
+		body->calculateParticleVelocities(h);
+		body->doRegionDamping();
+		body->applyParticleVelocities(h);
+		body->doFracturing();
 		// Apply gravity and check floor
 
 		for(ParticlePtr particle : body->particles){
@@ -138,7 +138,7 @@ bool SoftBodyEx::updatePhysics(){
 				particle->x.y = hiY;
 			}
 		}
-		body->UpdateCellPositions();
+		body->updateCellPositions();
 		int index = 0;
 		aly::Mesh& mesh = dbody->mesh;
 		for (CellPtr cell : body->cells) {

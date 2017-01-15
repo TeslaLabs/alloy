@@ -25,10 +25,10 @@ namespace aly {
 			int3 v2;
 
 			CellVertex();
-			void DeterminePositionArbiter();
-			void HandleVertexSharerFracture();	// Update in response to a fracture occuring in one of the cells that share this vertex
+			void determinePositionArbiter();
+			void handleVertexSharerFracture();	// Update in response to a fracture occuring in one of the cells that share this vertex
 
-			void UpdatePosition();
+			void updatePosition();
 		};
 	}
 }

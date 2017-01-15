@@ -24,10 +24,10 @@ namespace aly {
 			std::vector<Cell*> connectedCells;
 
 			Cell();
-			void Initialize();
-			void Initialize2();
-			void HandleVertexSharerFracture(); // Update in response to a fracture occuring in one of the cells that share this vertex
-			void UpdateVertexPositions();
+			void initialize();
+			void initialize2();
+			void handleVertexSharerFracture(); // Update in response to a fracture occuring in one of the cells that share this vertex
+			void updateVertexPositions();
 		};
 		typedef std::shared_ptr<Cell> CellPtr;
 	}

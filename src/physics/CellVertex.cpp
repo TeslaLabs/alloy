@@ -18,7 +18,7 @@ namespace aly {
 			}
 		}
 
-		void CellVertex::DeterminePositionArbiter()
+		void CellVertex::determinePositionArbiter()
 		{
 			Cell *positionArbiterCell;
 			positionArbiter = nullptr;
@@ -46,12 +46,12 @@ namespace aly {
 		}
 
 		// Update in response to a fracture occuring in one of the cells that share this vertex
-		void CellVertex::HandleVertexSharerFracture()
+		void CellVertex::handleVertexSharerFracture()
 		{
-			DeterminePositionArbiter();
+			determinePositionArbiter();
 		}
 
-		void CellVertex::UpdatePosition()
+		void CellVertex::updatePosition()
 		{
 			if (positionArbiter->parentRegions.size() <= 1)
 				position = positionArbiter->g + materialPositionOffset;	// Position arbiter does not have a rotation defined

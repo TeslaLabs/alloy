@@ -5,17 +5,17 @@ namespace aly {
 	namespace softbody {
 
 		// Just used in BFS for finding region extents
-		struct LpAndCost
+		struct LatticePointAndCost
 		{
 			LatticeLocation *lp;
 			float cost;
 
-			LpAndCost(LatticeLocation *lp, float c) : lp(lp), cost(c) {}
-			bool operator < (const LpAndCost &r) const
+			LatticePointAndCost(LatticeLocation *lp, float c) : lp(lp), cost(c) {}
+			bool operator < (const LatticePointAndCost &r) const
 			{
 				return cost < r.cost;
 			}
-			bool operator > (const LpAndCost &r) const
+			bool operator > (const LatticePointAndCost &r) const
 			{
 				return cost > r.cost;
 			}

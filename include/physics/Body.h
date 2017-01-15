@@ -1,8 +1,8 @@
 #ifndef PHYS_BODY_H
 #define PHYS_BODY_H
+#include <physics/LatticePointAndCost.h>
 #include "Cell.h"
 #include "LatticeLocation.h"
-#include "LpAndCost.h"
 #include "BrokenConnection.h"
 #include "Particle.h"
 #include <map>
@@ -48,27 +48,27 @@ namespace aly {
 
 										// Generation
 			Body(float3 spacing);
-			void AddParticle(int3 index);
-			void Finalize();			// After you add all the particles where you want them to be, you must finalize the object
+			void addParticle(int3 index);
+			void finalize();			// After you add all the particles where you want them to be, you must finalize the object
 
 										// Simulation
-			void ShapeMatch();
-			void CalculateParticleVelocities(float h);
-			void PerformRegionDamping();
-			void ApplyParticleVelocities(float h);
-			void DoFracturing();
-			void UpdateCellPositions();	// Actually useful only for rendering, so calling this is optional
+			void shapeMatch();
+			void calculateParticleVelocities(float h);
+			void doRegionDamping();
+			void applyParticleVelocities(float h);
+			void doFracturing();
+			void updateCellPositions();	// Actually useful only for rendering, so calling this is optional
 
 										// Fast summation
-			void SumParticlesToRegions();
-			void SumRegionsToParticles();
+			void sumParticlesToRegions();
+			void sumRegionsToParticles();
 
 			// Helper functions;
-			void GenerateSMRegions();
-			void CalculateInvariants();
-			void InitializeCells();
-			void RebuildRegions(std::vector<LatticeLocation*> &regen);		// Used in fracturing
-			LatticeLocation* GetLatticeLocation(int3 index);
+			void generateSMRegions();
+			void calculateInvariants();
+			void initializeCells();
+			void rebuildRegions(std::vector<LatticeLocation*> &regen);		// Used in fracturing
+			LatticeLocation* getLatticeLocation(int3 index);
 		};
 		template <class T> void Remove(std::vector<T> &vec, const T t)
 		{

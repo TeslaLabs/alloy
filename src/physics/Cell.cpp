@@ -11,7 +11,7 @@ namespace aly {
 		{
 		}
 
-		void Cell::Initialize()
+		void Cell::initialize()
 		{
 			int3 p2 = center->index * 2;
 
@@ -33,8 +33,8 @@ namespace aly {
 					int3 s2 = v2 + vertexOffset[j] * 2 - int3(1, 1, 1);
 					int3 s = int3(s2.x / 2, s2.y / 2, s2.z / 2);
 
-					if (center->body->GetLatticeLocation(s) != NULL)
-						v->shareVertexCells[j] = (Cell*)center->body->GetLatticeLocation(s)->cell;
+					if (center->body->getLatticeLocation(s) != NULL)
+						v->shareVertexCells[j] = (Cell*)center->body->getLatticeLocation(s)->cell;
 				}
 			}
 
@@ -45,7 +45,7 @@ namespace aly {
 			connectedCells.push_back(this);		// I'm always connected to myself
 		}
 
-		void Cell::Initialize2()
+		void Cell::initialize2()
 		{
 			// For each vertex
 			for (unsigned int i = 0; i < 8; i++)
@@ -72,24 +72,24 @@ namespace aly {
 					}
 				}
 
-				v->DeterminePositionArbiter();
+				v->determinePositionArbiter();
 				assert(v->positionArbiter);
 			}
 		}
 
-		void Cell::HandleVertexSharerFracture()
+		void Cell::handleVertexSharerFracture()
 		{
 			for (unsigned int i = 0; i < 8; i++)
 			{
-				vertices[i].HandleVertexSharerFracture();
+				vertices[i].handleVertexSharerFracture();
 			}
 		}
 
-		void Cell::UpdateVertexPositions()
+		void Cell::updateVertexPositions()
 		{
 			for (int i = 0; i < 8; i++)
 			{
-				vertices[i].UpdatePosition();
+				vertices[i].updatePosition();
 			}
 		}
 	}
