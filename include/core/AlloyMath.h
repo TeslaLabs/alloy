@@ -1729,6 +1729,14 @@ template<class T> matrix<T, 4, 4> MakeTransform(const box<T, 3>& src, const box<
 	float scaleS = aly::max(src.dimensions);
 	return MakeTranslation((tar.position + 0.5f * tar.dimensions)) * MakeScale(scaleT / scaleS) * MakeTranslation(-(src.position + 0.5f * src.dimensions));
 }
+template<class T> matrix<T, 4, 4> MakeTransform(const matrix<T,3, 3>& R, const vec<T, 3>& t) {
+	matrix<T, 4, 4> M;
+	M.x=vec<T,4>(R.x,T(0));
+	M.y=vec<T,4>(R.y,T(0));
+	M.z=vec<T,4>(R.z,T(0));
+	M.w=vec<T,4>(t,T(1));
+	return M;
+}
 template<class T> matrix<T, 4, 4> MakePerspectiveMatrix(const T &fovy, const T &aspect, const T &zNear, const T &zFar) {
 	T f = 1.0f / tan(ALY_PI * fovy / 360.0f);
 	T sx = f / aspect;

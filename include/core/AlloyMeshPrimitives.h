@@ -25,55 +25,55 @@
 namespace aly {
 	class Box: public Mesh {
 	public:
-		Box(const box3f& box,std::shared_ptr<AlloyContext>& context = AlloyDefaultContext());
+		Box(const box3f& box,const std::shared_ptr<AlloyContext>& context = AlloyDefaultContext());
 	};
 	class Icosahedron : public Mesh {
 	public:
-		Icosahedron(float radius,std::shared_ptr<AlloyContext>& context = AlloyDefaultContext());
+		Icosahedron(float radius,const std::shared_ptr<AlloyContext>& context = AlloyDefaultContext());
 	};
 	class Sphere : public Mesh {
 	public:
-		Sphere(float r, int slices, int stacks, std::shared_ptr<AlloyContext>& context = AlloyDefaultContext());
+		Sphere(float r, int slices, int stacks,const  std::shared_ptr<AlloyContext>& context = AlloyDefaultContext());
 	};
 	class Cylinder : public Mesh {
 	public:
-		Cylinder(float r, float h, int slices,  std::shared_ptr<AlloyContext>& context = AlloyDefaultContext());
+		Cylinder(float r, float h, int slices,const   std::shared_ptr<AlloyContext>& context = AlloyDefaultContext());
 	};
 	class Torus : public Mesh {
 	public:
-		Torus(float innerRadius,float outerRadius,int stacks, int slices, std::shared_ptr<AlloyContext>& context = AlloyDefaultContext());
+		Torus(float innerRadius,float outerRadius,int stacks, int slices,const  std::shared_ptr<AlloyContext>& context = AlloyDefaultContext());
 	};
 	class Cone : public Mesh {
 	public:
-		Cone(float r, float h, int slices, std::shared_ptr<AlloyContext>& context = AlloyDefaultContext());
+		Cone(float r, float h, int slices,const std::shared_ptr<AlloyContext>& context = AlloyDefaultContext());
 	};
 	class Pyramid : public Mesh {
 	public:
-		Pyramid(float w, float h, float d, std::shared_ptr<AlloyContext>& context = AlloyDefaultContext());
+		Pyramid(float w, float h, float d,const std::shared_ptr<AlloyContext>& context = AlloyDefaultContext());
 	};
 	class Frustum : public Mesh {
 	public:
-		Frustum(const CameraParameters& cam, std::shared_ptr<AlloyContext>& context = AlloyDefaultContext());
+		Frustum(const CameraParameters& cam,bool flipZ=false,const std::shared_ptr<AlloyContext>& context = AlloyDefaultContext());
 	};
 	class Plane : public Mesh {
 	public:
-		Plane(float w,float h, std::shared_ptr<AlloyContext>& context = AlloyDefaultContext());
+		Plane(float w,float h,const  std::shared_ptr<AlloyContext>& context = AlloyDefaultContext());
 	};
 	class Capsule : public Mesh {
 	public:
-		Capsule(float r, float h,int slices, int stacks, std::shared_ptr<AlloyContext>& context = AlloyDefaultContext());
+		Capsule(float r, float h,int slices, int stacks,const  std::shared_ptr<AlloyContext>& context = AlloyDefaultContext());
 	};
 	class TessellatedSphere : public Mesh {
 	public:
-		TessellatedSphere(float r,int subdivisions,const SubDivisionScheme& scheme, std::shared_ptr<AlloyContext>& context = AlloyDefaultContext());
+		TessellatedSphere(float r,int subdivisions,const SubDivisionScheme& scheme,const  std::shared_ptr<AlloyContext>& context = AlloyDefaultContext());
 	};
 	class Grid : public Mesh {
 	public:
-		Grid(float w, float h, int rows,int cols, std::shared_ptr<AlloyContext>& context = AlloyDefaultContext());
+		Grid(float w, float h, int rows,int cols,const  std::shared_ptr<AlloyContext>& context = AlloyDefaultContext());
 	};
 	class Asteroid : public Icosahedron {
 	public:
-		Asteroid(int subdivisions, std::shared_ptr<AlloyContext>& context = AlloyDefaultContext());
+		Asteroid(int subdivisions,const  std::shared_ptr<AlloyContext>& context = AlloyDefaultContext());
 	};
 }
 #endif /* MESH_H_ */

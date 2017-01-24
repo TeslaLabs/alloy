@@ -20,7 +20,7 @@
  */
 #include "AlloyMeshPrimitives.h"
 namespace aly {
-	Plane::Plane(float w, float h, std::shared_ptr<AlloyContext>& context) :Mesh(context) {
+	Plane::Plane(float w, float h,const  std::shared_ptr<AlloyContext>& context) :Mesh(context) {
 		vertexLocations.push_back(float3(-0.5f*w, -0.5f*h, 0.0f));
 		vertexLocations.push_back(float3(-0.5f*w, +0.5f*h, 0.0f));
 		vertexLocations.push_back(float3(+0.5f*w, +0.5f*h, 0.0f));
@@ -33,7 +33,7 @@ namespace aly {
 		boundingBox = box3f(float3(-0.5f*w, -0.5f*h, 0.0f), float3(w, h, 0));
 		setDirty(true);
 	}
-	Grid::Grid(float w, float h, int rows, int cols, std::shared_ptr<AlloyContext>& context) :Mesh(context) {
+	Grid::Grid(float w, float h, int rows, int cols,const  std::shared_ptr<AlloyContext>& context) :Mesh(context) {
 		float cellX = w / rows;
 		float cellY = h / cols;
 		float offX = -w*0.5f;
@@ -56,7 +56,7 @@ namespace aly {
 		boundingBox = box3f(float3(-0.5f*w, -0.5f*h, 0.0f), float3(w, h, 0));
 		setDirty(true);
 	}
-	Asteroid::Asteroid(int subdivisions, std::shared_ptr<AlloyContext>& context) :Icosahedron(1.0f, context) {
+	Asteroid::Asteroid(int subdivisions,const  std::shared_ptr<AlloyContext>& context) :Icosahedron(1.0f, context) {
 		std::random_device rd;
 		std::mt19937 gen(rd());
 		std::uniform_real_distribution<float> noise(0.0f, 1.0f);
@@ -73,7 +73,7 @@ namespace aly {
 		updateBoundingBox();
 		setDirty(true);
 	}
-	Pyramid::Pyramid(float w, float h, float d, std::shared_ptr<AlloyContext>& context) :Mesh(context) {
+	Pyramid::Pyramid(float w, float h, float d, const std::shared_ptr<AlloyContext>& context) :Mesh(context) {
 		vertexLocations.push_back(float3(-0.5f*w, -0.5f*h, 0.0f));
 		vertexLocations.push_back(float3(-0.5f*w, +0.5f*h, 0.0f));
 		vertexLocations.push_back(float3(+0.5f*w, +0.5f*h, 0.0f));
@@ -92,17 +92,18 @@ namespace aly {
 		boundingBox = box3f(float3(-0.5f*w, -0.5f*h, 0.0f), float3(w, h, d));
 		setDirty(true);
 	}
-	Frustum::Frustum(const CameraParameters& cam, std::shared_ptr<AlloyContext>& context) :Mesh(context) {
+	Frustum::Frustum(const CameraParameters& cam, bool flipZ,const std::shared_ptr<AlloyContext>& context) :Mesh(context) {
 
 		float3 pt1 = cam.transformNormalizedImageDepthToWorld(float3(0, 0, 0));
 		float3 pt2 = cam.transformNormalizedImageDepthToWorld(float3(1, 0, 0));
 		float3 pt3 = cam.transformNormalizedImageDepthToWorld(float3(1, 1, 0));
 		float3 pt4 = cam.transformNormalizedImageDepthToWorld(float3(0, 1, 0));
 
-		float3 qt1 = cam.transformNormalizedImageDepthToWorld(float3(0, 0, 1));
-		float3 qt2 = cam.transformNormalizedImageDepthToWorld(float3(1, 0, 1));
-		float3 qt3 = cam.transformNormalizedImageDepthToWorld(float3(1, 1, 1));
-		float3 qt4 = cam.transformNormalizedImageDepthToWorld(float3(0, 1, 1));
+		float z=(flipZ)?-1.0f:1.0f;
+		float3 qt1 = cam.transformNormalizedImageDepthToWorld(float3(0, 0, z));
+		float3 qt2 = cam.transformNormalizedImageDepthToWorld(float3(1, 0, z));
+		float3 qt3 = cam.transformNormalizedImageDepthToWorld(float3(1, 1, z));
+		float3 qt4 = cam.transformNormalizedImageDepthToWorld(float3(0, 1, z));
 
 		vertexLocations.push_back(pt1);
 		vertexLocations.push_back(pt2);
@@ -125,7 +126,7 @@ namespace aly {
 		updateBoundingBox();
 		setDirty(true);
 	}
-	Box::Box(const box3f& box, std::shared_ptr<AlloyContext>& context) :Mesh(context) {
+	Box::Box(const box3f& box,const  std::shared_ptr<AlloyContext>& context) :Mesh(context) {
 		float3 minPt = box.min();
 		float3 maxPt = box.max();
 		vertexLocations.push_back(float3(minPt.x, minPt.y, minPt.z));
@@ -149,7 +150,7 @@ namespace aly {
 		boundingBox = box;
 		setDirty(true);
 	}
-	Sphere::Sphere(float radius, int slices, int stacks, std::shared_ptr<AlloyContext>& context) :Mesh(context) {
+	Sphere::Sphere(float radius, int slices, int stacks,const  std::shared_ptr<AlloyContext>& context) :Mesh(context) {
 		std::vector<std::vector<uint32_t>> rings(stacks - 1, std::vector<uint32_t>(slices));
 		vertexLocations.push_back(float3(0.0f, 0.0f, radius));
 		vertexNormals.push_back(float3(0.0f, 0.0f, 1.0f));
@@ -196,7 +197,7 @@ namespace aly {
 		boundingBox = box3f(float3(-radius, -radius, -radius), float3(2 * radius, 2 * radius, 2 * radius));
 		setDirty(true);
 	}
-	Cylinder::Cylinder(float radius, float height, int slices, std::shared_ptr<AlloyContext>& context) :Mesh(context) {
+	Cylinder::Cylinder(float radius, float height, int slices,const  std::shared_ptr<AlloyContext>& context) :Mesh(context) {
 		vertexLocations.push_back(float3(0.0f, 0.0f, 0.5f*height));
 		vertexNormals.push_back(float3(0.0f, 0.0f, 1.0f));
 		std::vector<uint32_t> topRing(slices);
@@ -243,7 +244,7 @@ namespace aly {
 
 		setDirty(true);
 	}
-	Torus::Torus(float innerRadius, float outerRadius, int stacks, int slices, std::shared_ptr<AlloyContext>& context) :Mesh(context) {
+	Torus::Torus(float innerRadius, float outerRadius, int stacks, int slices,const  std::shared_ptr<AlloyContext>& context) :Mesh(context) {
 		float r = 0.5f*(outerRadius - innerRadius);
 		float R = 0.5f*(outerRadius + innerRadius);
 		std::vector<std::vector<uint32_t>> rings(stacks, std::vector<uint32_t>(slices));
@@ -279,7 +280,7 @@ namespace aly {
 		boundingBox = box3f(float3(-outerRadius, -outerRadius, -r), float3(2 * outerRadius, 2 * outerRadius, 2 * r));
 		setDirty(true);
 	}
-	Cone::Cone(float radius, float height, int slices, std::shared_ptr<AlloyContext>& context) :Mesh(context) {
+	Cone::Cone(float radius, float height, int slices,const  std::shared_ptr<AlloyContext>& context) :Mesh(context) {
 		vertexLocations.push_back(float3(0.0f, 0.0f, 0.5f*height));
 		vertexNormals.push_back(float3(0.0f, 0.0f, 1.0f));
 		std::vector<uint32_t> bottomRing(slices);
@@ -316,7 +317,7 @@ namespace aly {
 		boundingBox = box3f(float3(-radius, -radius, -0.5f*height), float3(2 * radius, 2 * radius, height));
 		setDirty(true);
 	}
-	Icosahedron::Icosahedron(float radius, std::shared_ptr<AlloyContext>& context) :Mesh(context) {
+	Icosahedron::Icosahedron(float radius,const std::shared_ptr<AlloyContext>& context) :Mesh(context) {
 		vertexLocations.push_back(float3(0.0f, 0.0f, -1.0f));
 		vertexLocations.push_back(float3(0.7236f, -0.52572f, -0.447215f));
 		vertexLocations.push_back(float3(-0.276385f, -0.85064f, -0.447215f));
@@ -356,7 +357,7 @@ namespace aly {
 		setDirty(true);
 
 	}
-	Capsule::Capsule(float radius, float height, int slices, int stacks, std::shared_ptr<AlloyContext>& context) :Mesh(context) {
+	Capsule::Capsule(float radius, float height, int slices, int stacks,const  std::shared_ptr<AlloyContext>& context) :Mesh(context) {
 
 		if (stacks % 2 == 0)stacks++;//Make odd
 		std::vector<std::vector<uint32_t>> rings(stacks - 1, std::vector<uint32_t>(slices));
@@ -408,7 +409,7 @@ namespace aly {
 		setDirty(true);
 	}
 
-	TessellatedSphere::TessellatedSphere(float radius, int subdivisions, const SubDivisionScheme& scheme, std::shared_ptr<AlloyContext>& context) :Mesh(context) {
+	TessellatedSphere::TessellatedSphere(float radius, int subdivisions, const SubDivisionScheme& scheme,const  std::shared_ptr<AlloyContext>& context) :Mesh(context) {
 		if (scheme == SubDivisionScheme::Loop) {
 			vertexLocations.push_back(float3(0.0f, 0.0f, -1.0f));
 			vertexLocations.push_back(float3(0.7236f, -0.52572f, -0.447215f));
