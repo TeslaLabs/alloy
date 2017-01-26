@@ -385,6 +385,12 @@ template<class T, int M> struct matrix<T, M, 2> {
 	explicit matrix(T s) :
 			x(s), y(s) {
 	}
+	matrix( T a00,T a01,
+			T a10,T a11){
+
+		x.x=a00;x.y=a10;
+		y.x=a01;y.y=a11;
+	}
 	template<class U> explicit matrix(const matrix<U, M, 2> & r) :
 			x(C(r.x)), y(C(r.y)) {
 	}
@@ -435,6 +441,15 @@ template<class T, int M> struct matrix<T, M, 3> {
 			y[m] = A[m * 3 + 1];
 			z[m] = A[m * 3 + 2];
 		}
+	}
+	matrix( T a00,T a01,T a02,
+			T a10,T a11,T a12,
+			T a20,T a21,T a22){
+
+		x.x=a00;x.y=a10;x.z=a20;
+		y.x=a01;y.y=a11;y.z=a21;
+		z.x=a02;z.y=a12;z.z=a22;
+
 	}
 	matrix(C x, C y, C z) :
 			x(x), y(y), z(z) {
@@ -496,6 +511,16 @@ template<class T, int M> struct matrix<T, M, 4> {
 	}
 	matrix(C x, C y, C z, C w) :
 			x(x), y(y), z(z), w(w) {
+	}
+	matrix( T a00,T a01,T a02,T a03,
+			T a10,T a11,T a12,T a13,
+			T a20,T a21,T a22,T a23,
+			T a30,T a31,T a32,T a33){
+
+		x.x=a00;x.y=a10;x.z=a20;x.w=a30;
+		y.x=a01;y.y=a11;y.z=a21;y.w=a31;
+		z.x=a02;z.y=a12;z.z=a22;z.w=a32;
+		w.x=a03;w.y=a13;w.z=a23;w.w=a33;
 	}
 	explicit matrix(T s) :
 			x(s), y(s), z(s), w(s) {
@@ -1736,6 +1761,112 @@ template<class T> matrix<T, 4, 4> MakeTransform(const matrix<T,3, 3>& R, const v
 	M.z=vec<T,4>(R.z,T(0));
 	M.w=vec<T,4>(t,T(1));
 	return M;
+}
+template<class T> vec<T,3> MakeEulerAngles(const matrix<T,3,3>& coeff,int a0=0,int a1=1,int a2=2) {
+  vec<T,3> res;
+  const int odd = ((a0+1)%3 == a1) ? 0 : 1;
+  const int i = a0;
+  const int j = (a0 + 1 + odd)%3;
+  const int k = (a0 + 2 - odd)%3;
+  if (a0==a2){
+    res[0] = std::atan2(coeff(j,i), coeff(k,i));
+    if((odd && res[0]<T(0)) || ((!odd) && res[0]>T(0))){
+      if(res[0] > T(0)) {
+        res[0] -= T(ALY_PI);
+      } else {
+        res[0] += T(ALY_PI);
+      }
+      T s2 = Vector2(coeff(j,i), coeff(k,i)).norm();
+      res[1] = -std::atan2(s2, coeff(i,i));
+    } else {
+      T s2 = Vector2(coeff(j,i), coeff(k,i)).norm();
+      res[1] = std::atan2(s2, coeff(i,i));
+    }
+    // With a=(0,1,0), we have i=0; j=1; k=2, and after computing the first two angles,
+    // we can compute their respective rotation, and apply its inverse to M. Since the result must
+    // be a rotation around x, we have:
+    //
+    //  c2  s1.s2 c1.s2                   1  0   0
+    //  0   c1    -s1       *    M    =   0  c3  s3
+    //  -s2 s1.c2 c1.c2                   0 -s3  c3
+    //
+    //  Thus:  m11.c1 - m21.s1 = c3  &   m12.c1 - m22.s1 = s3
+    T s1 = std::sin(res[0]);
+    T c1 = std::cos(res[0]);
+    res[2] = std::atan2(c1*coeff(j,k)-s1*coeff(k,k), c1*coeff(j,j) - s1 * coeff(k,j));
+  } else {
+    res[0] = std::atan2(coeff(j,k), coeff(k,k));
+    T c2 = Vector2(coeff(i,i), coeff(i,j)).norm();
+    if((odd && res[0]<T(0)) || ((!odd) && res[0]>T(0))) {
+      if(res[0] > T(0)) {
+        res[0] -= T(ALY_PI);
+      } else {
+        res[0] += T(ALY_PI);
+      }
+      res[1] = std::atan2(-coeff(i,k), -c2);
+    } else {
+      res[1] = std::atan2(-coeff(i,k), c2);
+    }
+    T s1 = std::sin(res[0]);
+    T c1 = std::cos(res[0]);
+    res[2] = std::atan2(s1*coeff(k,i)-c1*coeff(j,i), c1*coeff(j,j) - s1 * coeff(k,j));
+  }
+  if (!odd)
+	  res = -res;
+  return res;
+}
+template<class T> vec<T,3> MakeEulerAngles(const matrix<T,4,4>& coeff,int a0=0,int a1=1,int a2=2) {
+  vec<T,3> res;
+  const int odd = ((a0+1)%3 == a1) ? 0 : 1;
+  const int i = a0;
+  const int j = (a0 + 1 + odd)%3;
+  const int k = (a0 + 2 - odd)%3;
+  if (a0==a2){
+    res[0] = std::atan2(coeff(j,i), coeff(k,i));
+    if((odd && res[0]<T(0)) || ((!odd) && res[0]>T(0))){
+      if(res[0] > T(0)) {
+        res[0] -= T(ALY_PI);
+      } else {
+        res[0] += T(ALY_PI);
+      }
+      T s2 = Vector2(coeff(j,i), coeff(k,i)).norm();
+      res[1] = -std::atan2(s2, coeff(i,i));
+    } else {
+      T s2 = Vector2(coeff(j,i), coeff(k,i)).norm();
+      res[1] = std::atan2(s2, coeff(i,i));
+    }
+    // With a=(0,1,0), we have i=0; j=1; k=2, and after computing the first two angles,
+    // we can compute their respective rotation, and apply its inverse to M. Since the result must
+    // be a rotation around x, we have:
+    //
+    //  c2  s1.s2 c1.s2                   1  0   0
+    //  0   c1    -s1       *    M    =   0  c3  s3
+    //  -s2 s1.c2 c1.c2                   0 -s3  c3
+    //
+    //  Thus:  m11.c1 - m21.s1 = c3  &   m12.c1 - m22.s1 = s3
+    T s1 = std::sin(res[0]);
+    T c1 = std::cos(res[0]);
+    res[2] = std::atan2(c1*coeff(j,k)-s1*coeff(k,k), c1*coeff(j,j) - s1 * coeff(k,j));
+  } else {
+    res[0] = std::atan2(coeff(j,k), coeff(k,k));
+    T c2 = Vector2(coeff(i,i), coeff(i,j)).norm();
+    if((odd && res[0]<T(0)) || ((!odd) && res[0]>T(0))) {
+      if(res[0] > T(0)) {
+        res[0] -= T(ALY_PI);
+      } else {
+        res[0] += T(ALY_PI);
+      }
+      res[1] = std::atan2(-coeff(i,k), -c2);
+    } else {
+      res[1] = std::atan2(-coeff(i,k), c2);
+    }
+    T s1 = std::sin(res[0]);
+    T c1 = std::cos(res[0]);
+    res[2] = std::atan2(s1*coeff(k,i)-c1*coeff(j,i), c1*coeff(j,j) - s1 * coeff(k,j));
+  }
+  if (!odd)
+	  res = -res;
+  return res;
 }
 template<class T> matrix<T, 4, 4> MakePerspectiveMatrix(const T &fovy, const T &aspect, const T &zNear, const T &zFar) {
 	T f = 1.0f / tan(ALY_PI * fovy / 360.0f);
